@@ -3,11 +3,13 @@
 > *Author(s): DefinitelyRus, Google Gemini*
 
 ## 1. Project Overview & Goals
+
 * **Purpose:** Create a local, desktop-first business tracking app that is simpler and faster than a paper notebook.
 * **Target Audience:** Micro-SMEs (Sari-sari stores, milk tea shops, gyms, supply shops) in the Philippines.
 * **Prototype Focus:** Build the bare minimum to uncover user friction. Avoid premature optimization, complex abstractions, and cloud hosting.
 
 ## 2. Technical Architecture & Data Strategy
+
 * **Deployment:** Single-machine deployment (both front-end and back-end run locally on the merchant's PC).
 * **Front-end:** React (Desktop-first layout, component-based architecture).
 * **Back-end:** .NET Web API (Following SOLID principles, clean controller-service-repository pattern).
@@ -19,11 +21,13 @@
 ## 3. Core Features & Functional Requirements
 
 ### 3.1. Authentication (Simple Login)
+
 * **Goal:** basic access control for employees.
 * **Requirement:** A minimalist login screen asking for Username/Password.
 * **Prototype Shortcut:** Passwords are saved and verified in **plain-text** within SQLite. No hashing, encryption, or JWT tokens needed for this version.
 
 ### 3.2. Analytics Dashboard
+
 * **Goal:** Instantly show the merchant business performance.
 * **Metrics to Display:**
   * Total Sales (Today)
@@ -31,6 +35,7 @@
 * **Alerts Section:** Lists products where stock quantity is below a critical threshold (e.g., < 5 units).
 
 ### 3.3. Inventory Management Tab
+
 * **Goal:** Track what items the store offers.
 * **Item Types Supported:**
   * **Products:** Has physical stock count (deducts on sale).
@@ -41,6 +46,7 @@
   * **Search Bar:** Real-time text filter matching product/service names or SKUs.
 
 ### 3.4. Point-of-Sale (POS) Tab
+
 * **Goal:** Ring up sales quickly.
 * **Features:**
   * **Item Selector:** A searchable grid or list of all active products and services.
@@ -48,6 +54,7 @@
   * **Checkout Button:** One-click submission that registers the sale, logs the transaction items, and updates the SQLite product stock counts.
 
 ### 3.5. Employee Attendance
+
 * **Goal:** Basic clock-in ledger.
 * **Features:**
   * A simple toggle button on the main UI sidebar or header: **"Clock In"** / **"Clock Out"**.
@@ -105,6 +112,7 @@ CREATE TABLE Attendance (
 ```
 
 ## 5. Explicitly Out of Scope (Do Not Build Yet)
+
 * Password hashing, multi-factor authentication, or token expirations.
 * Database migrations (if schemas change, wipe the .db file and restart).
 * External hardware integration (barcode scanners can wait; use text search first).
