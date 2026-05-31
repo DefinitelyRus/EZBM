@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="EZBM.Core/EZBM.Core.csproj" />
+  <Project Path="EZBM.DesktopHost/EZBM.DesktopHost.csproj" />
 </Solution>

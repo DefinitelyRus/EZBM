@@ -1,0 +1,6 @@
+@EZBM.DesktopHost_HostAddress = http://localhost:5056
+
+GET {{EZBM.DesktopHost_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
