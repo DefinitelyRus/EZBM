@@ -8,7 +8,7 @@ namespace EZBM.Core.Tools;
 /// Provides enhanced logging capabilities with contextual information and stack tracing.
 /// <br/><br/>
 /// <i>Author(s): OpenAI ChatGPT, Google Gemini, DefinitelyRus
-/// Docuemented by: Google Gemini</i>
+/// Documented by: Google Gemini</i>
 /// </summary>
 public class Log
 {

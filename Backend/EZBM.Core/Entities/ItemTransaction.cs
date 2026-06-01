@@ -1,20 +1,83 @@
 namespace EZBM.Core.Entities;
 
-// Instances of this class must be immutable.
+/// <summary>
+/// Represents a record of stock movement or adjustment for a specific item.
+/// <br/><br/>
+/// <i>Author(s): DefinitelyRus<br/>
+/// Editors(s): None<br/>
+/// Documented by: Google Gemini</i>
+/// </summary>
 public class ItemTransaction : Entity
 {
+    /// <summary>
+    /// Defines the reason or nature of the item transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public enum Type { NewStock, Sale, Damaged_Lost_Expired, Correction }
 
+    /// <summary>
+    /// The category of this stock movement.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public Type TransactionType { get; private set; }
 
+    /// <summary>
+    /// The amount of the item involved in the transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public float Quantity { get; private set; }
+
+    /// <summary>
+    /// The date and time when the transaction occurred.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public DateTime Timestamp { get; private set; }
+
+    /// <summary>
+    /// Additional context or reasons for the transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public string? Notes { get; private set; }
 
+    /// <summary>
+    /// The item associated with this transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public Item Item { get; private set; }
+
+    /// <summary>
+    /// The specific sale entry if this transaction was triggered by a sale.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
     public SaleEntry? SaleEntry { get; private set; }
 
-    public ItemTransaction(int id, Item item, Type transactionType, SaleEntry? saleEntry, float quantity, DateTime timestamp, string? notes = null)
+    /// <summary>
+    /// Initializes a new instance of the ItemTransaction class.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    /// <param name="id">The unique identifier for this entity.</param>
+    /// <param name="item">The item being tracked.</param>
+    /// <param name="transactionType">The type of stock movement.</param>
+    /// <param name="saleEntry">Optional reference to a sale record.</param>
+    /// <param name="quantity">The quantity changed.</param>
+    /// <param name="timestamp">The time of the event.</param>
+    /// <param name="notes">Optional remarks.</param>
+    public ItemTransaction(
+        int id,
+        Item item,
+        Type transactionType,
+        SaleEntry? saleEntry,
+        float quantity,
+        DateTime timestamp,
+        string? notes = null)
     {
         Id = id;
         Item = item;
