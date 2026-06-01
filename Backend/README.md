@@ -34,9 +34,7 @@ dotnet sln add EZBM.DesktopHost/EZBM.DesktopHost.csproj
 dotnet add EZBM.DesktopHost/EZBM.DesktopHost.csproj reference EZBM.Core/EZBM.Core.csproj
 ```
 
-## Adding Android support
-
-> *Author(s): DefinitelyRus, Google Gemini*
+### Adding Android support
 
 When the front-end and back-end are done and ready to go, we can pivot to adding Android support.
 
@@ -47,6 +45,7 @@ dotnet new maui -o EZBM.MobileApp
 Once that project is made, you need to:
 
 1. Bundle your compiled static React production build (`dist` or `build` directory assets) directly into the `wwwroot` directory of that new project.
+
 2. Link the mobile package to your existing backend rules engine.
 
 ```bash
@@ -55,3 +54,17 @@ dotnet add EZBM.MobileApp/EZBM.MobileApp.csproj reference EZBM.Core/EZBM.Core.cs
 ```
 
 3. Instead of using controllers to route HTTP calls, use the MAUI `.NET 10` native `HybridWebView` to execute your `EZBM.Core` data methods directly out of physical device memory, bypassing local web server performance limitations on mobile entirely.
+
+## Implementing Local Storage
+
+The backend uses SQLite and Entity Framework Core (EF Core) for local storage as these don't require a separate database engine server installation, and stores everything in one file.
+
+### Add NuGet Packages
+
+```bash
+# Move into the Core directory
+cd EZBM.Core
+
+# Install EF Core and the SQLite driver
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+```
