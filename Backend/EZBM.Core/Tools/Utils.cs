@@ -1,4 +1,5 @@
 using System.Text.Json;
+using EZBM.Core.Entities;
 
 namespace EZBM.Core.Tools;
 
@@ -13,25 +14,30 @@ namespace EZBM.Core.Tools;
 /// <i>Documented by: Google Gemini</i>
 /// </summary>
 public static class Utils
-{   
+{
 
     #region ID Handling
-    
+
     /// <summary>
     /// Generates a random ID then checks if any existing entity shares the same ID.
     /// If it does, it will generate a new one until a unique ID is found.
     /// <br/><br/>
     /// Example:
     /// <code>
-    /// long id = Utils.GenerateId(typeof(Entity));
+    /// this.Id = Utils.GenerateEntityId();
     /// </code>
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    /// <param name="type">The type of the entity to generate an ID for.</param>
-    public static long GenerateId(Type type)
     {
-        // TODO: Write this function
+        // Generate a random long integer
+
+        // Query the database to check if the generated number matches any existing values
+
+        // If there is a match, keep generating another number and checking until there is no match
+
+        // If none, return the generated number
+
         return 0;
     }
 
