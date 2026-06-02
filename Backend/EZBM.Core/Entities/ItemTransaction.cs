@@ -31,6 +31,13 @@ public class ItemTransaction : Entity
     public float Quantity { get; private set; }
 
     /// <summary>
+    /// The staff member who performed or authorized the stock movement.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    public Staff Staff { get; private set; }
+
+    /// <summary>
     /// The date and time when the transaction occurred.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
@@ -67,7 +74,8 @@ public class ItemTransaction : Entity
     /// <param name="item">The item being tracked.</param>
     /// <param name="transactionType">The type of stock movement.</param>
     /// <param name="saleEntry">Optional reference to a sale record.</param>
-    /// <param name="quantity">The quantity changed.</param>
+    /// <param name="quantity">The amount of stock changed.</param>
+    /// <param name="staff">The staff member responsible.</param>
     /// <param name="timestamp">The time of the event.</param>
     /// <param name="notes">Optional remarks.</param>
     public ItemTransaction(
@@ -76,6 +84,7 @@ public class ItemTransaction : Entity
         Type transactionType,
         SaleEntry? saleEntry,
         float quantity,
+        Staff staff,
         DateTime timestamp,
         string? notes = null)
     {
@@ -84,6 +93,7 @@ public class ItemTransaction : Entity
         TransactionType = transactionType;
         SaleEntry = saleEntry;
         Quantity = quantity;
+        Staff = staff;
         Timestamp = timestamp;
         Notes = notes;
     }
