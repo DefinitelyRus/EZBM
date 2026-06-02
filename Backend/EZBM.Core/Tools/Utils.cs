@@ -11,7 +11,9 @@ namespace EZBM.Core.Tools;
 /// string json = Utils.ConvertToJson(data);
 /// </code>
 /// <br/><br/>
-/// <i>Documented by: Google Gemini</i>
+/// <i>Author(s): DefinitelyRus<br/>
+/// Editor(s): None<br/>
+/// Documented by: Google Gemini</i>
 /// </summary>
 public static class Utils
 {
@@ -42,6 +44,17 @@ public static class Utils
         return 0;
     }
 
+    /// <summary>
+    /// Generates a sequential invoice number for a transaction based on the given timestamp.
+    /// <br/><br/>
+    /// Example:
+    /// <code>
+    /// int num = Utils.GenerateInvoiceNumber(DateTime.UtcNow);
+    /// </code>
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    /// <param name="timestamp">The timestamp of the transaction.</param>
     public static int GenerateInvoiceNumber(DateTime timestamp)
     {
         string datePart = timestamp.Date.ToString("yyyyMMdd");

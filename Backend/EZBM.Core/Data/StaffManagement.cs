@@ -3,8 +3,27 @@ using EZBM.Core.Entities;
 
 namespace EZBM.Core.Data;
 
+/// <summary>
+/// Provides utility methods to manage staff, including creation and import of staff members.
+/// <br/><br/>
+/// <i>Author(s): DefinitelyRus<br/>
+/// Editor(s): None<br/>
+/// Documented by: Google Gemini</i>
+/// </summary>
 public static class StaffManagement
 {
+    /// <summary>
+    /// Parses a JSON string representing a staff member and adds them to the system.
+    /// <br/><br/>
+    /// Example:
+    /// <code>
+    /// string json = "{\"id\": 1, \"username\": \"john_doe\", \"payType\": \"Hourly\", \"payRate\": 15.5}";
+    /// StaffManagement.AddStaff(json);
+    /// </code>
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    /// <param name="json">The JSON data string containing the staff member's attributes.</param>
     public static void AddStaff(string json)
     {
         Log.Me(() => "Attempting to add staff...");

@@ -31,7 +31,7 @@ Changes:
 
 ### 06/02/2026
 
-Refactored and enhanced the backend core data models, including setting up an SQLite database context and its respective mappings. Revised various entity relationships and refined utility functions.
+Refactored and enhanced the backend core data models, including setting up an SQLite database context and its respective mappings. Revised various entity relationships, refined utility functions, and added comprehensive XML documentation to C# source files.
 
 Changes:
 
@@ -42,6 +42,7 @@ Changes:
 - Implemented core database initialization and reset logic.
 - Restructured code by renaming the storage folder to `Data` and updating ID generation methods.
 - Refined models by removing redundant properties and adding new enumerations.
+- Added and updated comprehensive in-code XML documentation for C# classes, records, and members.
 
 ### 06/01/2026
 

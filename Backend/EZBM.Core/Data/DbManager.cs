@@ -6,7 +6,7 @@ namespace EZBM.Core.Data;
 /// Manages the database lifecycle, including initialization and error handling.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): None<br/>
+/// Editor(s): None<br/>
 /// Documented by: Google Gemini</i>
 /// </summary>
 public static class DbManager
@@ -106,7 +106,9 @@ public static class DbManager
 /// <summary>
 /// Provides data for the database initialization failure event.
 /// <br/><br/>
-/// <i>Documented by: Google Gemini</i>
+/// <i>Author(s): DefinitelyRus<br/>
+/// Editor(s): None<br/>
+/// Documented by: Google Gemini</i>
 /// </summary>
 /// <param name="e">The exception that caused the failure.</param>
 /// <param name="message">A descriptive error message.</param>
@@ -114,11 +116,15 @@ public class DbInitializationFailedEventArgs(Exception e, string message) : Even
 {
     /// <summary>
     /// The exception captured during initialization.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public Exception Exception { get; } = e;
 
     /// <summary>
     /// The error message describing the failure.
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public string Message { get; } = message;
 }
