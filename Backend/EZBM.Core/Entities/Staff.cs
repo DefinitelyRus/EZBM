@@ -14,7 +14,7 @@ public class Staff : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public enum PaymentType { Hourly, Daily, Biweekly, Monthly, Invalid }
+    public enum PaymentType { Hourly, Daily, Weekly, Biweekly, Monthly, Invalid }
 
     /// <summary>
     /// The unique username used for authentication.
