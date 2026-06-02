@@ -10,11 +10,11 @@ namespace EZBM.Core.Entities;
 public class Attendance : Entity
 {
     /// <summary>
-    /// The unique identifier of the staff member associated with this record.
+    /// The staff member associated with this record.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public int StaffId { get; set; }
+    public Staff Staff { get; set; }
 
     /// <summary>
     /// The date and time when the staff member clocked in.
@@ -36,13 +36,13 @@ public class Attendance : Entity
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
-    /// <param name="staffId">The ID of the staff member.</param>
+    /// <param name="staff">The ID of the staff member.</param>
     /// <param name="timeIn">The clock-in timestamp.</param>
     /// <param name="timeOut">The optional clock-out timestamp.</param>
-    public Attendance(int id, int staffId, DateTime timeIn, DateTime? timeOut = null)
+    public Attendance(int id, Staff staff, DateTime timeIn, DateTime? timeOut = null)
     {
         Id = id;
-        StaffId = staffId;
+        Staff = staff;
         TimeIn = timeIn;
         TimeOut = timeOut;
     }
