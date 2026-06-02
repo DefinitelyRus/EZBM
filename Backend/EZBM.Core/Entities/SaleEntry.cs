@@ -7,7 +7,7 @@ namespace EZBM.Core.Entities;
 /// Editors(s): None<br/>
 /// Documented by: Google Gemini</i>
 /// </summary>
-public class SaleEntry(Sale sale, Item item, float quantity, float unitPrice, float subtotal)
+public class SaleEntry(Sale sale, Item item, float quantity, float unitPrice, float subtotal) : Entity
 {
     /// <summary>
     /// The amount of the item purchased.
