@@ -6,8 +6,8 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 ## 1. Initial Project & Database Setup
 
-* [ ] **Back-end (.NET):** Create a new web API project and configure the local port (`localhost`).
-* [ ] **Back-end (SQLite):** Initialize the `ezbm.db` file and execute the database creation script.
+* [x] **Back-end (.NET):** Create a new web API project and configure the local port (`localhost`).
+* [x] **Back-end (SQLite):** Initialize the `ezbm.db` file and execute the database creation script.
 * [ ] **Back-end (JSON):** Create a default `settings.json` file in the root folder for basic app configurations.
 * [ ] **Front-end (React):** Boot a clean desktop-first React project.
 * [ ] **Front-end (API Connection):** Set up a base API client (like Axios or native Fetch) pointed to the local .NET server.

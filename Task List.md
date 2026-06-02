@@ -4,8 +4,8 @@
 
 | Category | Stack | Task Description | Status |
 | :--- | :--- | :--- | :--- |
-| **1. Initial Setup** | Back-end | Create new .NET web API project and configure local port (`localhost`) | Todo |
-| | Back-end | Initialize `ezbm.db` and execute SQLite creation script | Todo |
+| **1. Initial Setup** | Back-end | Create new .NET web API project and configure local port (`localhost`) | Done |
+| | Back-end | Initialize `ezbm.db` and execute SQLite creation script | Done |
 | | Back-end | Create default `settings.json` file | Todo |
 | | Front-end | Boot clean desktop-first React project | Todo |
 | | Front-end | Set up base API client (Axios/Fetch) pointed to local .NET server | Todo |

@@ -1,5 +1,12 @@
 # Update Documentation
 
+## Update `Task List.md` and `Feature Checklist.md`
+
+- Whenever significant progress is made or a feature is completed, review `Task List.md` and `Feature Checklist.md`.
+- Mark completed items with `[x]` in `Feature Checklist.md`.
+- Update the `Status` column in `Task List.md` from `Todo` to `Done` (or `In Progress` if applicable).
+- Ensure that the documented progress aligns with the actual state of the codebase.
+
 ## Update `Changelog.md`
 
 - Read through the Git changes and create new changelog entries.
@@ -8,14 +15,12 @@
 
 ## Update in-code documentation for C# files
 
-Add/update in-code documentation to this file following the existing documentation style (including spacing and line breaks) from other source code files of the same type. Keep it short and use plain English. Use/add a "Documented by" field and add "Google Gemini" to it. Add usage examples if it's not already intuitive or straight-forward. Do this for the class itself and all its members.
-
-- Add or update in-code documentation to all `.cs` files following the documentation style and spacing examples below.
-- Use other existing in-code documentation as reference as the examples are just guidelines, not rules.
-- Keep the descriptions short and use plain English.
+- Add or update in-code documentation to all `.cs` files following the documentation style example below.
+- Follow the spacing and line breaks from the example below. (Not rules, just examples)
+- Keep descriptions short and use plain English.
 - Add "Author(s)", "Editor(s)", and "Documented by" fields.
-  - Add "DefinitelyRus" to the authors.
-  - Add "Google Gemini" to the "documented by".
+  - Add "DefinitelyRus" to the "Author(s)" field.
+  - Add your name to the "Documented by" field. (e.g., "Google Gemini", "OpenAI ChatGPT", etc.)
 
 Example:
 
