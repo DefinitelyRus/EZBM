@@ -29,6 +29,7 @@ public static class Utils
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
+    public static long GenerateEntityId()
     {
         // Generate a random long integer
 
@@ -37,6 +38,19 @@ public static class Utils
         // If there is a match, keep generating another number and checking until there is no match
 
         // If none, return the generated number
+
+        return 0;
+    }
+
+    public static int GenerateInvoiceNumber(DateTime timestamp)
+    {
+        string datePart = timestamp.Date.ToString("yyyyMMdd");
+
+        // Query the database for all transactions matching the given timestamp.
+
+        // If none were found, return 0000001.
+
+        // If at least one is found, get the largest invoice number, increment by 1, then return the result.
 
         return 0;
     }
