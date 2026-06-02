@@ -10,13 +10,6 @@ namespace EZBM.Core.Entities;
 public class Staff : Entity
 {
     /// <summary>
-    /// Defines the possible availability states for a staff member.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
-    /// </summary>
-    public enum Status { Online, Offline, Removed }
-
-    /// <summary>
     /// Defines the frequency or method of payment.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
@@ -73,13 +66,6 @@ public class Staff : Entity
     public string? Position { get; set; }
 
     /// <summary>
-    /// The current availability status of the staff member.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
-    /// </summary>
-    public Status CurrentStatus { get; set; } = Status.Offline;
-
-    /// <summary>
     /// The frequency at which the staff member is paid.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
@@ -131,7 +117,6 @@ public class Staff : Entity
         PhoneNumber = phoneNumber;
 
         Position = position;
-        CurrentStatus = Status.Offline;
 
         PayType = payType;
         PayRate = payRate;
