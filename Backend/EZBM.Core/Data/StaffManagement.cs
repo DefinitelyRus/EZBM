@@ -1,7 +1,7 @@
 using EZBM.Core.Tools;
 using EZBM.Core.Entities;
 
-namespace EZBM.Core.Helpers;
+namespace EZBM.Core.Data;
 
 public static class StaffManagement
 {
