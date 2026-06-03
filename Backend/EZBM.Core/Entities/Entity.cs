@@ -14,7 +14,7 @@ public abstract class Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public long Id { get; set; }
+    public ulong Id { get; set; }
 
     /// <summary>
     /// The date and time when the entity was first created.

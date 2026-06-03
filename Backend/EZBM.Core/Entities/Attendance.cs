@@ -4,8 +4,8 @@ namespace EZBM.Core.Entities;
 /// Represents an attendance record for a staff member, tracking their clock-in and clock-out times.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): None<br/>
-/// Documented by: Google Gemini</i>
+/// Editor(s): Google Antigravity<br/>
+/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 public class Attendance : Entity
 {
@@ -33,13 +33,15 @@ public class Attendance : Entity
     /// <summary>
     /// Initializes a new instance of the Attendance class.
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus<br/>
+    /// Editor(s): Google Antigravity<br/>
+    /// Documented by: Google Gemini, Google Antigravity</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="staff">The ID of the staff member.</param>
     /// <param name="timeIn">The clock-in timestamp.</param>
     /// <param name="timeOut">The optional clock-out timestamp.</param>
-    public Attendance(int id, Staff staff, DateTime timeIn, DateTime? timeOut = null)
+    public Attendance(ulong id, Staff staff, DateTime timeIn, DateTime? timeOut = null)
     {
         Id = id;
         Staff = staff;

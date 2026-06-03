@@ -4,8 +4,8 @@ namespace EZBM.Core.Entities;
 /// Represents a record of stock movement or adjustment for a specific item.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): None<br/>
-/// Documented by: Google Gemini</i>
+/// Editor(s): None<br/>
+/// Documented by: Google Gemini, Antigravity</i>
 /// </summary>
 public class ItemTransaction : Entity
 {
@@ -68,7 +68,9 @@ public class ItemTransaction : Entity
     /// <summary>
     /// Initializes a new instance of the ItemTransaction class.
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus<br/>
+    /// Editor(s): Google Antigravity<br/>
+    /// Documented by: Google Gemini, Antigravity</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="item">The item being tracked.</param>
@@ -79,7 +81,7 @@ public class ItemTransaction : Entity
     /// <param name="timestamp">The time of the event.</param>
     /// <param name="notes">Optional remarks.</param>
     public ItemTransaction(
-        int id,
+        ulong id,
         Item item,
         Type transactionType,
         SaleEntry? saleEntry,

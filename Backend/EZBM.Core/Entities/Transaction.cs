@@ -6,8 +6,8 @@ namespace EZBM.Core.Entities;
 /// Represents a financial transaction within the system, tracking income, expenses, and corrections.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): Google Gemini<br/>
-/// Documented by: Google Gemini</i>
+/// Editor(s): Google Antigravity<br/>
+/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 public class Transaction : Entity
 {
@@ -96,7 +96,9 @@ public class Transaction : Entity
     /// <summary>
     /// Initializes a new instance of the Transaction class.
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus<br/>
+    /// Editor(s): Google Antigravity<br/>
+    /// Documented by: Google Gemini, Google Antigravity</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="transactionType">The type of financial movement.</param>
@@ -108,7 +110,7 @@ public class Transaction : Entity
     /// <param name="invoicePrefix">The prefix for the generated invoice ID.</param>
     /// <param name="notes">Optional remarks.</param>
     public Transaction(
-        int id,
+        ulong id,
         Type transactionType,
         float amount,
         DateTime timestamp,

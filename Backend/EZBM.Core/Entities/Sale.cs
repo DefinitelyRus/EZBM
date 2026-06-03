@@ -9,8 +9,8 @@ using System;
 /// It is made purely to distinguish from other <see cref="Transaction"/> subtypes.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): Google Gemini<br/>
-/// Documented by: Google Gemini</i>
+/// Editor(s): Google Antigravity<br/>
+/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 /// <param name="id">The unique identifier for this entity.</param>
 /// <param name="invoiceNumber">The numeric sequence for the invoice.</param>
@@ -20,10 +20,10 @@ using System;
 /// <param name="timestamp">The time of the transaction.</param>
 /// <param name="notes">Optional notes about the sale.</param>
 public class Sale(
-    int id,
+    ulong id,
     int invoiceNumber,
     float amount,
-Transaction.PayMethod paymentMethod,
+    Transaction.PayMethod paymentMethod,
     Staff staff,
     DateTime timestamp,
     string? notes = null) : Transaction(id, Type.Income, amount, timestamp, staff, paymentMethod, invoiceNumber, "SALE", notes)

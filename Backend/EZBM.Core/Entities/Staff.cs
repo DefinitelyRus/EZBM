@@ -4,7 +4,7 @@ namespace EZBM.Core.Entities;
 /// Represents a staff member in the system, including their personal information, employment details, and current status.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): None<br/>
+/// Editor(s): None<br/>
 /// Documented by: Google Gemini</i>
 /// </summary>
 public class Staff : Entity
@@ -14,7 +14,7 @@ public class Staff : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public enum PaymentType { Hourly, Daily, Weekly, Biweekly, Monthly, Invalid }
+    public enum Frequency { Hourly, Daily, Weekly, Biweekly, Monthly, Invalid }
 
     /// <summary>
     /// The unique username used for authentication.
@@ -70,7 +70,7 @@ public class Staff : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public PaymentType PayType { get; set; }
+    public Frequency PayFrequency { get; set; }
 
     /// <summary>
     /// The monetary value paid based on the payment type.
@@ -86,7 +86,7 @@ public class Staff : Entity
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="username">The staff's username.</param>
-    /// <param name="payType">The frequency of payment.</param>
+    /// <param name="payFrequency">The frequency of payment.</param>
     /// <param name="payRate">The rate of pay.</param>
     /// <param name="password">The account password.</param>
     /// <param name="firstName">The staff's first name.</param>
@@ -95,9 +95,9 @@ public class Staff : Entity
     /// <param name="phoneNumber">The staff's phone number.</param>
     /// <param name="position">The staff's job position.</param>
     public Staff(
-        int id,
+        ulong id,
         string username,
-        PaymentType payType,
+        Frequency payFrequency,
         float payRate,
         string? password = null,
         string? firstName = null,
@@ -118,7 +118,7 @@ public class Staff : Entity
 
         Position = position;
 
-        PayType = payType;
+        PayFrequency = payFrequency;
         PayRate = payRate;
     }
 }

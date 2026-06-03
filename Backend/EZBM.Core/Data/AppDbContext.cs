@@ -91,13 +91,13 @@ public class AppDbContext : DbContext
 
         // Map Enums to strings automatically
         modelBuilder.Entity<Staff>()
-            .Property(s => s.PayType)
+            .Property(s => s.PayFrequency)
             .HasConversion<string>();
-        
+
         modelBuilder.Entity<ItemTransaction>()
             .Property(s => s.TransactionType)
             .HasConversion<string>();
-        
+
         modelBuilder.Entity<Transaction>()
             .Property(t => t.TransactionType)
             .HasConversion<string>();

@@ -4,8 +4,8 @@ namespace EZBM.Core.Entities;
 /// Represents a product or resource in the inventory, tracking its stock, pricing, and properties.
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
-/// Editors(s): None<br/>
-/// Documented by: Google Gemini</i>
+/// Editor(s): Google Antigravity<br/>
+/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 public class Item : Entity
 {
@@ -96,7 +96,9 @@ public class Item : Entity
     /// <summary>
     /// Initializes a new instance of the Item class.
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus<br/>
+    /// Editor(s): Google Antigravity<br/>
+    /// Documented by: Google Gemini, Google Antigravity</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="unitOfMeasurement">The unit used for quantity.</param>
@@ -110,7 +112,7 @@ public class Item : Entity
     /// <param name="cost">The acquisition cost.</param>
     /// <param name="imageUrl">The URL for the item's image.</param>
     public Item(
-        int id,
+        ulong id,
         QType unitOfMeasurement,
         bool isForSale,
         float price = 0,
