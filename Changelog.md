@@ -29,6 +29,20 @@ Changes:
 
 ## Logs
 
+### 06/03/2026
+
+Implemented backend database services for managing staff, inventory, and sales. Updated unique identifiers across all records, added helper functions for reading data, and cleaned up unused components.
+
+Changes:
+
+- Created database services to handle staff details, inventory items, and sales transactions.
+- Updated unique IDs across all data entities.
+- Added data conversion helper functions to prevent errors when loading data.
+- Removed the obsolete staff management helper class.
+- Switched to strict variable types across the C# projects to ensure safety.
+- Added code documentation and checked off completed items on project lists.
+
+
 ### 06/02/2026
 
 Refactored and enhanced the backend core data models, including setting up an SQLite database context and its respective mappings. Revised various entity relationships, refined utility functions, and added comprehensive XML documentation to C# source files.

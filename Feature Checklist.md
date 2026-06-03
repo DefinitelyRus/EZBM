@@ -32,7 +32,7 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 * [ ] Create a `GET /api/items` endpoint to fetch all products and services.
 * [ ] Create a `POST /api/items` endpoint to save a new item to SQLite.
-* [ ] Implement back-end logic to handle validation (e.g., prevent negative prices, ensure names aren't empty).
+* [x] Implement back-end logic to handle validation (e.g., prevent negative prices, ensure names aren't empty).
 
 ### Front-end Requirements
 
@@ -51,7 +51,7 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 ### Back-end Requirements
 
 * [ ] Create a `POST /api/sales` endpoint to process a completed checkout.
-* [ ] **Transaction Logic:** Ensure a single checkout performs two database actions:
+* [x] **Transaction Logic:** Ensure a single checkout performs two database actions:
 * Insert a row into the `Sales` table and its matching rows into the `SaleItems` table.
 * Subtract the purchased quantities from the `Items` table stock counts (only if the item type is a "Product").
 
@@ -70,7 +70,7 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 ### Back-end Requirements
 
 * [ ] Create a `POST /api/attendance` endpoint.
-* [ ] Write an SQLite query to log the user's ID, the action type ("In" or "Out"), and the exact server timestamp.
+* [x] Write an SQLite query to log the user's ID, the action type ("In" or "Out"), and the exact server timestamp.
 
 ### Front-end Requirements
 

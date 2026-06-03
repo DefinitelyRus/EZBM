@@ -17,18 +17,18 @@
 | | Front-end | Show basic error message on login failure | Todo |
 | **3. Inventory** | Back-end | Create `GET /api/items` endpoint | Todo |
 | | Back-end | Create `POST /api/items` endpoint to save new item | Todo |
-| | Back-end | Implement validation logic (prevent negative prices, empty names) | Todo |
+| | Back-end | Implement validation logic (prevent negative prices, empty names) | Done |
 | | Front-end | Build main grid layout with side nav / top tabs | Todo |
 | | Front-end | Create Inventory Table (name, type, cost, retail, stock) | Todo |
 | | Front-end | Add real-time Search Bar for table items | Todo |
 | | Front-end | Build "Add New Item" Form (Name, Type, Cost, Retail, Initial Stock) | Todo |
 | **4. POS** | Back-end | Create `POST /api/sales` endpoint for checkout | Todo |
-| | Back-end | Implement transaction logic: insert Sales, SaleItems; deduct stock if Product | Todo |
+| | Back-end | Implement transaction logic: insert Sales, SaleItems; deduct stock if Product | Done |
 | | Front-end | Create searchable item picker list to add to cart | Todo |
 | | Front-end | Build Cart Component (item names, qty modifiers, total amount) | Todo |
 | | Front-end | Add "Confirm Sale" Button to send cart to API and clear cart | Todo |
 | **5. Attendance** | Back-end | Create `POST /api/attendance` endpoint | Todo |
-| | Back-end | Write SQLite query to log user ID, action type (In/Out), timestamp | Todo |
+| | Back-end | Write SQLite query to log user ID, action type (In/Out), timestamp | Done |
 | | Front-end | Place persistent "Clock In / Out" Toggle Button in header/sidebar | Todo |
 | | Front-end | Update button text based on current status | Todo |
 | | Front-end | Trigger alert notification for successful clock action | Todo |
