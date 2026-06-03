@@ -1,4 +1,4 @@
-﻿namespace EZBM.Core;
+namespace EZBM.Core;
 
 public class Core
 {

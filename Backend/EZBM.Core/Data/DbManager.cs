@@ -11,7 +11,7 @@ namespace EZBM.Core.Data;
 /// </summary>
 public static class DbManager
 {
-    
+
     /// <summary>
     /// The name of the database file.
     /// <br/><br/>
@@ -55,7 +55,7 @@ public static class DbManager
     {
         try
         {
-            using var context = new AppDbContext();
+            using AppDbContext context = new();
             context.Database.EnsureCreated();
         }
         catch (Exception e)
@@ -86,9 +86,10 @@ public static class DbManager
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            // Use DbFilePath to delete the file securely
+            // Delete the database file
             if (File.Exists(DbFilePath)) File.Delete(DbFilePath);
 
+            // Create a new database
             using AppDbContext context = new();
             context.Database.EnsureCreated();
         }

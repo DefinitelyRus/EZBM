@@ -13,7 +13,7 @@ namespace EZBM.Core.Tools;
 /// <br/><br/>
 /// <i>Author(s): DefinitelyRus<br/>
 /// Editor(s): None<br/>
-/// Documented by: Google Gemini</i>
+/// Documented by: Antigravity</i>
 /// </summary>
 public static class Utils
 {
@@ -29,19 +29,32 @@ public static class Utils
     /// this.Id = Utils.GenerateEntityId();
     /// </code>
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus, Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
     /// </summary>
-    public static long GenerateEntityId()
+    public static ulong GenerateEntityId()
     {
-        // Generate a random long integer
+        using Data.AppDbContext context = new();
+        while (true)
+        {
+            byte[] bytes = new byte[8];
+            Random.Shared.NextBytes(bytes);
+            ulong id = BitConverter.ToUInt64(bytes, 0);
+            if (id == 0) continue;
 
-        // Query the database to check if the generated number matches any existing values
+            // Check all DB sets to see if this ID exists
+            bool exists = context.Staff.Any(s => s.Id == id) ||
+                          context.Attendance.Any(a => a.Id == id) ||
+                          context.Payroll.Any(p => p.Id == id) ||
+                          context.Item.Any(i => i.Id == id) ||
+                          context.ItemTransaction.Any(it => it.Id == id) ||
+                          context.Sale.Any(s => s.Id == id) ||
+                          context.SaleEntry.Any(se => se.Id == id) ||
+                          context.Transaction.Any(t => t.Id == id);
 
-        // If there is a match, keep generating another number and checking until there is no match
-
-        // If none, return the generated number
-
-        return 0;
+            if (!exists) return id;
+        }
     }
 
     /// <summary>
@@ -52,20 +65,152 @@ public static class Utils
     /// int num = Utils.GenerateInvoiceNumber(DateTime.UtcNow);
     /// </code>
     /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
+    /// <i>Author(s): DefinitelyRus, Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="timestamp">The timestamp of the transaction.</param>
     public static int GenerateInvoiceNumber(DateTime timestamp)
     {
-        string datePart = timestamp.Date.ToString("yyyyMMdd");
+        using Data.AppDbContext context = new();
+        DateTime datePrefix = timestamp.Date;
 
-        // Query the database for all transactions matching the given timestamp.
+        int? maxInvoice = context.Transaction
+            .Where(t => t.Timestamp.Date == datePrefix)
+            .Select(t => (int?)t.InvoiceNumber)
+            .Max();
 
-        // If none were found, return 0000001.
+        return maxInvoice.HasValue ? maxInvoice.Value + 1 : 1;
+    }
 
-        // If at least one is found, get the largest invoice number, increment by 1, then return the result.
+    #endregion
 
-        return 0;
+    #region JSON Helpers
+
+    /// <summary>
+    /// Safely gets an object as a ulong value.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static ulong? GetAsUlong(object? obj)
+    {
+        if (obj is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.Number && element.TryGetUInt64(out ulong val))
+                return val;
+            if (element.ValueKind == JsonValueKind.String && ulong.TryParse(element.GetString(), out ulong parsed))
+                return parsed;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Safely gets an object as a string.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static string? GetAsString(object? obj)
+    {
+        if (obj is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.String) return element.GetString();
+            if (element.ValueKind == JsonValueKind.Null) return null;
+            return element.GetRawText();
+        }
+
+        return obj?.ToString();
+    }
+
+    /// <summary>
+    /// Safely gets an object as a float value.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static float? GetAsFloat(object? obj)
+    {
+        if (obj is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.Number && element.TryGetSingle(out float val))
+                return val;
+            if (element.ValueKind == JsonValueKind.String && float.TryParse(element.GetString(), out float parsed))
+                return parsed;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Safely gets an object as a boolean.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static bool? GetAsBool(object? obj)
+    {
+        if (obj is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.True) return true;
+            if (element.ValueKind == JsonValueKind.False) return false;
+            if (element.ValueKind == JsonValueKind.String && bool.TryParse(element.GetString(), out bool parsed))
+                return parsed;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Safely gets an object as a DateTime.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static DateTime? GetAsDateTime(object? obj)
+    {
+        if (obj is JsonElement element)
+        {
+            if (element.ValueKind == JsonValueKind.String && element.TryGetDateTime(out DateTime dt))
+                return dt;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Safely gets a list of Item tags from a JsonElement array.
+    /// <br/><br/>
+    /// <i>Author(s): Google Antigravity<br/>
+    /// Editor(s): None<br/>
+    /// Documented by: Google Antigravity</i>
+    /// </summary>
+    public static List<Item.Tag>? GetAsTagsList(object? obj)
+    {
+        if (obj is JsonElement element && element.ValueKind == JsonValueKind.Array)
+        {
+            List<Item.Tag> list = [];
+            foreach (JsonElement item in element.EnumerateArray())
+            {
+                if (item.ValueKind == JsonValueKind.String)
+                {
+                    if (Enum.TryParse<Item.Tag>(item.GetString(), true, out Item.Tag tag))
+                    {
+                        list.Add(tag);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        return null;
     }
 
     #endregion

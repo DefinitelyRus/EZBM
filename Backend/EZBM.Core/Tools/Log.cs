@@ -48,16 +48,16 @@ public class Log
     /// <param name="filePath">Provided automatically by the compiler.</param>
     /// <param name="line">Provided automatically by the compiler.</param>
     public static void Message(
-        string message, 
-        Mode printAs, 
-        int frameDepth, 
-        bool printTrace, 
-        [CallerFilePath] string filePath = "", 
+        string message,
+        Mode printAs,
+        int frameDepth,
+        bool printTrace,
+        [CallerFilePath] string filePath = "",
         [CallerLineNumber] int line = 0)
     {
         StackTrace trace = new(frameDepth, true);
         StackFrame[]? frames = trace.GetFrames();
-        
+
         bool noFrames = frames == null || frames.Length == 0;
         if (noFrames)
         {
@@ -67,7 +67,7 @@ public class Log
 
         StackFrame[] relevantFrames = FilterFrames(frames!);
         int depth = 0;
-        
+
         foreach (StackFrame frame in relevantFrames)
         {
             MethodBase? method = frame.GetMethod();
@@ -78,22 +78,22 @@ public class Log
             {
                 string className = method.DeclaringType?.Name ?? "UNKNOWN_CLASS";
                 string methodName = method.Name;
-                
+
                 bool isTopLevelMain = methodName == "<Main>$";
                 if (isTopLevelMain)
                 {
                     methodName = "MAIN";
                 }
-                
+
                 int frameLine = frame.GetFileLineNumber();
-                
+
                 string rootIndent = depth == 0 ? "\n" : "";
                 indent = rootIndent + indent;
-                
-                string locationInfo = frameLine > 0 
-                    ? $"{className}.{methodName}:{frameLine}" 
+
+                string locationInfo = frameLine > 0
+                    ? $"{className}.{methodName}:{frameLine}"
                     : $"{className}.{methodName}:?";
-                    
+
                 prefix = $"{indent}[{locationInfo}]";
             }
             else
@@ -252,7 +252,7 @@ public class Log
     /// <returns>An array of filtered stack frames relevant to the application.</returns>
     private static StackFrame[] FilterFrames(StackFrame[] frames)
     {
-        IEnumerable<StackFrame> filtered = frames.Where(f => 
+        IEnumerable<StackFrame> filtered = frames.Where(f =>
         {
             MethodBase? method = f.GetMethod();
             Type? type = method?.DeclaringType;
@@ -264,11 +264,11 @@ public class Log
             bool isSystem = ns.StartsWith("System");
             bool isMicrosoft = ns.StartsWith("Microsoft");
             bool isLogger = type.Name == "Log";
-            
+
             return !isSystem && !isMicrosoft && !isLogger;
         });
-        
-        return filtered.Reverse().ToArray();
+
+        return [.. filtered.Reverse()];
     }
 
     #endregion
