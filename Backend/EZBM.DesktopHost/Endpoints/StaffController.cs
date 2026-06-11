@@ -1,6 +1,7 @@
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
+using EZBM.DesktopHost.Tools;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EZBM.DesktopHost.Endpoints;
