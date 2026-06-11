@@ -1,6 +1,6 @@
 using static EZBM.Core.Tools.Utils;
 
-namespace EZBM.DesktopHost.Utils;
+namespace EZBM.DesktopHost.Tools;
 
 /// <summary>
 /// Helper methods for endpoint mapping and conversion.
