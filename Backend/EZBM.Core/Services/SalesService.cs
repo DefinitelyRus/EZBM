@@ -1,487 +1,592 @@
+using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Tools;
-using EZBM.Core.Data;
 using Microsoft.EntityFrameworkCore;
-
-/*
- * For the record, I am quite annoyed at how AI tools keep generating
- * code that I did not ask it to generate.
- *
- * They're good and they're already there, so I won't remove it now,
- * but I'm writing the code manually for a reason, damn it.
- *
- * Now I have to go read through all this code to make sure
- * it actually does what I need it to do.
- * I'm dyslexic ffs!
- *
- * - DefinitelyRus
- */
 
 namespace EZBM.Core.Services;
 
 /// <summary>
-/// Service class for managing Sale records, SaleEntries, and general financial Transactions.
+/// Provides services for managing sales transactions and sale entries.
 /// <br/><br/>
-/// <i>Author(s): Google Antigravity<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Antigravity</i>
+/// <i>Documented by: Google Antigravity</i>
 /// </summary>
-internal static class SalesService
+public static class SalesService
 {
-    #region Factory Methods
+    #region Sale Requests
 
     /// <summary>
-    /// Creates a Sale instance from a JSON string, resolving the Staff relationship.
+    /// Creates a new sale and updates inventory.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    /// <param name="json">The JSON substring containing sale details.</param>
-    /// <param name="context">The database context used to lookup the Staff member.</param>
-    internal static Sale? CreateSaleInstance(string json, AppDbContext context)
+    /// <param name="request">The request parameters containing sale details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateSaleAsync(
+        CreateSaleRequest request)
     {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as a Sale object.");
-            return null;
-        }
-
-        ulong id = 0;
-        int invoiceNumber = 0;
-        float amount = 0;
-        Transaction.PayMethod paymentMethod = Transaction.PayMethod.Cash;
-        Staff? staff = null;
-        DateTime timestamp = DateTime.UtcNow;
-        string? notes = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    id = Utils.GetAsUlong(kvp.Value) ?? 0;
-                    break;
-
-                case "invoicenumber":
-                    invoiceNumber = (int)(Utils.GetAsUlong(kvp.Value) ?? 0);
-                    break;
-
-                case "amount" or "totalamount":
-                    amount = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "paymentmethod" or "paymethod":
-                    string? payStr = Utils.GetAsString(kvp.Value);
-                    if (payStr != null && Enum.TryParse<Transaction.PayMethod>(payStr, true, out Transaction.PayMethod parsedPay))
-                    {
-                        paymentMethod = parsedPay;
-                    }
-                    break;
-
-                case "staffid" or "userid":
-                    ulong? staffId = Utils.GetAsUlong(kvp.Value);
-                    if (staffId.HasValue)
-                    {
-                        staff = context.Staff.Find(staffId.Value);
-                    }
-                    break;
-
-                case "timestamp":
-                    timestamp = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "notes":
-                    notes = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in Sale JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (staff is null)
-        {
-            Log.Err(() => "Staff reference is required to create a Sale instance.");
-            return null;
-        }
-
-        if (invoiceNumber == 0)
-        {
-            invoiceNumber = Utils.GenerateInvoiceNumber(timestamp);
-        }
-
-        return new Sale(
-            id,
-            invoiceNumber,
-            amount,
-            paymentMethod,
-            staff,
-            timestamp,
-            notes
-        );
-    }
-
-    /// <summary>
-    /// Creates a SaleEntry instance from a JSON string, resolving the Sale and Item relationships.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="json">The JSON substring containing sale entry details.</param>
-    /// <param name="context">The database context used to lookup relations.</param>
-    internal static SaleEntry? CreateSaleEntryInstance(string json, AppDbContext context)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as a SaleEntry object.");
-            return null;
-        }
-
-        Sale? sale = null;
-        Item? item = null;
-        float quantity = 0;
-        float unitPrice = 0;
-        float subtotal = 0;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "saleid":
-                    ulong? saleId = Utils.GetAsUlong(kvp.Value);
-                    if (saleId.HasValue)
-                    {
-                        sale = context.Sale.Find(saleId.Value);
-                    }
-                    break;
-
-                case "itemid":
-                    ulong? itemId = Utils.GetAsUlong(kvp.Value);
-                    if (itemId.HasValue)
-                    {
-                        item = context.Item.Find(itemId.Value);
-                    }
-                    break;
-
-                case "quantity":
-                    quantity = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "unitprice" or "price":
-                    unitPrice = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "subtotal":
-                    subtotal = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in SaleEntry JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (sale is null)
-        {
-            Log.Err(() => "Sale reference is required to create a SaleEntry instance.");
-            return null;
-        }
-
-        if (item is null)
-        {
-            Log.Err(() => "Item reference is required to create a SaleEntry instance.");
-            return null;
-        }
-
-        if (subtotal == 0)
-        {
-            subtotal = quantity * unitPrice;
-        }
-
-        return new SaleEntry(
-            sale,
-            item,
-            quantity,
-            unitPrice,
-            subtotal
-        );
-    }
-
-    /// <summary>
-    /// Creates a generic Transaction instance from a JSON string, resolving the Staff relationship.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="json">The JSON substring containing transaction details.</param>
-    /// <param name="context">The database context used to lookup the Staff member.</param>
-    internal static Transaction? CreateTransactionInstance(string json, AppDbContext context)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as a Transaction object.");
-            return null;
-        }
-
-        ulong id = 0;
-        Transaction.Type transactionType = Transaction.Type.Income;
-        float amount = 0;
-        DateTime timestamp = DateTime.UtcNow;
-        Staff? staff = null;
-        Transaction.PayMethod? paymentMethod = null;
-        int? invoiceNumber = null;
-        string? invoicePrefix = "GENERIC";
-        string? notes = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    id = Utils.GetAsUlong(kvp.Value) ?? 0;
-                    break;
-
-                case "transactiontype" or "type":
-                    string? typeStr = Utils.GetAsString(kvp.Value);
-                    if (typeStr != null && Enum.TryParse<Transaction.Type>(typeStr, true, out Transaction.Type parsedType))
-                    {
-                        transactionType = parsedType;
-                    }
-                    break;
-
-                case "amount":
-                    amount = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "timestamp":
-                    timestamp = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "staffid":
-                    ulong? staffId = Utils.GetAsUlong(kvp.Value);
-                    if (staffId.HasValue)
-                    {
-                        staff = context.Staff.Find(staffId.Value);
-                    }
-                    break;
-
-                case "paymentmethod" or "paymethod":
-                    string? payStr = Utils.GetAsString(kvp.Value);
-                    if (payStr != null && Enum.TryParse<Transaction.PayMethod>(payStr, true, out Transaction.PayMethod parsedPay))
-                    {
-                        paymentMethod = parsedPay;
-                    }
-                    break;
-
-                case "invoicenumber":
-                    invoiceNumber = (int)(Utils.GetAsUlong(kvp.Value) ?? 0);
-                    break;
-
-                case "invoiceprefix":
-                    invoicePrefix = Utils.GetAsString(kvp.Value) ?? "GENERIC";
-                    break;
-
-                case "notes":
-                    notes = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in Transaction JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (staff is null)
-        {
-            Log.Err(() => "Staff reference is required to create a Transaction instance.");
-            return null;
-        }
-
-        return new Transaction(
-            id,
-            transactionType,
-            amount,
-            timestamp,
-            staff,
-            paymentMethod,
-            invoiceNumber,
-            invoicePrefix,
-            notes
-        );
-    }
-
-    #endregion
-
-    #region CRUD Sale Operations
-
-    /// <summary>
-    /// Retrieves all sales from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<Sale> GetAllSales()
-    {
-        using AppDbContext context = new();
-        return [.. context.Sale.Include(s => s.Staff)];
-    }
-
-    /// <summary>
-    /// Retrieves a specific sale by its unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static Sale? GetSaleById(ulong id)
-    {
-        using AppDbContext context = new();
-        return context.Sale
-            .Include(s => s.Staff)
-            .FirstOrDefault(s => s.Id == id);
-    }
-
-    #endregion
-
-    #region CRUD SaleEntry Operations
-
-    /// <summary>
-    /// Retrieves all sale entries from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<SaleEntry> GetAllSaleEntries()
-    {
-        using AppDbContext context = new();
-        return [.. context.SaleEntry
-            .Include(se => se.Sale)
-            .Include(se => se.Item)];
-    }
-
-    /// <summary>
-    /// Retrieves all sale entries associated with a specific sale.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<SaleEntry> GetSaleEntriesForSale(ulong saleId)
-    {
-        using AppDbContext context = new();
-        return [.. context.SaleEntry
-            .Include(se => se.Sale)
-            .Include(se => se.Item)
-            .Where(se => se.Sale.Id == saleId)];
-    }
-
-    #endregion
-
-    #region CRUD Transaction Operations
-
-    /// <summary>
-    /// Retrieves all financial transactions from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<Transaction> GetAllTransactions()
-    {
-        using AppDbContext context = new();
-        return [.. context.Transaction.Include(t => t.Staff)];
-    }
-
-    /// <summary>
-    /// Retrieves a specific transaction by its unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static Transaction? GetTransactionById(ulong id)
-    {
-        using AppDbContext context = new();
-        return context.Transaction
-            .Include(t => t.Staff)
-            .FirstOrDefault(t => t.Id == id);
-    }
-
-    #endregion
-
-    #region Add Sale Logic (Transaction)
-
-    /// <summary>
-    /// Completes a sale transaction, saving the Sale, its SaleEntries,
-    /// deducting item stock levels for Products, and logging stock movement.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="sale">The Sale header record.</param>
-    /// <param name="entries">The list of SaleEntry items purchased.</param>
-    internal static bool AddSale(Sale sale, List<SaleEntry> entries)
-    {
-        using AppDbContext context = new();
-        using Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction dbTransaction = context.Database.BeginTransaction();
-
+        string message;
         try
         {
-            context.Entry(sale.Staff).State = EntityState.Unchanged;
-            context.Sale.Add(sale);
+            using AppDbContext context = new();
 
-            foreach (SaleEntry entry in entries)
+            // Verify staff
+            Staff? staff = await context.Staff.FindAsync(request.StaffId);
+            if (staff is null)
             {
-                context.Entry(entry.Item).State = EntityState.Unchanged;
-                context.SaleEntry.Add(entry);
-
-                Item? dbItem = context.Item.Find(entry.Item.Id);
-                if (dbItem is null)
-                {
-                    Log.Err(() => $"Item with ID {entry.Item.Id} not found in database.");
-                    dbTransaction.Rollback();
-                    return false;
-                }
-
-                dbItem.Quantity -= entry.Quantity;
-                context.Item.Update(dbItem);
-
-                ulong itId = Utils.GenerateEntityId();
-                ItemTransaction it = new(
-                    itId,
-                    dbItem,
-                    ItemTransaction.Type.Sale,
-                    entry,
-                    -entry.Quantity,
-                    sale.Staff,
-                    DateTime.UtcNow,
-                    $"Deduction from Sale ID {sale.Id}"
+                message = $"Staff with ID {request.StaffId} not found.";
+                Log.Me(message);
+                Utils.RequestResult noStaffResult = new(
+                    Utils.Result.Failed_NoResults, message
                 );
-                context.ItemTransaction.Add(it);
+                return noStaffResult;
             }
 
-            context.SaveChanges();
-            dbTransaction.Commit();
-            return true;
+            // Begin db transaction or let EF Core save atomically
+            DateTime serverTime = DateTime.UtcNow;
+            int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
+
+            // Create Sale entity
+            Sale sale = new(
+                id: Utils.GenerateEntityId(),
+                invoiceNumber: invoiceNumber,
+                amount: request.TotalAmount,
+                paymentMethod: request.PaymentMethod,
+                staff: staff,
+                timestamp: serverTime,
+                notes: request.Notes
+            );
+
+            context.Sale.Add(sale);
+
+            // Add Sale entries (line items)
+            foreach (SaleItemRequest itemReq in request.Items)
+            {
+                Item? item = await context.Item.FindAsync(itemReq.ItemId);
+                if (item is null)
+                {
+                    message = $"Item with ID {itemReq.ItemId} not found.";
+                    Log.Me(message);
+                    Utils.RequestResult noItemResult = new(
+                        Utils.Result.Failed_NoResults, message
+                    );
+                    return noItemResult;
+                }
+
+                float subtotal = itemReq.Quantity * itemReq.UnitPrice;
+
+                SaleEntry entry = new(
+                    sale: sale,
+                    item: item,
+                    quantity: itemReq.Quantity,
+                    unitPrice: itemReq.UnitPrice,
+                    subtotal: subtotal
+                );
+
+                context.SaleEntry.Add(entry);
+
+                // Deduct stock quantity
+                item.Quantity -= itemReq.Quantity;
+
+                // Log stock transaction movement in ItemTransactions
+                ItemTransaction itemTransaction = new(
+                    item: item,
+                    transactionType: ItemTransaction.Type.Sale,
+                    saleEntry: entry,
+                    quantity: itemReq.Quantity,
+                    staff: staff,
+                    timestamp: serverTime,
+                    note: $"Checkout for Invoice {sale.InvoiceId}"
+                );
+
+                context.ItemTransaction.Add(itemTransaction);
+            }
+
+            await context.SaveChangesAsync();
+
+            message = $"Sale registered successfully with Invoice {sale.InvoiceId}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+            return successResult;
         }
+
         catch (Exception ex)
         {
-            dbTransaction.Rollback();
-            Log.Err(() => $"Error completing sale transaction: {ex.Message}");
-            return false;
+            message = $"Error when creating sale transaction: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a specific sale record by identifier.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the sale ID.</param>
+    /// <returns>A RequestResult containing the Sale entity.</returns>
+    public static async Task<Utils.RequestResult<Sale>> GetSaleAsync(
+        GetSaleRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Sale? sale = await context.Sale
+                .Include(s => s.Staff)
+                .FirstOrDefaultAsync(
+                    s => s.Id == request.Id
+                );
+
+            if (sale is null)
+            {
+                message = $"Sale with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult<Sale> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Sale with ID {request.Id} found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<Sale> successResult = new(
+                Utils.Result.Success, message, sale
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when getting sale with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<Sale> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Finds sale records matching query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching Sales.</returns>
+    public static async Task<Utils.RequestResult<List<Sale>>> FindSalesAsync(
+        FindSaleRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<Sale> query = context.Sale.Include(s => s.Staff);
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestIdStr = request.Id.Value.ToString();
+                    query = query.Where(
+                        s => s.Id.ToString().Contains(requestIdStr)
+                    );
+                }
+
+                if (request.InvoiceNumber is not null)
+                    query = query.Where(
+                        s => s.InvoiceNumber == request.InvoiceNumber
+                    );
+
+                if (request.StaffId is not null)
+                    query = query.Where(
+                        s => s.Staff.Id == request.StaffId
+                    );
+
+                if (request.MinTimestamp is not null)
+                    query = query.Where(
+                        s => s.Timestamp >= request.MinTimestamp
+                    );
+
+                if (request.MaxTimestamp is not null)
+                    query = query.Where(
+                        s => s.Timestamp <= request.MaxTimestamp
+                    );
+
+                if (request.PaymentMethod is not null)
+                    query = query.Where(
+                        s => s.PaymentMethod == request.PaymentMethod
+                    );
+
+                if (request.MinAmount is not null)
+                    query = query.Where(
+                        s => s.Amount >= request.MinAmount
+                    );
+
+                if (request.MaxAmount is not null)
+                    query = query.Where(
+                        s => s.Amount <= request.MaxAmount
+                    );
+            }
+
+            List<Sale> results = await query.ToListAsync();
+
+            if (results.Count == 0)
+            {
+                message = "No sales records found matching the query.";
+                Log.Me(message);
+                Utils.RequestResult<List<Sale>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []
+                );
+                return noResults;
+            }
+
+            message = $"Found {results.Count} sales record(s) matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<Sale>> successResult = new(
+                Utils.Result.Success, message, results
+            );
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when finding sales records: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<List<Sale>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []
+            );
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific sale record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the sale ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteSaleAsync(
+        DeleteSaleRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Sale? sale = await context.Sale.FindAsync(request.Id);
+
+            if (sale is null)
+            {
+                message = $"Sale with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult noResults = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noResults;
+            }
+
+            context.Sale.Remove(sale);
+            await context.SaveChangesAsync();
+
+            message = $"Sale with ID {sale.Id} deleted successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when deleting sale with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    #endregion
+
+    #region Sale Entry Requests
+
+    /// <summary>
+    /// Creates a manual sale entry.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing sale entry details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateSaleEntryAsync(
+        CreateSaleEntryRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+
+            Sale? sale = await context.Sale.FindAsync(request.SaleId);
+            if (sale is null)
+            {
+                message = $"Sale with ID {request.SaleId} not found.";
+                Log.Me(message);
+                Utils.RequestResult noSaleResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noSaleResult;
+            }
+
+            Item? item = await context.Item.FindAsync(request.ItemId);
+            if (item is null)
+            {
+                message = $"Item with ID {request.ItemId} not found.";
+                Log.Me(message);
+                Utils.RequestResult noItemResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noItemResult;
+            }
+
+            SaleEntry entry = new(
+                sale: sale,
+                item: item,
+                quantity: request.Quantity,
+                unitPrice: request.UnitPrice,
+                subtotal: request.Subtotal
+            );
+
+            context.SaleEntry.Add(entry);
+            await context.SaveChangesAsync();
+
+            message = $"Sale entry created successfully for Sale ID {sale.Id}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when creating sale entry: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a specific sale entry record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the sale entry ID.</param>
+    /// <returns>A RequestResult containing the SaleEntry entity.</returns>
+    public static async Task<Utils.RequestResult<SaleEntry>> GetSaleEntryAsync(
+        GetSaleEntryRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            SaleEntry? entry = await context.SaleEntry
+                .Include(se => se.Sale)
+                .Include(se => se.Item)
+                .FirstOrDefaultAsync(
+                    se => se.Id == request.Id
+                );
+
+            if (entry is null)
+            {
+                message = $"Sale entry with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult<SaleEntry> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Sale entry with ID {request.Id} found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<SaleEntry> successResult = new(
+                Utils.Result.Success, message, entry
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when getting sale entry with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<SaleEntry> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Finds sale entries matching query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching SaleEntries.</returns>
+    public static async Task<Utils.RequestResult<List<SaleEntry>>> FindSaleEntriesAsync(
+        FindSaleEntryRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<SaleEntry> query = context.SaleEntry
+                .Include(se => se.Sale)
+                .Include(se => se.Item);
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestIdStr = request.Id.Value.ToString();
+                    query = query.Where(
+                        se => se.Id.ToString().Contains(requestIdStr)
+                    );
+                }
+
+                if (request.SaleId is not null)
+                    query = query.Where(
+                        se => se.Sale.Id == request.SaleId
+                    );
+
+                if (request.ItemId is not null)
+                    query = query.Where(
+                        se => se.Item.Id == request.ItemId
+                    );
+
+                if (request.MinQuantity is not null)
+                    query = query.Where(
+                        se => se.Quantity >= request.MinQuantity
+                    );
+
+                if (request.MaxQuantity is not null)
+                    query = query.Where(
+                        se => se.Quantity <= request.MaxQuantity
+                    );
+
+                if (request.MinUnitPrice is not null)
+                    query = query.Where(
+                        se => se.UnitPrice >= request.MinUnitPrice
+                    );
+
+                if (request.MaxUnitPrice is not null)
+                    query = query.Where(
+                        se => se.UnitPrice <= request.MaxUnitPrice
+                    );
+            }
+
+            List<SaleEntry> results = await query.ToListAsync();
+
+            if (results.Count == 0)
+            {
+                message = "No sale entries matching query found.";
+                Log.Me(message);
+                Utils.RequestResult<List<SaleEntry>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []
+                );
+
+                return noResults;
+            }
+
+            message = $"Found {results.Count} sale entry/entries matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<SaleEntry>> successResult = new(
+                Utils.Result.Success, message, results
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when finding sale entries: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<List<SaleEntry>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific sale entry record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the sale entry ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteSaleEntryAsync(
+        DeleteSaleEntryRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            SaleEntry? entry = await context.SaleEntry.FindAsync(request.Id);
+
+            if (entry is null)
+            {
+                message = $"Sale entry with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult noResults = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noResults;
+            }
+
+            context.SaleEntry.Remove(entry);
+            await context.SaveChangesAsync();
+
+            message = $"Sale entry with ID {entry.Id} deleted successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when deleting sale entry with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
         }
     }
 

@@ -1,535 +1,1059 @@
+using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Tools;
-using EZBM.Core.Data;
 using Microsoft.EntityFrameworkCore;
-using static EZBM.Core.Entities.Staff;
-
-/*
- * For the record, I am quite annoyed at how AI tools keep generating
- * code that I did not ask it to generate.
- *
- * They're good and they're already there, so I won't remove it now,
- * but I'm writing the code manually for a reason, damn it.
- *
- * Now I have to go read through all this code to make sure
- * it actually does what I need it to do.
- * I'm dyslexic ffs!
- *
- * - DefinitelyRus
- */
 
 namespace EZBM.Core.Services;
 
 /// <summary>
-/// Service class for managing Staff members, Attendance records, and Payroll details in the database.
+/// Provides services for managing staff, attendance, and payroll records.
 /// <br/><br/>
-/// <i>Author(s): DefinitelyRus, Google Antigravity<br/>
-/// Editor(s): Google Antigravity<br/>
-/// Documented by: Google Antigravity</i>
+/// <i>Documented by: Google Antigravity</i>
 /// </summary>
-internal static class StaffService
+public static class StaffService
 {
-    #region Factory Methods
+    #region Staff Requests
 
     /// <summary>
-    /// Creates a Staff instance from a JSON string.
+    /// Gets a staff profile by username.
     /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus<br/>
-    /// Editor(s): Google Antigravity<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    /// <param name="json">The JSON substring containing staff details.</param>
-    internal static Staff? CreateStaffInstance(string json)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as a Staff object.");
-            return null;
-        }
-
-        ulong id = 0;
-        string username = null!;
-        Frequency payFrequency = Frequency.Invalid;
-        float payRate = 0;
-        string? password = null;
-        string? firstName = null;
-        string? lastName = null;
-        string? email = null;
-        string? phoneNumber = null;
-        string? position = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    ulong? v_id = Utils.GetAsUlong(kvp.Value);
-                    if (v_id.HasValue) id = v_id.Value;
-                    else Log.Err(() => "The provided 'id' is not a valid 64-bit unsigned integer.");
-                    break;
-
-                case "username":
-                    string? v_un = Utils.GetAsString(kvp.Value);
-                    if (!string.IsNullOrWhiteSpace(v_un)) username = v_un;
-                    else Log.Err(() => "The provided 'username' is null or empty.");
-                    break;
-
-                case "payfrequency":
-                    string? v_pf = Utils.GetAsString(kvp.Value);
-                    payFrequency = v_pf?.ToLowerInvariant() switch
-                    {
-                        "hourly" => Frequency.Hourly,
-                        "daily" => Frequency.Daily,
-                        "weekly" => Frequency.Weekly,
-                        "biweekly" => Frequency.Biweekly,
-                        "monthly" => Frequency.Monthly,
-                        _ => Frequency.Invalid,
-                    };
-                    break;
-
-                case "payrate":
-                    float? v_pr = Utils.GetAsFloat(kvp.Value);
-                    if (v_pr.HasValue) payRate = v_pr.Value;
-                    else Log.Err(() => "The provided 'payRate' is not a float. Setting to 0.");
-                    break;
-
-                case "password":
-                    password = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "firstname":
-                    firstName = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "lastname":
-                    lastName = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "email":
-                    email = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "phonenumber":
-                    phoneNumber = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "position":
-                    position = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected with value '{kvp.Value}'. Skipping...");
-                    break;
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(username))
-        {
-            Log.Err(() => "Username is required to create a Staff instance.");
-            return null;
-        }
-
-        return new Staff(
-            id,
-            username,
-            payFrequency,
-            payRate,
-            password,
-            firstName,
-            lastName,
-            email,
-            phoneNumber,
-            position
-        );
-    }
-
-    /// <summary>
-    /// Creates an Attendance instance from a JSON string, resolving the Staff relationship from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="json">The JSON substring containing attendance details.</param>
-    /// <param name="context">The database context used to lookup the Staff member.</param>
-    internal static Attendance? CreateAttendanceInstance(string json, AppDbContext context)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as an Attendance object.");
-            return null;
-        }
-
-        ulong id = 0;
-        Staff? staff = null;
-        DateTime timeIn = DateTime.UtcNow;
-        DateTime? timeOut = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    id = Utils.GetAsUlong(kvp.Value) ?? 0;
-                    break;
-
-                case "staffid":
-                    ulong? staffId = Utils.GetAsUlong(kvp.Value);
-                    if (staffId.HasValue)
-                    {
-                        staff = context.Staff.Find(staffId.Value);
-                        if (staff is null)
-                        {
-                            Log.Err(() => $"Staff member with ID {staffId.Value} not found in database.");
-                        }
-                    }
-                    break;
-
-                case "timein":
-                    timeIn = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "timeout":
-                    timeOut = Utils.GetAsDateTime(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in Attendance JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (staff is null)
-        {
-            Log.Err(() => "Staff member reference is required to create an Attendance instance.");
-            return null;
-        }
-
-        return new Attendance(id, staff, timeIn, timeOut);
-    }
-
-    /// <summary>
-    /// Creates a Payroll instance from a JSON string, resolving the Staff relationship from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="json">The JSON substring containing payroll details.</param>
-    /// <param name="context">The database context used to lookup the Staff member.</param>
-    internal static Payroll? CreatePayrollInstance(string json, AppDbContext context)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as a Payroll object.");
-            return null;
-        }
-
-        ulong id = 0;
-        Staff? staff = null;
-        DateTime periodStart = DateTime.UtcNow;
-        DateTime periodEnd = DateTime.UtcNow;
-        float totalHours = 0;
-        float grossAmount = 0;
-        float modifiers = 0;
-        float netAmount = 0;
-        DateTime? payDate = null;
-        string? notes = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    id = Utils.GetAsUlong(kvp.Value) ?? 0;
-                    break;
-
-                case "staffid":
-                    ulong? staffId = Utils.GetAsUlong(kvp.Value);
-                    if (staffId.HasValue)
-                    {
-                        staff = context.Staff.Find(staffId.Value);
-                        if (staff is null)
-                        {
-                            Log.Err(() => $"Staff member with ID {staffId.Value} not found in database.");
-                        }
-                    }
-                    break;
-
-                case "periodstart":
-                    periodStart = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "periodend":
-                    periodEnd = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "totalhours":
-                    totalHours = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "grossamount":
-                    grossAmount = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "modifiers":
-                    modifiers = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "netamount":
-                    netAmount = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "paydate":
-                    payDate = Utils.GetAsDateTime(kvp.Value);
-                    break;
-
-                case "notes":
-                    notes = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in Payroll JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (staff is null)
-        {
-            Log.Err(() => "Staff member reference is required to create a Payroll instance.");
-            return null;
-        }
-
-        return new Payroll(
-            id,
-            staff,
-            periodStart,
-            periodEnd,
-            totalHours,
-            grossAmount,
-            modifiers,
-            netAmount,
-            payDate,
-            notes
-        );
-    }
-
-    #endregion
-
-    #region CRUD Staff Operations
-
-    /// <summary>
-    /// Retrieves all staff members from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<Staff> GetAllStaff()
-    {
-        using var context = new AppDbContext();
-        return [.. context.Staff];
-    }
-
-    /// <summary>
-    /// Retrieves a specific staff member by their unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static Staff? GetStaffById(ulong id)
-    {
-        using var context = new AppDbContext();
-        return context.Staff.Find(id);
-    }
-
-    /// <summary>
-    /// Adds a new staff member to the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool AddStaff(Staff staff)
+    /// <param name="username">The username to search for.</param>
+    /// <returns>The Staff entity if found, otherwise null.</returns>
+    public static async Task<Staff?> GetStaffByUsernameAsync(string username)
     {
         try
         {
-            using var context = new AppDbContext();
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FirstOrDefaultAsync(
+                s => s.Username == username
+            );
+            return staff;
+        }
+
+        catch (Exception ex)
+        {
+            Log.Err($"Error when getting staff by username: {ex.Message}");
+            return null;
+        }
+    }
+
+        /// <summary>
+    /// Creates a new staff member profile.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing staff profile details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateStaffAsync(
+        CreateStaffRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+
+            // Check if username already exists
+            bool exists = await context.Staff.AnyAsync(
+                s => s.Username == request.Username
+            );
+
+            if (exists)
+            {
+                message = $"Staff username '{request.Username}' already exists.";
+                Log.Me(message);
+                Utils.RequestResult conflictResult = new(
+                    Utils.Result.Failed_InvalidQuery, message
+                );
+
+                return conflictResult;
+            }
+
+            Staff staff = new(
+                id: Utils.GenerateEntityId(),
+                username: request.Username,
+                payFrequency: request.PayFrequency,
+                payRate: request.PayRate,
+                password: request.Password,
+                firstName: request.FirstName,
+                lastName: request.LastName,
+                email: request.Email,
+                phoneNumber: request.PhoneNumber,
+                position: request.Position
+            );
+
             context.Staff.Add(staff);
-            context.SaveChanges();
-            return true;
+            await context.SaveChangesAsync();
+
+            message = $"Staff '{staff.Username}' created successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error adding staff member: {ex.Message}");
-            return false;
+            message = $"Error when creating staff: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
         }
     }
 
     /// <summary>
-    /// Updates an existing staff member in the database.
+    /// Retrieves a specific staff member by identifier.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    internal static bool UpdateStaff(Staff staff)
+    /// <param name="request">The request containing the staff ID.</param>
+    /// <returns>A RequestResult containing the Staff entity.</returns>
+    public static async Task<Utils.RequestResult<Staff>> GetStaffAsync(
+        GetStaffRequest request)
     {
+        string message;
         try
         {
-            using var context = new AppDbContext();
-            context.Staff.Update(staff);
-            context.SaveChanges();
-            return true;
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.Id);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult<Staff> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Staff '{staff.Username}' found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<Staff> successResult = new(
+                Utils.Result.Success, message, staff
+            );
+
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error updating staff member: {ex.Message}");
-            return false;
+            message = $"Error when getting staff with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<Staff> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
         }
     }
 
     /// <summary>
-    /// Deletes a staff member by their unique ID.
+    /// Finds staff profiles matching the specified query filters.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    internal static bool DeleteStaff(ulong id)
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching Staff members.</returns>
+    public static async Task<Utils.RequestResult<List<Staff>>> FindStaffAsync(
+        FindStaffRequest request)
     {
+        string message;
         try
         {
-            using var context = new AppDbContext();
-            var staff = context.Staff.Find(id);
-            if (staff is null) return false;
+            using AppDbContext context = new();
+            IQueryable<Staff> query = context.Staff;
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestIdStr = request.Id.Value.ToString();
+                    query = query.Where(
+                        s => s.Id.ToString().Contains(requestIdStr)
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(request.Username))
+                    query = query.Where(
+                        s => s.Username.Contains(request.Username)
+                    );
+
+                if (!string.IsNullOrEmpty(request.FirstName))
+                    query = query.Where(
+                        s => s.FirstName != null &&
+                        s.FirstName.Contains(request.FirstName)
+                    );
+
+                if (!string.IsNullOrEmpty(request.LastName))
+                    query = query.Where(
+                        s => s.LastName != null &&
+                        s.LastName.Contains(request.LastName)
+                    );
+
+                if (!string.IsNullOrEmpty(request.Position))
+                    query = query.Where(
+                        s => s.Position != null &&
+                        s.Position.Contains(request.Position)
+                    );
+
+                if (request.PayFrequency is not null)
+                    query = query.Where(
+                        s => s.PayFrequency == request.PayFrequency
+                    );
+            }
+
+            List<Staff> results = await query.ToListAsync();
+
+            if (results.Count == 0)
+            {
+                message = "No staff records found matching the query.";
+                Log.Me(message);
+                Utils.RequestResult<List<Staff>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []
+                );
+
+                return noResults;
+            }
+
+            message = $"Found {results.Count} staff record(s) matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<Staff>> successResult = new(
+                Utils.Result.Success, message, results
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when finding staff: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<List<Staff>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing staff member's profile.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing update fields and ID.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> UpdateStaffAsync(
+        UpdateStaffRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.Id);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult failResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return failResult;
+            }
+
+            staff.Username = request.Username ?? staff.Username;
+            staff.Password = request.Password ?? staff.Password;
+            staff.FirstName = request.FirstName ?? staff.FirstName;
+            staff.LastName = request.LastName ?? staff.LastName;
+            staff.Email = request.Email ?? staff.Email;
+            staff.PhoneNumber = request.PhoneNumber ?? staff.PhoneNumber;
+            staff.Position = request.Position ?? staff.Position;
+            staff.PayFrequency = request.PayFrequency ?? staff.PayFrequency;
+            staff.PayRate = request.PayRate ?? staff.PayRate;
+
+            await context.SaveChangesAsync();
+
+            message = $"Staff member '{staff.Username}' updated successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when updating staff: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific staff profile.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the staff ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteStaffAsync(
+        DeleteStaffRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.Id);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult noResults = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noResults;
+            }
+
             context.Staff.Remove(staff);
-            context.SaveChanges();
-            return true;
+            await context.SaveChangesAsync();
+
+            message = $"Staff with ID {staff.Id} deleted successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error deleting staff member: {ex.Message}");
-            return false;
+            message = $"Error when deleting staff with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
         }
     }
 
     #endregion
 
-    #region Attendance Operations
+    #region Attendance Requests
 
     /// <summary>
-    /// Retrieves all attendance records from the database.
+    /// Logs a clock-in or clock-out event for a staff member.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    internal static List<Attendance> GetAllAttendance()
+    /// <param name="request">The request parameters containing staff ID and action type.</param>
+    /// <returns>A RequestResult containing the timestamp of the logged event.</returns>
+    public static async Task<Utils.RequestResult<DateTime>> LogAttendanceAsync(
+        LogAttendanceRequest request)
     {
-        using var context = new AppDbContext();
-        return [.. context.Attendance.Include(a => a.Staff)];
-    }
-
-    /// <summary>
-    /// Retrieves attendance records for a specific staff member.
-    /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Antigravity</i>
-    /// </summary>
-    internal static List<Attendance> GetAttendanceForStaff(ulong staffId)
-    {
-        using var context = new AppDbContext();
-        return [.. context.Attendance
-            .Include(a => a.Staff)
-            .Where(a => a.Staff.Id == staffId)];
-    }
-
-    /// <summary>
-    /// Logs an attendance record.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool LogAttendance(Attendance attendance)
-    {
+        string message;
         try
         {
-            using var context = new AppDbContext();
-            context.Entry(attendance.Staff).State = EntityState.Unchanged;
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.StaffId);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.StaffId} not found.";
+                Log.Me(message);
+                Utils.RequestResult<DateTime> noResults = new(
+                    Utils.Result.Failed_NoResults, message, DateTime.MinValue
+                );
+
+                return noResults;
+            }
+
+            DateTime serverTime = DateTime.UtcNow;
+
+            if (request.ActionType.Equals("In", StringComparison.OrdinalIgnoreCase))
+            {
+                Attendance? activeAttendance = await context.Attendance
+                    .FirstOrDefaultAsync(
+                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
+                    );
+
+                if (activeAttendance is not null)
+                {
+                    message = $"Staff member '{staff.Username}' is already clocked in.";
+                    Log.Me(message);
+                    Utils.RequestResult<DateTime> warnResult = new(
+                        Utils.Result.Success_Warning, message, activeAttendance.TimeIn
+                    );
+
+                    return warnResult;
+                }
+
+                Attendance attendance = new(
+                    id: Utils.GenerateEntityId(),
+                    staff: staff,
+                    timeIn: serverTime,
+                    timeOut: null
+                );
+
+                context.Attendance.Add(attendance);
+                await context.SaveChangesAsync();
+
+                message = $"Staff member '{staff.Username}' clocked in successfully at {serverTime}.";
+                Log.Me(message);
+                Utils.RequestResult<DateTime> successResult = new(
+                    Utils.Result.Success, message, serverTime
+                );
+
+                return successResult;
+            }
+            else if (request.ActionType.Equals("Out", StringComparison.OrdinalIgnoreCase))
+            {
+                Attendance? activeAttendance = await context.Attendance
+                    .Where(
+                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
+                    )
+                    .OrderByDescending(
+                        a => a.TimeIn
+                    )
+                    .FirstOrDefaultAsync();
+
+                if (activeAttendance is null)
+                {
+                    Attendance fallbackAttendance = new(
+                        id: Utils.GenerateEntityId(),
+                        staff: staff,
+                        timeIn: serverTime,
+                        timeOut: serverTime
+                    );
+
+                    context.Attendance.Add(fallbackAttendance);
+                    await context.SaveChangesAsync();
+
+                    message = $"No active clock-in found for '{staff.Username}'. Logged new completed session at {serverTime}.";
+                    Log.Me(message);
+                    Utils.RequestResult<DateTime> warnResult = new(
+                        Utils.Result.Success_Warning, message, serverTime
+                    );
+
+                    return warnResult;
+                }
+
+                activeAttendance.TimeOut = serverTime;
+                await context.SaveChangesAsync();
+
+                message = $"Staff member '{staff.Username}' clocked out successfully at {serverTime}.";
+                Log.Me(message);
+                Utils.RequestResult<DateTime> successResult = new(
+                    Utils.Result.Success, message, serverTime
+                );
+
+                return successResult;
+            }
+            else
+            {
+                message = $"Invalid action type '{request.ActionType}'. Must be 'In' or 'Out'.";
+                Log.Me(message);
+                Utils.RequestResult<DateTime> invalidResult = new(
+                    Utils.Result.Failed_InvalidQuery, message, DateTime.MinValue
+                );
+
+                return invalidResult;
+            }
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when logging attendance: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<DateTime> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, DateTime.MinValue
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Creates a manual attendance entry.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing attendance details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateAttendanceAsync(
+        CreateAttendanceRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.StaffId);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.StaffId} not found.";
+                Log.Me(message);
+                Utils.RequestResult noStaffResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noStaffResult;
+            }
+
+            Attendance attendance = new(
+                id: Utils.GenerateEntityId(),
+                staff: staff,
+                timeIn: request.TimeIn,
+                timeOut: request.TimeOut
+            );
+
             context.Attendance.Add(attendance);
-            context.SaveChanges();
-            return true;
+            await context.SaveChangesAsync();
+
+            message = $"Attendance record created successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error logging attendance record: {ex.Message}");
-            return false;
+            message = $"Error when creating attendance record: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a specific attendance record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the attendance ID.</param>
+    /// <returns>A RequestResult containing the Attendance entity.</returns>
+    public static async Task<Utils.RequestResult<Attendance>> GetAttendanceAsync(
+        GetAttendanceRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Attendance? attendance = await context.Attendance
+                .Include(a => a.Staff)
+                .FirstOrDefaultAsync(
+                    a => a.Id == request.Id
+                );
+
+            if (attendance is null)
+            {
+                message = $"Attendance record with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult<Attendance> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Attendance record with ID {request.Id} found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<Attendance> successResult = new(
+                Utils.Result.Success, message, attendance
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when getting attendance record: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<Attendance> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Finds attendance records matching the specified query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching Attendance records.</returns>
+    public static async Task<Utils.RequestResult<List<Attendance>>> FindAttendanceAsync(
+        FindAttendanceRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<Attendance> query = context.Attendance.Include(a => a.Staff);
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestIdStr = request.Id.Value.ToString();
+                    query = query.Where(
+                        a => a.Id.ToString().Contains(requestIdStr)
+                    );
+                }
+
+                if (request.StaffId is not null)
+                    query = query.Where(
+                        a => a.Staff.Id == request.StaffId
+                    );
+
+                if (request.MinTimeIn is not null)
+                    query = query.Where(
+                        a => a.TimeIn >= request.MinTimeIn
+                    );
+
+                if (request.MaxTimeIn is not null)
+                    query = query.Where(
+                        a => a.TimeIn <= request.MaxTimeIn
+                    );
+
+                if (request.MinTimeOut is not null)
+                    query = query.Where(
+                        a => a.TimeOut != null && a.TimeOut >= request.MinTimeOut
+                    );
+
+                if (request.MaxTimeOut is not null)
+                    query = query.Where(
+                        a => a.TimeOut != null && a.TimeOut <= request.MaxTimeOut
+                    );
+            }
+
+            List<Attendance> results = await query.ToListAsync();
+
+            if (results.Count == 0)
+            {
+                message = "No attendance records found matching query.";
+                Log.Me(message);
+                Utils.RequestResult<List<Attendance>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []
+                );
+                return noResults;
+            }
+
+            message = $"Found {results.Count} attendance record(s) matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<Attendance>> successResult = new(
+                Utils.Result.Success, message, results
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when finding attendance records: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<List<Attendance>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Updates a specific attendance record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing update fields and ID.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> UpdateAttendanceAsync(
+        UpdateAttendanceRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Attendance? attendance = await context.Attendance.FindAsync(request.Id);
+
+            if (attendance is null)
+            {
+                message = $"Attendance record with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult failResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return failResult;
+            }
+
+            if (request.StaffId is not null)
+            {
+                Staff? staff = await context.Staff.FindAsync(request.StaffId.Value);
+                if (staff is null)
+                {
+                    message = $"Staff with ID {request.StaffId} not found.";
+                    Log.Me(message);
+                    Utils.RequestResult noStaffResult = new(
+                        Utils.Result.Failed_NoResults, message
+                    );
+
+                    return noStaffResult;
+                }
+                attendance.Staff = staff;
+            }
+
+            attendance.TimeIn = request.TimeIn ?? attendance.TimeIn;
+            attendance.TimeOut = request.TimeOut ?? attendance.TimeOut;
+
+            await context.SaveChangesAsync();
+
+            message = $"Attendance record with ID {attendance.Id} updated.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when updating attendance: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific attendance record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the attendance ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteAttendanceAsync(
+        DeleteAttendanceRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Attendance? attendance = await context.Attendance.FindAsync(request.Id);
+
+            if (attendance is null)
+            {
+                message = $"Attendance record with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult noResults = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noResults;
+            }
+
+            context.Attendance.Remove(attendance);
+            await context.SaveChangesAsync();
+
+            message = $"Attendance record with ID {attendance.Id} deleted.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when deleting attendance: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
         }
     }
 
     #endregion
 
-    #region Payroll Operations
+    #region Payroll Requests
 
     /// <summary>
-    /// Retrieves all payroll records from the database.
+    /// Creates a new payroll record.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    internal static List<Payroll> GetAllPayroll()
+    /// <param name="request">The request containing payroll details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreatePayrollAsync(
+        CreatePayrollRequest request)
     {
-        using var context = new AppDbContext();
-        return [.. context.Payroll.Include(p => p.Staff)];
-    }
-
-    /// <summary>
-    /// Retrieves payroll records for a specific staff member.
-    /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus<br/>
-    /// Editor(s): Google Antigravity<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<Payroll> GetPayrollForStaff(ulong staffId)
-    {
-        using var context = new AppDbContext();
-        return [.. context.Payroll
-            .Include(p => p.Staff)
-            .Where(p => p.Staff.Id == staffId)];
-    }
-
-    /// <summary>
-    /// Adds a new payroll record to the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool AddPayroll(Payroll payroll)
-    {
+        string message;
         try
         {
-            using var context = new AppDbContext();
-            context.Entry(payroll.Staff).State = EntityState.Unchanged;
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(request.StaffId);
+
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.StaffId} not found.";
+                Log.Me(message);
+                Utils.RequestResult noStaffResult = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noStaffResult;
+            }
+
+            Payroll payroll = new(
+                id: Utils.GenerateEntityId(),
+                staff: staff,
+                periodStart: request.PeriodStart,
+                periodEnd: request.PeriodEnd,
+                totalHours: request.TotalHours,
+                grossAmount: request.GrossAmount,
+                modifiers: request.Modifiers,
+                netAmount: request.NetAmount,
+                payDate: request.PayDate,
+                notes: request.Notes
+            );
+
             context.Payroll.Add(payroll);
-            context.SaveChanges();
-            return true;
+            await context.SaveChangesAsync();
+
+            message = $"Payroll record created successfully with ID {payroll.Id}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error adding payroll record: {ex.Message}");
-            return false;
+            message = $"Error when creating payroll: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a specific payroll record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the payroll ID.</param>
+    /// <returns>A RequestResult containing the Payroll entity.</returns>
+    public static async Task<Utils.RequestResult<Payroll>> GetPayrollAsync(
+        GetPayrollRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Payroll? payroll = await context.Payroll
+                .Include(p => p.Staff)
+                .FirstOrDefaultAsync(
+                    p => p.Id == request.Id
+                );
+
+            if (payroll is null)
+            {
+                message = $"Payroll record with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult<Payroll> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Payroll record with ID {request.Id} found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<Payroll> successResult = new(
+                Utils.Result.Success, message, payroll
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when getting payroll record: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<Payroll> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Finds payroll records matching the specified query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching Payroll records.</returns>
+    public static async Task<Utils.RequestResult<List<Payroll>>> FindPayrollAsync(
+        FindPayrollRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<Payroll> query = context.Payroll.Include(p => p.Staff);
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestIdStr = request.Id.Value.ToString();
+                    query = query.Where(
+                        p => p.Id.ToString().Contains(requestIdStr)
+                    );
+                }
+
+                if (request.StaffId is not null)
+                    query = query.Where(
+                        p => p.Staff.Id == request.StaffId
+                    );
+
+                if (request.MinPeriodStart is not null)
+                    query = query.Where(
+                        p => p.PeriodStart >= request.MinPeriodStart
+                    );
+
+                if (request.MaxPeriodStart is not null)
+                    query = query.Where(
+                        p => p.PeriodStart <= request.MaxPeriodStart
+                    );
+
+                if (request.MinPeriodEnd is not null)
+                    query = query.Where(
+                        p => p.PeriodEnd >= request.MinPeriodEnd
+                    );
+
+                if (request.MaxPeriodEnd is not null)
+                    query = query.Where(
+                        p => p.PeriodEnd <= request.MaxPeriodEnd
+                    );
+
+                if (request.MinNetAmount is not null)
+                    query = query.Where(
+                        p => p.Amount >= request.MinNetAmount
+                    );
+
+                if (request.MaxNetAmount is not null)
+                    query = query.Where(
+                        p => p.Amount <= request.MaxNetAmount
+                    );
+            }
+
+            List<Payroll> results = await query.ToListAsync();
+
+            if (results.Count == 0)
+            {
+                message = "No payroll records found matching query.";
+                Log.Me(message);
+                Utils.RequestResult<List<Payroll>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []
+                );
+
+                return noResults;
+            }
+
+            message = $"Found {results.Count} payroll record(s) matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<Payroll>> successResult = new(
+                Utils.Result.Success, message, results
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when finding payroll records: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<List<Payroll>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []
+            );
+
+            return errorResult;
+        }
+    }
+
+    /// <summary>
+    /// Deletes a specific payroll record.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the payroll ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeletePayrollAsync(
+        DeletePayrollRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Payroll? payroll = await context.Payroll.FindAsync(request.Id);
+
+            if (payroll is null)
+            {
+                message = $"Payroll record with ID {request.Id} not found.";
+                Log.Me(message);
+                Utils.RequestResult noResults = new(
+                    Utils.Result.Failed_NoResults, message
+                );
+
+                return noResults;
+            }
+
+            context.Payroll.Remove(payroll);
+            await context.SaveChangesAsync();
+
+            message = $"Payroll record with ID {payroll.Id} deleted successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message
+            );
+
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when deleting payroll: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message
+            );
+
+            return errorResult;
         }
     }
 

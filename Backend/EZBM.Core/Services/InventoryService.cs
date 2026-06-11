@@ -1,464 +1,771 @@
+using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Tools;
-using EZBM.Core.Data;
 using Microsoft.EntityFrameworkCore;
-
-/*
- * For the record, I am quite annoyed at how AI tools keep generating
- * code that I did not ask it to generate.
- *
- * They're good and they're already there, so I won't remove it now,
- * but I'm writing the code manually for a reason, damn it.
- *
- * Now I have to go read through all this code to make sure
- * it actually does what I need it to do.
- * I'm dyslexic ffs!
- *
- * - DefinitelyRus
- */
 
 namespace EZBM.Core.Services;
 
 /// <summary>
-/// Service class for managing inventory Items and ItemTransactions.
+/// Provides services for managing items and stock transactions in the inventory.
 /// <br/><br/>
-/// <i>Author(s): Google Antigravity<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Antigravity</i>
+/// <i>Documented by: Google Antigravity</i>
 /// </summary>
-internal static class InventoryService
+public static class InventoryService
 {
-    #region Factory Methods
+
+    #region Item Requests
 
     /// <summary>
-    /// Creates an Item instance from a JSON string.
+    /// Retrieves a specific inventory item by identifier.
     /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
-    /// <param name="json">The JSON substring containing item details.</param>
-    internal static Item? CreateItemInstance(string json)
+    /// <param name="request">The request containing the item ID.</param>
+    /// <returns>A RequestResult containing the Item entity.</returns>
+    public static async Task<Utils.RequestResult<Item>> GetItemAsync(GetItemRequest request)
     {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as an Item object.");
-            return null;
-        }
-
-        ulong id = 0;
-        Item.QType unitOfMeasurement = Item.QType.Count;
-        bool isForSale = false;
-        float price = 0;
-        string? name = null;
-        string? description = null;
-        List<Item.Tag>? tags = null;
-        float quantity = 0;
-        DateTime? expirationDate = null;
-        float cost = 0;
-        string? imageUrl = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    ulong? v_id = Utils.GetAsUlong(kvp.Value);
-                    if (v_id.HasValue) id = v_id.Value;
-                    break;
-
-                case "unitofmeasurement":
-                    string? uomStr = Utils.GetAsString(kvp.Value);
-                    if (uomStr != null && Enum.TryParse<Item.QType>(uomStr, true, out Item.QType parsedUom))
-                    {
-                        unitOfMeasurement = parsedUom;
-                    }
-                    break;
-
-                case "isforsale":
-                    isForSale = Utils.GetAsBool(kvp.Value) ?? false;
-                    break;
-
-                case "saleprice" or "price":
-                    price = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "name":
-                    name = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "description":
-                    description = Utils.GetAsString(kvp.Value);
-                    break;
-
-                case "tags":
-                    tags = Utils.GetAsTagsList(kvp.Value);
-                    break;
-
-                case "quantity" or "stockquantity":
-                    quantity = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "expirationdate":
-                    expirationDate = Utils.GetAsDateTime(kvp.Value);
-                    break;
-
-                case "cost" or "costprice":
-                    cost = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "imageurl":
-                    imageUrl = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in Item JSON. Skipping...");
-                    break;
-            }
-        }
-
-        return new Item(
-            id,
-            unitOfMeasurement,
-            isForSale,
-            price,
-            name,
-            description,
-            tags,
-            quantity,
-            expirationDate,
-            cost,
-            imageUrl
-        );
-    }
-
-    /// <summary>
-    /// Creates an ItemTransaction instance from a JSON string, resolving relations from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="json">The JSON substring containing item transaction details.</param>
-    /// <param name="context">The database context used to lookup relations.</param>
-    internal static ItemTransaction? CreateItemTransactionInstance(string json, AppDbContext context)
-    {
-        Dictionary<string, object>? contents = Utils.ConvertFromJson(json);
-
-        if (contents is null)
-        {
-            Log.Err(() => "Unable to parse the input JSON as an ItemTransaction object.");
-            return null;
-        }
-
-        ulong id = 0;
-        Item? item = null;
-        ItemTransaction.Type transactionType = ItemTransaction.Type.NewStock;
-        SaleEntry? saleEntry = null;
-        float quantity = 0;
-        Staff? staff = null;
-        DateTime timestamp = DateTime.UtcNow;
-        string? notes = null;
-
-        foreach (KeyValuePair<string, object> kvp in contents)
-        {
-            switch (kvp.Key.ToLowerInvariant())
-            {
-                case "id":
-                    id = Utils.GetAsUlong(kvp.Value) ?? 0;
-                    break;
-
-                case "itemid":
-                    ulong? itemId = Utils.GetAsUlong(kvp.Value);
-                    if (itemId.HasValue)
-                    {
-                        item = context.Item.Find(itemId.Value);
-                    }
-                    break;
-
-                case "transactiontype" or "type":
-                    string? typeStr = Utils.GetAsString(kvp.Value);
-                    if (typeStr != null && Enum.TryParse<ItemTransaction.Type>(typeStr, true, out ItemTransaction.Type parsedType))
-                    {
-                        transactionType = parsedType;
-                    }
-                    break;
-
-                case "saleentryid":
-                    ulong? saleEntryId = Utils.GetAsUlong(kvp.Value);
-                    if (saleEntryId.HasValue)
-                    {
-                        saleEntry = context.SaleEntry.Find(saleEntryId.Value);
-                    }
-                    break;
-
-                case "quantity":
-                    quantity = Utils.GetAsFloat(kvp.Value) ?? 0;
-                    break;
-
-                case "staffid":
-                    ulong? staffId = Utils.GetAsUlong(kvp.Value);
-                    if (staffId.HasValue)
-                    {
-                        staff = context.Staff.Find(staffId.Value);
-                    }
-                    break;
-
-                case "timestamp":
-                    timestamp = Utils.GetAsDateTime(kvp.Value) ?? DateTime.UtcNow;
-                    break;
-
-                case "notes":
-                    notes = Utils.GetAsString(kvp.Value);
-                    break;
-
-                default:
-                    Log.Warn(() => $"Invalid key '{kvp.Key}' detected in ItemTransaction JSON. Skipping...");
-                    break;
-            }
-        }
-
-        if (item is null)
-        {
-            Log.Err(() => "Item reference is required to create an ItemTransaction instance.");
-            return null;
-        }
-
-        if (staff is null)
-        {
-            Log.Err(() => "Staff reference is required to create an ItemTransaction instance.");
-            return null;
-        }
-
-        return new ItemTransaction(
-            id,
-            item,
-            transactionType,
-            saleEntry,
-            quantity,
-            staff,
-            timestamp,
-            notes
-        );
-    }
-
-    #endregion
-
-    #region CRUD Item Operations
-
-    /// <summary>
-    /// Retrieves all items from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<Item> GetAllItems()
-    {
-        using AppDbContext context = new();
-        return [.. context.Item];
-    }
-
-    /// <summary>
-    /// Retrieves a specific item by its unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static Item? GetItemById(ulong id)
-    {
-        using AppDbContext context = new();
-        return context.Item.Find(id);
-    }
-
-    /// <summary>
-    /// Adds a new item to the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool AddItem(Item item)
-    {
-        if (string.IsNullOrWhiteSpace(item.Name))
-        {
-            Log.Err(() => "Item name cannot be empty.");
-            return false;
-        }
-        if (item.SalePrice < 0 || item.Cost < 0)
-        {
-            Log.Err(() => "Item prices or costs cannot be negative.");
-            return false;
-        }
+        string message;
 
         try
         {
             using AppDbContext context = new();
-            context.Item.Add(item);
-            context.SaveChanges();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Err(() => $"Error adding item: {ex.Message}");
-            return false;
-        }
-    }
+            Item? item = await context.Item.FindAsync(request.Id);
 
-    /// <summary>
-    /// Updates an existing item in the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool UpdateItem(Item item)
-    {
-        if (string.IsNullOrWhiteSpace(item.Name))
-        {
-            Log.Err(() => "Item name cannot be empty.");
-            return false;
-        }
-        if (item.SalePrice < 0 || item.Cost < 0)
-        {
-            Log.Err(() => "Item prices or costs cannot be negative.");
-            return false;
-        }
-
-        try
-        {
-            using AppDbContext context = new();
-            context.Item.Update(item);
-            context.SaveChanges();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Err(() => $"Error updating item: {ex.Message}");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Deletes an item by its unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static bool DeleteItem(ulong id)
-    {
-        try
-        {
-            using AppDbContext context = new();
-            Item? item = context.Item.Find(id);
-            if (item is null) return false;
-            context.Item.Remove(item);
-            context.SaveChanges();
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Log.Err(() => $"Error deleting item: {ex.Message}");
-            return false;
-        }
-    }
-
-    #endregion
-
-    #region CRUD ItemTransaction Operations
-
-    /// <summary>
-    /// Retrieves all item transactions from the database.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static List<ItemTransaction> GetAllItemTransactions()
-    {
-        using AppDbContext context = new();
-        return [.. context.ItemTransaction
-            .Include(it => it.Item)
-            .Include(it => it.Staff)
-            .Include(it => it.SaleEntry)];
-    }
-
-    /// <summary>
-    /// Retrieves a specific item transaction by its unique ID.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    internal static ItemTransaction? GetItemTransactionById(ulong id)
-    {
-        using AppDbContext context = new();
-        return context.ItemTransaction
-            .Include(it => it.Item)
-            .Include(it => it.Staff)
-            .Include(it => it.SaleEntry)
-            .FirstOrDefault(it => it.Id == id);
-    }
-
-    #endregion
-
-    #region Stock Adjustment Operations
-
-    /// <summary>
-    /// Adjusts the stock quantity of an item and records an ItemTransaction log.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
-    /// </summary>
-    /// <param name="itemId">The unique ID of the item.</param>
-    /// <param name="quantityChange">The change in quantity (positive for additions, negative for reductions).</param>
-    /// <param name="type">The type of stock movement.</param>
-    /// <param name="staffId">The ID of the staff member performing the action.</param>
-    /// <param name="notes">Optional remarks about the stock adjustment.</param>
-    internal static bool AdjustStock(ulong itemId, float quantityChange, ItemTransaction.Type type, ulong staffId, string? notes = null)
-    {
-        try
-        {
-            using AppDbContext context = new();
-            Item? item = context.Item.Find(itemId);
+            // Does not exist
             if (item is null)
             {
-                Log.Err(() => $"Item with ID {itemId} not found.");
-                return false;
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                return new Utils.RequestResult<Item>(Utils.Result.Failed_NoResults, message, null);
             }
 
-            Staff? staff = context.Staff.Find(staffId);
-            if (staff is null)
+            // Return result
+            message = $"Item '{item.Name}' with ID {item.Id} found successfully.";
+            Log.Me(message);
+            return new Utils.RequestResult<Item>(Utils.Result.Success, message, item);
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when getting item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            return new Utils.RequestResult<Item>(Utils.Result.Failed_UnhandledException, message, null);
+        }
+    }
+
+
+    /// <summary>
+    /// Finds items matching the specified query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching Items.</returns>
+    public static async Task<Utils.RequestResult<List<Item>>> FindItemAsync(
+        FindItemRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<Item> query = context.Item;
+
+            if (request is not null)
             {
-                Log.Err(() => $"Staff member with ID {staffId} not found.");
-                return false;
+                if (request.Id is not null)
+                {
+                    string requestId = request.Id.Value.ToString();
+                    query = query.Where(
+                        item => item.Id.ToString().Contains(requestId)
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(request.Name))
+                    query = query.Where(
+                        item => item.Name.Contains(request.Name)
+                    );
+
+                if (!string.IsNullOrEmpty(request.Description))
+                    query = query.Where(
+                        item => item.Description != null &&
+                        item.Description.Contains(request.Description)
+                    );
+
+                if (request.IsForSale is not null)
+                    query = query.Where(
+                        item => item.IsForSale == request.IsForSale
+                    );
+
+                if (request.MinCost is not null)
+                    query = query.Where(
+                        item => item.Cost >= request.MinCost
+                    );
+
+                if (request.MaxCost is not null)
+                    query = query.Where(
+                        item => item.Cost <= request.MaxCost
+                    );
+
+                if (request.MinSalePrice is not null)
+                    query = query.Where(
+                        item => item.SalePrice >= request.MinSalePrice
+                    );
+
+                if (request.MaxSalePrice is not null)
+                    query = query.Where(
+                        item => item.SalePrice <= request.MaxSalePrice
+                    );
+
+                if (request.MinQuantity is not null)
+                    query = query.Where(
+                        item => item.Quantity >= request.MinQuantity
+                    );
+
+                if (request.MaxQuantity is not null)
+                    query = query.Where(
+                        item => item.Quantity <= request.MaxQuantity
+                    );
+
+                if (request.UnitOfMeasurement is not null)
+                    query = query.Where(
+                        item => item.UnitOfMeasurement == request.UnitOfMeasurement
+                    );
+
+                if (request.MinExpirationDate is not null)
+                    query = query.Where(
+                        item => item.ExpirationDate >= request.MinExpirationDate
+                    );
+
+                if (request.MaxExpirationDate is not null)
+                    query = query.Where(
+                        item => item.ExpirationDate <= request.MaxExpirationDate
+                    );
             }
 
-            // Update item stock count
-            item.Quantity += quantityChange;
-            context.Item.Update(item);
+            List<Item> results = await query.ToListAsync();
 
-            // Log item transaction
-            ulong itId = Utils.GenerateEntityId();
-            ItemTransaction it = new(itId, item, type, null, quantityChange, staff, DateTime.UtcNow, notes);
-            context.Entry(it.Item).State = EntityState.Unchanged;
-            context.Entry(it.Staff).State = EntityState.Unchanged;
-            context.ItemTransaction.Add(it);
+            // Perform in-memory filter for Tags if requested
+            if (request?.Tags is { Count: > 0 } && results.Count > 0)
+            {
+                results = [.. results.Where(
+                    item => item.Tags.Any(t => request.Tags.Contains(t))
+                )];
+            }
 
-            context.SaveChanges();
-            return true;
+            if (results.Count == 0)
+            {
+                message = "No items matching query found in database.";
+                Log.Me(message);
+                Utils.RequestResult<List<Item>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []);
+                return noResults;
+            }
+
+            message = $"Found {results.Count} items matching query.";
+            Log.Me(message);
+            Utils.RequestResult<List<Item>> successResult = new(
+                Utils.Result.Success, message, results);
+            return successResult;
         }
         catch (Exception ex)
         {
-            Log.Err(() => $"Error adjusting stock: {ex.Message}");
-            return false;
+            message = $"Error when finding items: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<List<Item>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Updates an existing inventory item's details.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing update fields and ID.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> UpdateItemAsync(UpdateItemRequest request)
+    {
+        string message;
+
+        try
+        {
+            using AppDbContext context = new();
+            Item? item = await context.Item.FindAsync(request.Id);
+
+            // Does not exist
+            if (item is null)
+            {
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+            }
+
+            // Update item
+            item.Name = request.Name ?? item.Name;
+            item.Description = request.Description ?? item.Description;
+            item.IsForSale = request.IsForSale;
+            item.Cost = request.Cost ?? item.Cost;
+            item.SalePrice = request.SalePrice ?? item.SalePrice;
+            item.Quantity = request.Quantity;
+            item.UnitOfMeasurement = request.UnitOfMeasurement;
+            item.ExpirationDate = request.ExpirationDate ?? item.ExpirationDate;
+            item.Tags = request.Tags ?? item.Tags;
+            await context.SaveChangesAsync();
+
+            // Return result
+            message = $"Item '{item.Name}' with ID {item.Id} updated successfully.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Success, message);
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when updating item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
+        }
+    }
+
+
+    /// <summary>
+    /// Creates a new inventory item.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing new item details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateItemAsync(CreateItemRequest request)
+    {
+        try
+        {
+            Item? item = new(
+                Utils.GenerateEntityId(),
+                request.UnitOfMeasurement,
+                request.IsForSale,
+                request.SalePrice,
+                request.Name,
+                request.Description,
+                request.Tags,
+                request.Quantity,
+                request.ExpirationDate,
+                request.Cost,
+                request.ImageUrl
+            );
+
+            // Add to database
+            using AppDbContext context = new();
+            context.Item.Add(item);
+            await context.SaveChangesAsync();
+
+            // Return result
+            string message = $"Item '{item.Name}' with ID {item.Id} created successfully.";
+            Log.Me(() => message);
+            return new Utils.RequestResult(Utils.Result.Success, message);
+        }
+
+        catch (Exception ex)
+        {
+            Log.Me(() => $"Error creating item: {ex.Message}.");
+            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, $"Error creating item: {ex.Message}.");
+        }
+    }
+
+
+    /// <summary>
+    /// Deletes a specific inventory item.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the item ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteItemAsync(DeleteItemRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Item? item = await context.Item.FindAsync(request.Id);
+
+            // Does not exist
+            if (item is null)
+            {
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+            }
+
+            // Remove item
+            context.Item.Remove(item);
+            await context.SaveChangesAsync();
+
+            // Return result
+            message = $"Item '{item.Name}' with ID {item.Id} deleted successfully.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Success, message);
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when deleting item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
         }
     }
 
     #endregion
+
+    #region Item Transaction Requests
+
+    /// <summary>
+    /// Retrieves a specific item transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the transaction ID.</param>
+    /// <returns>A RequestResult containing the ItemTransaction entity.</returns>
+    public static async Task<Utils.RequestResult<ItemTransaction>> GetItemTransactionAsync(
+        GetItemTransactionRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            ItemTransaction? itemTransaction = await context.ItemTransaction
+                .Include(t => t.Item)
+                .Include(t => t.Staff)
+                .Include(t => t.SaleEntry)
+                .FirstOrDefaultAsync(t => t.Id == request.Id);
+
+            // Does not exist
+            if (itemTransaction is null)
+            {
+                message = $"Item transaction with ID {request.Id} " +
+                    $"not found in database.";
+                Log.Me(message);
+                Utils.RequestResult<ItemTransaction> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null);
+                return failResult;
+            }
+
+            // Return result
+            message = $"Item transaction with ID {request.Id} " +
+                $"found successfully.";
+            Log.Me(message);
+            Utils.RequestResult<ItemTransaction> successResult = new(
+                Utils.Result.Success, message, itemTransaction);
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when getting item transaction " +
+                $"with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<ItemTransaction> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Finds item transactions matching the specified query filters.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The search query parameters.</param>
+    /// <returns>A RequestResult containing the list of matching ItemTransactions.</returns>
+    public static async Task<Utils.RequestResult<List<ItemTransaction>>> FindItemTransactionAsync(
+        FindItemTransactionRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            IQueryable<ItemTransaction> query = context.ItemTransaction
+                .Include(t => t.Item)
+                .Include(t => t.Staff)
+                .Include(t => t.SaleEntry);
+
+            if (request is not null)
+            {
+                if (request.Id is not null)
+                {
+                    string requestId = request.Id.Value.ToString();
+                    query = query.Where(
+                        t => t.Id.ToString().Contains(requestId)
+                    );
+                }
+
+                if (request.MinQuantity is not null)
+                {
+                    query = query.Where(
+                        t => t.Quantity >= request.MinQuantity
+                    );
+                }
+
+                if (request.MaxQuantity is not null)
+                {
+                    query = query.Where(
+                        t => t.Quantity <= request.MaxQuantity
+                    );
+                }
+
+                if (request.Type is not null)
+                {
+                    query = query.Where(
+                        t => t.TransactionType == request.Type
+                    );
+                }
+
+                if (request.MinTimestamp is not null)
+                {
+                    query = query.Where(
+                        t => t.Timestamp >= request.MinTimestamp
+                    );
+                }
+
+                if (request.MaxTimestamp is not null)
+                {
+                    query = query.Where(
+                        t => t.Timestamp <= request.MaxTimestamp
+                    );
+                }
+
+                if (!string.IsNullOrEmpty(request.Note))
+                {
+                    query = query.Where(
+                        t => t.Note != null && t.Note.Contains(request.Note)
+                    );
+                }
+
+                if (request.ItemQuery is not null)
+                {
+                    FindItemRequest itemQuery = request.ItemQuery;
+
+                    if (itemQuery.Id is not null)
+                    {
+                        string itemIdStr = itemQuery.Id.Value.ToString();
+                        query = query.Where(
+                            t => t.Item.Id.ToString().Contains(itemIdStr)
+                        );
+                    }
+
+                    if (!string.IsNullOrEmpty(itemQuery.Name))
+                    {
+                        query = query.Where(
+                            t => t.Item.Name.Contains(itemQuery.Name)
+                        );
+                    }
+
+                    if (!string.IsNullOrEmpty(itemQuery.Description))
+                    {
+                        query = query.Where(
+                            t => t.Item.Description != null &&
+                            t.Item.Description.Contains(itemQuery.Description)
+                        );
+                    }
+
+                    if (itemQuery.IsForSale is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.IsForSale == itemQuery.IsForSale
+                        );
+                    }
+
+                    if (itemQuery.MinCost is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.Cost >= itemQuery.MinCost
+                        );
+                    }
+
+                    if (itemQuery.MaxCost is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.Cost <= itemQuery.MaxCost
+                        );
+                    }
+
+                    if (itemQuery.MinSalePrice is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.SalePrice >= itemQuery.MinSalePrice
+                        );
+                    }
+
+                    if (itemQuery.MaxSalePrice is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.SalePrice <= itemQuery.MaxSalePrice
+                        );
+                    }
+
+                    if (itemQuery.MinQuantity is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.Quantity >= itemQuery.MinQuantity
+                        );
+                    }
+
+                    if (itemQuery.MaxQuantity is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.Quantity <= itemQuery.MaxQuantity
+                        );
+                    }
+
+                    if (itemQuery.UnitOfMeasurement is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.UnitOfMeasurement == itemQuery.UnitOfMeasurement
+                        );
+                    }
+
+                    if (itemQuery.MinExpirationDate is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.ExpirationDate >= itemQuery.MinExpirationDate
+                        );
+                    }
+
+                    if (itemQuery.MaxExpirationDate is not null)
+                    {
+                        query = query.Where(
+                            t => t.Item.ExpirationDate <= itemQuery.MaxExpirationDate
+                        );
+                    }
+                }
+            }
+
+            List<ItemTransaction> results = await query.ToListAsync();
+
+            // Perform in-memory filter for Tags if requested
+            if (request?.ItemQuery?.Tags is { Count: > 0 } && results.Count > 0)
+            {
+                results = [.. results.Where(t =>
+                    t.Item != null &&
+                    t.Item.Tags.Any(tag => request.ItemQuery.Tags.Contains(tag)))
+                ];
+            }
+
+            if (results.Count == 0)
+            {
+                message = "No item transactions matching query found in database.";
+                Log.Me(message);
+                Utils.RequestResult<List<ItemTransaction>> noResults = new(
+                    Utils.Result.Success_NoResults, message, []);
+                return noResults;
+            }
+
+            message = $"Found {results.Count} item transaction(s) matching the query.";
+            Log.Me(message);
+            Utils.RequestResult<List<ItemTransaction>> successResult = new(
+                Utils.Result.Success, message, results);
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when getting item transactions: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult<List<ItemTransaction>> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, []);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Creates a new stock/item transaction (stock movement log) and adjusts item quantity.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request parameters containing transaction details.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> CreateItemTransactionAsync(
+        CreateItemTransactionRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+
+            // Get item
+            Item? item = await context.Item.FindAsync(request.ItemId);
+            if (item is null)
+            {
+                message = $"Item with ID {request.ItemId} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult noItemResult = new(
+                    Utils.Result.Failed_NoResults, message);
+                return noItemResult;
+            }
+
+            // Get staff
+            Staff? staff = await context.Staff.FindAsync(request.StaffId);
+            if (staff is null)
+            {
+                message = $"Staff with ID {request.StaffId} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult noStaffResult = new(
+                    Utils.Result.Failed_NoResults, message);
+                return noStaffResult;
+            }
+
+            // Get sale entry if provided
+            SaleEntry? saleEntry = null;
+            if (request.SaleEntryId is not null)
+            {
+                saleEntry = await context.SaleEntry.FindAsync(
+                    request.SaleEntryId.Value);
+                if (saleEntry is null)
+                {
+                    message = $"SaleEntry with ID {request.SaleEntryId} not found.";
+                    Log.Me(message);
+                    Utils.RequestResult noSaleEntryResult = new(
+                        Utils.Result.Failed_NoResults, message);
+                    return noSaleEntryResult;
+                }
+            }
+
+            // Create item transaction
+            ItemTransaction transaction = new(
+                item: item,
+                transactionType: request.Type,
+                saleEntry: saleEntry,
+                quantity: request.Quantity,
+                staff: staff,
+                timestamp: request.Timestamp,
+                note: request.Note
+            );
+
+            // Update item
+            switch (request.Type)
+            {
+                // Add to item quantity
+                case ItemTransaction.Type.NewStock:
+                case ItemTransaction.Type.Correction_Sum:
+                    item.Quantity += request.Quantity;
+                    break;
+
+                // Subtract from item quantity
+                case ItemTransaction.Type.Consumed:
+                case ItemTransaction.Type.Sale:
+                case ItemTransaction.Type.Damaged_Lost_Expired:
+                    item.Quantity -= request.Quantity;
+                    break;
+
+                // Set new item quantity
+                case ItemTransaction.Type.Correction_Set:
+                    item.Quantity = request.Quantity;
+                    break;
+
+                default:
+                    break;
+            }
+
+            // Mark for warnings
+            bool negativeResultWarning = item.Quantity < 0;
+            bool negativeAddendWarning = false;
+            if (request.Quantity < 0)
+            {
+                switch (request.Type)
+                {
+                    case ItemTransaction.Type.NewStock:
+                    case ItemTransaction.Type.Consumed:
+                    case ItemTransaction.Type.Sale:
+                    case ItemTransaction.Type.Damaged_Lost_Expired:
+                        negativeAddendWarning = true;
+                        break;
+                }
+            }
+
+            // Add and save
+            context.ItemTransaction.Add(transaction);
+            await context.SaveChangesAsync();
+
+            // Return with negative addend warning
+            if (negativeAddendWarning)
+            {
+                message = $"Item transaction with ID {transaction.Id} created " +
+                    $"with invalid quantity ({request.Quantity}).";
+                Log.Me(message);
+                Utils.RequestResult warningResult = new(
+                    Utils.Result.Success_Warning, message);
+                return warningResult;
+            }
+
+            // Return with negative total warning
+            if (negativeResultWarning)
+            {
+                message = $"Item transaction with ID {transaction.Id} created " +
+                    $"with invalid total quantity ({item.Quantity}).";
+                Log.Me(message);
+                Utils.RequestResult warningResult = new(
+                    Utils.Result.Success_Warning, message);
+                return warningResult;
+            }
+
+            // Return success
+            message = $"Item transaction with ID {transaction.Id} created successfully.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(
+                Utils.Result.Success, message);
+            return successResult;
+        }
+        catch (Exception ex)
+        {
+            message = $"Error when creating item transaction: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(
+                Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Deletes a specific item transaction.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
+    /// </summary>
+    /// <param name="request">The request containing the transaction ID to delete.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> DeleteItemTransactionAsync(DeleteItemTransactionRequest request)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            ItemTransaction? transaction = await context.ItemTransaction.FindAsync(request.Id);
+
+            // Does not exist
+            if (transaction is null)
+            {
+                message = $"Item transaction with ID {request.Id} not found in database.";
+                Log.Me(message);
+                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+            }
+
+            // Remove item transaction
+            context.ItemTransaction.Remove(transaction);
+            await context.SaveChangesAsync();
+
+            // Return result
+            message = $"Item transaction with ID {transaction.Id} deleted successfully.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Success, message);
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when deleting item transaction with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
+        }
+    }
+
+    #endregion
+
 }
