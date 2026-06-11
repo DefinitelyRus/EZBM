@@ -37,7 +37,7 @@ ezbm/
 
 ---
 
-<!-->
+<!--
 ## 🚀 Getting Started (Local Setup)
 
 Follow these steps to get the prototype running on your machine.
@@ -72,7 +72,7 @@ npm start
 Your default browser will automatically open to `http://localhost:3000`.
 
 ---
-<-->
+-->
 
 ## 💾 Data Strategy & Resetting
 
