@@ -1,70 +1,82 @@
-# README
+# EZBM Backend Directory
 
-> *Author(s): DefinitelyRus, Google Gemini*
+This directory contains the backend services, business logic, test suites, and diagnostic tools for the EZBM application. The backend is built on **.NET** using **C#** and **EF Core / SQLite** for local data persistence.
 
-This is a respository for how things are made on the back-end... mainly because the author will forget soon after committing the code.
+---
 
-## Creating the project
+## Projects Overview
 
-The back-end service is split in 2 parts: the logic engine (`EZBM.Core`) and the desktop host (`EZBM.DesktopHost`).
+| Project | Type | Description |
+| :--- | :--- | :--- |
+| **[EZBM.Core](EZBM.Core/README.md)** | Class Library | The core engine containing data entities, database context, services, and core utilities. |
+| **[EZBM.DesktopHost](EZBM.DesktopHost/README.md)** | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
+| **[EZBM.Tests](EZBM.Tests/README.md)** | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
+| **[TestDb](TestDb/README.md)** | Console App | A minor utility/diagnostic project used to test database creation, configuration, and connectivity independently. |
 
-The logic engine is a standard class library acting as the back-end's core which does all the data handling and calculations and all that.
+---
 
-The desktop host provides the local REST API layer so that the front-end server can fetch and interact with `EZBM.Core` without it modifying any data directly by itself.
+### 1. EZBM.Core
+
+The foundational business logic layer.
+
+* **Entities**: Defined in `Entities/` (e.g., `Staff`, `Item`, `Transaction`, `Attendance`, `Payroll`, `Sale`, `SaleEntry`).
+* **Database Management**: Managed by `Data/DbManager` and `Data/AppDbContext` targeting SQLite. The database file `business_data.db` is stored under the user's `My Documents` folder (or OneDrive-backed equivalent).
+* **Services**: Defined in `Services/` (e.g., `InventoryService`) containing core logic rules.
+
+#### How to Reference
+
+Add a project reference to this project in any runner project:
 
 ```bash
-# 1. Create a solution folder and step inside
-mkdir EZBM
-cd EZBM
-
-# 2. Initialize a blank solution file
-dotnet new sln -n EZBM
-
-# 3. Create your back-end logic engine as a standard class library
-dotnet new classlib -o EZBM.Core
-
-# 4. Create your temporary desktop host (ASP.NET Web API)
-dotnet new webapi -o EZBM.DesktopHost
-
-# 5. Attach both projects to your solution file
-dotnet sln add EZBM.Core/EZBM.Core.csproj
-dotnet sln add EZBM.DesktopHost/EZBM.DesktopHost.csproj
-
-# 6. Make the Host reference your core business logic project
-dotnet add EZBM.DesktopHost/EZBM.DesktopHost.csproj reference EZBM.Core/EZBM.Core.csproj
+dotnet add <project-path>.csproj reference Backend/EZBM.Core/EZBM.Core.csproj
 ```
 
-### Adding Android support
+---
 
-When the front-end and back-end are done and ready to go, we can pivot to adding Android support.
+### 2. EZBM.DesktopHost
+
+An ASP.NET Core Web API project hosting endpoints locally for front-end integration.
+
+* **Endpoints**: Defined in `Endpoints/` (e.g., `InventoryController`, `SalesController`, `StaffController`, `AuthController`).
+* **Initialization**: The main entry point `Program.cs` automatically triggers `DbManager.Initialize()` to ensure the database schema exists on startup.
+
+#### How to Run
+
+To spin up the local REST server:
 
 ```bash
-dotnet new maui -o EZBM.MobileApp
+dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 ```
 
-Once that project is made, you need to:
+---
 
-1. Bundle your compiled static React production build (`dist` or `build` directory assets) directly into the `wwwroot` directory of that new project.
+### 3. EZBM.Tests
 
-2. Link the mobile package to your existing backend rules engine.
+A console project serving as our integration test suite.
+
+* **Flow**: Resets the database to a clean state, invokes static API endpoint methods directly, and compiles the results in a markdown summary.
+* **Test Outputs**: Compiles a detailed test summary to `Backend/Results.md`.
+
+#### How to Run Tests
+
+To run endpoint tests and review output:
 
 ```bash
-dotnet sln add EZBM.MobileApp/EZBM.MobileApp.csproj
-dotnet add EZBM.MobileApp/EZBM.MobileApp.csproj reference EZBM.Core/EZBM.Core.csproj
+cd Backend/EZBM.Tests
+rm results.log # Remove old logs if they exist
+dotnet run --project EZBM.Tests.csproj
 ```
 
-3. Instead of using controllers to route HTTP calls, use the MAUI `.NET 10` native `HybridWebView` to execute your `EZBM.Core` data methods directly out of physical device memory, bypassing local web server performance limitations on mobile entirely.
+---
 
-## Implementing Local Storage
+### 4. TestDb
 
-The backend uses SQLite and Entity Framework Core (EF Core) for local storage as these don't require a separate database engine server installation, and stores everything in one file.
+A minimal console application specifically created to isolate and test database lifecycle behavior.
 
-### Add NuGet Packages
+* **Features**: Runs database initialization (`DbManager.Initialize()`) and checks whether the database is successfully created, listing the resolved save directory path.
+
+#### How to Run Diagnostic
 
 ```bash
-# Move into the Core directory
-cd EZBM.Core
-
-# Install EF Core and the SQLite driver
-dotnet add package Microsoft.EntityFrameworkCore.Sqlite
+dotnet run --project Backend/TestDb/TestDb.csproj
 ```
