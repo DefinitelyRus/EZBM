@@ -6,6 +6,8 @@ I laid out exactly what screens need creating. Because store staff will be runni
 
 Keep in mind that it's supposed to be simple as the desktop form will *not* be its final version--it's going to be a mobile app. This is just the test platform testers will be using.
 
+Lastly, make sure to update your Notion task list to reflect what you're *actually* doing; this task list is probably not 100% accurate or comprehensive.
+
 ---
 
 ## Step 1: Initial App Structure
