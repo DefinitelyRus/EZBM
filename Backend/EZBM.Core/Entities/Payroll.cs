@@ -26,50 +26,78 @@ using System;
 /// <param name="netAmount">Final pay amount (mapped to transaction amount).</param>
 /// <param name="payDate">The date of payment (mapped to transaction timestamp).</param>
 /// <param name="notes">Optional remarks about the payroll.</param>
-public class Payroll(
-    ulong id,
-    Staff staff,
-    DateTime periodStart,
-    DateTime periodEnd,
-    float totalHours,
-    float grossAmount,
-    float modifiers,
-    float netAmount,
-    DateTime? payDate = null,
-    string? notes = null) : Transaction(id, Transaction.Type.Expense, netAmount, payDate ?? DateTime.UtcNow, staff, null, null, notes)
+public class Payroll : Transaction
 {
     /// <summary>
     /// The start date of the pay period.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public DateTime PeriodStart { get; private set; } = periodStart;
+    public DateTime PeriodStart { get; private set; }
 
     /// <summary>
     /// The end date of the pay period.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public DateTime PeriodEnd { get; private set; } = periodEnd;
+    public DateTime PeriodEnd { get; private set; }
 
     /// <summary>
     /// The total number of hours worked during the period.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public float TotalHours { get; private set; } = totalHours;
+    public float TotalHours { get; private set; }
 
     /// <summary>
     /// The total earnings before any deductions or additions.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public float GrossAmount { get; private set; } = grossAmount;
+    public float GrossAmount { get; private set; }
 
     /// <summary>
     /// Adjustments made to the gross amount, such as bonuses or deductions.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public float Modifiers { get; private set; } = modifiers;
+    public float Modifiers { get; private set; }
+
+    /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+    protected Payroll() : base() { }
+
+    /// <summary>
+    /// Initializes a new instance of the Payroll class.
+    /// </summary>
+    public Payroll(
+        ulong id,
+        Staff staff,
+        DateTime periodStart,
+        DateTime periodEnd,
+        float totalHours,
+        float grossAmount,
+        float modifiers,
+        float netAmount,
+        DateTime? payDate = null,
+        string? notes = null) : base(
+            id: id,
+            transactionType: Type.Expense,
+            amount: netAmount,
+            timestamp: payDate ?? DateTime.UtcNow,
+            staff: staff,
+            paymentMethod: null,
+            invoiceNumber: null,
+            invoicePrefix: "PAYROLL",
+            notes: notes)
+    {
+        PeriodStart = periodStart;
+        PeriodEnd = periodEnd;
+        TotalHours = totalHours;
+        GrossAmount = grossAmount;
+        Modifiers = modifiers;
+    }
+
 }
+

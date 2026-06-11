@@ -2,7 +2,7 @@ using System.Text;
 
 class Program
 {
-    private static StringBuilder resultsBuilder = new StringBuilder();
+    private static readonly StringBuilder resultsBuilder = new();
 
     static async Task Main(string[] args)
     {

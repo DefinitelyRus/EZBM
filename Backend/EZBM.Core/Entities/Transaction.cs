@@ -94,6 +94,13 @@ public class Transaction : Entity
     #endregion
 
     /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+#pragma warning disable CS8618
+    protected Transaction() { }
+#pragma warning restore CS8618
+
+    /// <summary>
     /// Initializes a new instance of the Transaction class.
     /// <br/><br/>
     /// <i>Author(s): DefinitelyRus<br/>

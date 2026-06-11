@@ -47,6 +47,14 @@ public class SaleEntry : Entity
     public Item Item { get; private set; }
 
     /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+#pragma warning disable CS8618
+    protected SaleEntry() { }
+#pragma warning restore CS8618
+
+
+    /// <summary>
     /// Creates a new instance of the <see cref="SaleEntry"/> class.
     /// </summary>
     /// <param name="sale">The sale transaction this entry belongs to.</param>

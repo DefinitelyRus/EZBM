@@ -19,14 +19,33 @@ using System;
 /// <param name="staff">The staff member responsible for the sale.</param>
 /// <param name="timestamp">The time of the transaction.</param>
 /// <param name="notes">Optional notes about the sale.</param>
-public class Sale(
-    ulong id,
-    int invoiceNumber,
-    float amount,
-    Transaction.PayMethod paymentMethod,
-    Staff staff,
-    DateTime timestamp,
-    string? notes = null) : Transaction(id, Type.Income, amount, timestamp, staff, paymentMethod, invoiceNumber, "SALE", notes)
+public class Sale : Transaction
 {
-    // Yes, this class does nothing.
+    /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+    protected Sale() : base() { }
+
+    /// <summary>
+    /// Initializes a new instance of the Sale class.
+    /// </summary>
+    public Sale(
+        ulong id,
+        int invoiceNumber,
+        float amount,
+        PayMethod paymentMethod,
+        Staff staff,
+        DateTime timestamp,
+        string? notes = null) : base(
+            id,
+            Type.Income,
+            amount,
+            timestamp,
+            staff,
+            paymentMethod,
+            invoiceNumber,
+            "SALE",
+            notes)
+    {
+    }
 }

@@ -12,4 +12,15 @@
     <ProjectReference Include="..\EZBM.DesktopHost\EZBM.DesktopHost.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="EZBM.Core.Data" />
+    <Using Include="EZBM.Core.Entities" />
+    <Using Include="EZBM.Core.Services" />
+    <Using Include="EZBM.Core.Tools" />
+    <Using Include="EZBM.DesktopHost.Endpoints" />
+    <Using Include="Microsoft.AspNetCore.Http" />
+    <Using Include="Microsoft.AspNetCore.Http.HttpResults" />
+  </ItemGroup>
+
+
 </Project>
