@@ -72,10 +72,10 @@
 - [x] Implement `GET /api/items` endpoint:
   - Call `InventoryService.FindItemAsync(null)` to retrieve the item list.
   - Return the collection (200 OK).
-- [/] Implement `POST /api/items` endpoint:
+- [x] Implement `POST /api/items` endpoint:
   - Read incoming item JSON.
   - Save the item to the database using `InventoryService.CreateItemAsync(request)`.
-  - [ ] **DISCREPANCY/BUG:** Return the created item with its new database ID (currently returns an empty 200 OK response on success).
+  - [x] **DISCREPANCY/BUG:** Return the created item with its new database ID (currently returns an empty 200 OK response on success).
 
 **Example GET Response (200 OK):**
 
@@ -147,12 +147,12 @@
 **Subtasks:**
 
 - [x] Create `SalesController.cs` in the host API project and implement attendance/payroll endpoints in `StaffController.cs` (correcting mapping bugs in `Program.cs`).
-- [/] Implement `POST /api/sales` endpoint:
+- [x] Implement `POST /api/sales` endpoint:
   - Parse the request payload to instantiate a `Sale` record, create `SaleEntry` records, deduct stock, and execute database transactions via `SalesService.CreateSaleAsync(request)`.
-  - [ ] **DISCREPANCY/BUG:** Return the success payload containing the generated `saleId` (currently returns an empty 200 OK response on success).
-- [/] Implement `POST /api/attendance` endpoint:
+  - [x] **DISCREPANCY/BUG:** Return the success payload containing the generated `saleId` (currently returns an empty 200 OK response on success).
+- [x] Implement `POST /api/attendance` endpoint:
   - Log clock-in/clock-out events via `StaffService.LogAttendanceAsync(request)`.
-  - [ ] **DISCREPANCY/BUG:** Return the success payload containing `success` and `timestamp` fields (currently returns a raw DateTime string).
+  - [x] **DISCREPANCY/BUG:** Return the success payload containing `success` and `timestamp` fields (currently returns a raw DateTime string).
 
 **Example POST /api/sales Request:**
 

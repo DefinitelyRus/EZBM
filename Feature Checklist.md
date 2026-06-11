@@ -16,9 +16,9 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 ### Back-end Requirements
 
-* [ ] Create a `POST /api/auth/login` endpoint.
-* [ ] Write an SQLite query to check if the entered username and password (plain text) match a record.
-* [ ] Return a simple user object (ID, Username, Role) on success, or a 401 error code on failure.
+* [x] Create a `POST /api/auth/login` endpoint.
+* [x] Write an SQLite query to check if the entered username and password (plain text) match a record.
+* [x] Return a simple user object (ID, Username, Role) on success, or a 401 error code on failure.
 
 ### Front-end Requirements
 
@@ -30,8 +30,8 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 ### Back-end Requirements
 
-* [ ] Create a `GET /api/items` endpoint to fetch all products and services.
-* [ ] Create a `POST /api/items` endpoint to save a new item to SQLite.
+* [x] Create a `GET /api/items` endpoint to fetch all products and services.
+* [x] Create a `POST /api/items` endpoint to save a new item to SQLite.
 * [x] Implement back-end logic to handle validation (e.g., prevent negative prices, ensure names aren't empty).
 
 ### Front-end Requirements
@@ -50,7 +50,7 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 ### Back-end Requirements
 
-* [ ] Create a `POST /api/sales` endpoint to process a completed checkout.
+* [x] Create a `POST /api/sales` endpoint to process a completed checkout.
 * [x] **Transaction Logic:** Ensure a single checkout performs two database actions:
 * Insert a row into the `Sales` table and its matching rows into the `SaleItems` table.
 * Subtract the purchased quantities from the `Items` table stock counts (only if the item type is a "Product").
@@ -69,7 +69,7 @@ This is a step-by-step feature checklist split by front-end and back-end. The go
 
 ### Back-end Requirements
 
-* [ ] Create a `POST /api/attendance` endpoint.
+* [x] Create a `POST /api/attendance` endpoint.
 * [x] Write an SQLite query to log the user's ID, the action type ("In" or "Out"), and the exact server timestamp.
 
 ### Front-end Requirements
