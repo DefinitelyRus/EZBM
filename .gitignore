@@ -101,3 +101,7 @@ packages/react-devtools-timeline/dist
 /.dotnet
 Backend/EZBM.Tests/build_output.txt
 Backend/EZBM.Tests/build_and_run.bat
+Backend/EZBM.Tests/git_version.txt
+Backend/EZBM.Tests/git_status_unsandboxed.txt
+Backend/EZBM.Tests/git_status.txt
+Backend/EZBM.Tests/git_log.txt
