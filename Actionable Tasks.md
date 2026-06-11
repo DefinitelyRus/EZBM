@@ -16,11 +16,11 @@
 
 **Subtasks:**
 
-- [ ] Create `AuthController.cs` file in the host API project.
-- [ ] Define the `POST /api/auth/login` route handler.
-- [ ] Parse request payload to extract username and password.
-- [ ] Query all database users via `StaffService.GetAllStaff()` and find the match.
-- [ ] Return staff object (200 OK) if passwords match; return 401 Unauthorized if mismatch/not found.
+- [x] Create `AuthController.cs` file in the host API project.
+- [x] Define the `POST /api/auth/login` route handler.
+- [x] Parse request payload to extract username and password.
+- [x] Query database users via `StaffService.GetStaffByUsernameAsync()` and find the match.
+- [x] Return staff object (200 OK) if passwords match; return 401 Unauthorized if mismatch/not found.
 
 **Example Request:**
 
@@ -68,15 +68,14 @@
 
 **Subtasks:**
 
-- [ ] Create `InventoryController.cs` in the host API project.
-- [ ] Implement `GET /api/items` endpoint:
-  - Call `InventoryService.GetAllItems()` to retrieve the item list.
+- [x] Create `InventoryController.cs` in the host API project.
+- [x] Implement `GET /api/items` endpoint:
+  - Call `InventoryService.FindItemAsync(null)` to retrieve the item list.
   - Return the collection (200 OK).
-- [ ] Implement `POST /api/items` endpoint:
+- [/] Implement `POST /api/items` endpoint:
   - Read incoming item JSON.
-  - Instantiate the entity with `InventoryService.CreateItemInstance(json)`.
-  - Save the item to the database using `InventoryService.AddItem(item)`.
-  - Return the created item with its new database ID (200 OK) or 400 Bad Request on validation failure.
+  - Save the item to the database using `InventoryService.CreateItemAsync(request)`.
+  - [ ] **DISCREPANCY/BUG:** Return the created item with its new database ID (currently returns an empty 200 OK response on success).
 
 **Example GET Response (200 OK):**
 
@@ -147,16 +146,13 @@
 
 **Subtasks:**
 
-- [ ] Create `SalesController.cs` and `AttendanceController.cs` in the host API project.
-- [ ] Implement `POST /api/sales` endpoint:
-  - Parse the header information to instantiate a `Sale` record via `SalesService.CreateSaleInstance(json, context)`.
-  - Loop through items to instantiate `SaleEntry` records via `SalesService.CreateSaleEntryInstance(itemJson, context)`.
-  - Execute database transactions using `SalesService.AddSale(sale, entries)`.
-  - Return success status (200 OK) or error payload (400 Bad Request).
-- [ ] Implement `POST /api/attendance` endpoint:
-  - Instantiate an `Attendance` record using `StaffService.CreateAttendanceInstance(json, context)`.
-  - Save the record using `StaffService.LogAttendance(attendance)`.
-  - Return success (200 OK) with the registered server timestamp.
+- [x] Create `SalesController.cs` and `AttendanceController.cs` in the host API project.
+- [/] Implement `POST /api/sales` endpoint:
+  - Parse the request payload to instantiate a `Sale` record, create `SaleEntry` records, deduct stock, and execute database transactions via `SalesService.CreateSaleAsync(request)`.
+  - [ ] **DISCREPANCY/BUG:** Return the success payload containing the generated `saleId` (currently returns an empty 200 OK response on success).
+- [/] Implement `POST /api/attendance` endpoint:
+  - Log clock-in/clock-out events via `StaffService.LogAttendanceAsync(request)`.
+  - [ ] **DISCREPANCY/BUG:** Return the success payload containing `success` and `timestamp` fields (currently returns a raw DateTime string).
 
 **Example POST /api/sales Request:**
 
