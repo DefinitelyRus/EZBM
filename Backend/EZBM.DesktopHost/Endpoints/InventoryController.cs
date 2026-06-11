@@ -1,6 +1,7 @@
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
+using EZBM.DesktopHost.Tools;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EZBM.DesktopHost.Endpoints;
@@ -50,7 +51,8 @@ public static class InventoryController
     /// <returns>An HTTP result indicating the status of the item creation.</returns>
     public static async Task<IResult> CreateItem([FromBody] CreateItemRequest request)
     {
-        Utils.RequestResult result = await InventoryService.CreateItemAsync(request);
+        Utils.RequestResult<Item> result = await InventoryService.CreateItemAsync(request);
+
         return EndpointHelpers.ToIResult(result);
     }
 

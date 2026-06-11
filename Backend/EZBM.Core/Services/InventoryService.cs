@@ -236,7 +236,7 @@ public static class InventoryService
     /// </summary>
     /// <param name="request">The request parameters containing new item details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
-    public static async Task<Utils.RequestResult> CreateItemAsync(CreateItemRequest request)
+    public static async Task<Utils.RequestResult<Item>> CreateItemAsync(CreateItemRequest request)
     {
         try
         {
@@ -262,13 +262,26 @@ public static class InventoryService
             // Return result
             string message = $"Item '{item.Name}' with ID {item.Id} created successfully.";
             Log.Me(() => message);
-            return new Utils.RequestResult(Utils.Result.Success, message);
+
+            Utils.Result resultType = Utils.Result.Success;
+            Utils.RequestResult<Item> successResult = new(
+                resultType, message, item
+            );
+
+            return successResult;
         }
 
         catch (Exception ex)
         {
-            Log.Me(() => $"Error creating item: {ex.Message}.");
-            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, $"Error creating item: {ex.Message}.");
+            string message = $"Error creating item: {ex.Message}.";
+            Log.Me(() => message);
+
+            Utils.Result resultType = Utils.Result.Failed_UnhandledException;
+            Utils.RequestResult<Item> errorResult = new(
+                resultType, message, null
+            );
+
+            return errorResult;
         }
     }
 

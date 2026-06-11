@@ -92,9 +92,20 @@ public static class StaffController
     /// </summary>
     /// <param name="request">The request parameters containing staff ID and action type ("In" or "Out").</param>
     /// <returns>An HTTP result containing the timestamp of the logged event.</returns>
-    public static async Task<IResult> LogAttendance([FromBody] LogAttendanceRequest request)
+    public static async Task<IResult> LogAttendance(
+        [FromBody] LogAttendanceRequest request)
     {
         Utils.RequestResult<DateTime> result = await StaffService.LogAttendanceAsync(request);
+
+        if (result.Type == Utils.Result.Success)
+        {
+            return Results.Ok(new
+            {
+                success = true,
+                timestamp = result.Data
+            });
+        }
+
         return EndpointHelpers.ToIResult(result);
     }
 

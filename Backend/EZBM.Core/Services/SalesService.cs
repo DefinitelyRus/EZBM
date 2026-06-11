@@ -21,7 +21,7 @@ public static class SalesService
     /// </summary>
     /// <param name="request">The request parameters containing sale details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
-    public static async Task<Utils.RequestResult> CreateSaleAsync(
+    public static async Task<Utils.RequestResult<ulong>> CreateSaleAsync(
         CreateSaleRequest request)
     {
         string message;
@@ -35,9 +35,12 @@ public static class SalesService
             {
                 message = $"Staff with ID {request.StaffId} not found.";
                 Log.Me(message);
-                Utils.RequestResult noStaffResult = new(
-                    Utils.Result.Failed_NoResults, message
+
+                Utils.Result resultType = Utils.Result.Failed_NoResults;
+                Utils.RequestResult<ulong> noStaffResult = new(
+                    resultType, message, 0
                 );
+
                 return noStaffResult;
             }
 
@@ -66,9 +69,12 @@ public static class SalesService
                 {
                     message = $"Item with ID {itemReq.ItemId} not found.";
                     Log.Me(message);
-                    Utils.RequestResult noItemResult = new(
-                        Utils.Result.Failed_NoResults, message
+
+                    Utils.Result resultType = Utils.Result.Failed_NoResults;
+                    Utils.RequestResult<ulong> noItemResult = new(
+                        resultType, message, 0
                     );
+
                     return noItemResult;
                 }
 
@@ -105,9 +111,12 @@ public static class SalesService
 
             message = $"Sale registered successfully with Invoice {sale.InvoiceId}.";
             Log.Me(message);
-            Utils.RequestResult successResult = new(
-                Utils.Result.Success, message
+
+            Utils.Result successType = Utils.Result.Success;
+            Utils.RequestResult<ulong> successResult = new(
+                successType, message, sale.Id
             );
+
             return successResult;
         }
 
@@ -115,9 +124,14 @@ public static class SalesService
         {
             message = $"Error when creating sale transaction: {ex.Message}";
             Log.Me(message);
-            Utils.RequestResult errorResult = new(
-                Utils.Result.Failed_UnhandledException, message
+
+            Utils.Result resultType =
+                Utils.Result.Failed_UnhandledException;
+
+            Utils.RequestResult<ulong> errorResult = new(
+                resultType, message, 0
             );
+
             return errorResult;
         }
     }

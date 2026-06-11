@@ -25,7 +25,17 @@ public static class SalesController
     /// <returns>An HTTP result indicating the status of the sale creation.</returns>
     public static async Task<IResult> CreateSale([FromBody] CreateSaleRequest request)
     {
-        Utils.RequestResult result = await SalesService.CreateSaleAsync(request);
+        Utils.RequestResult<ulong> result = await SalesService.CreateSaleAsync(request);
+
+        if (result.Type == Utils.Result.Success)
+        {
+            return Results.Ok(new
+            {
+                success = true,
+                saleId = result.Data
+            });
+        }
+
         return EndpointHelpers.ToIResult(result);
     }
 
