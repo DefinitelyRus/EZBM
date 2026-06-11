@@ -1,7 +1,6 @@
-using SQLitePCL;
 using static EZBM.Core.Tools.Utils;
 
-namespace EZBM.DesktopHost.Endpoints;
+namespace EZBM.DesktopHost.Utils;
 
 /// <summary>
 /// Helper methods for endpoint mapping and conversion.
