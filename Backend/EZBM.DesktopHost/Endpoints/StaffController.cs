@@ -12,6 +12,9 @@ namespace EZBM.DesktopHost.Endpoints;
 /// </summary>
 public static class StaffController
 {
+
+    #region Staff requests
+
     /// <summary>
     /// Creates a new staff member profile.
     /// <br/><br/>
@@ -76,6 +79,10 @@ public static class StaffController
         Utils.RequestResult result = await StaffService.DeleteStaffAsync(request);
         return EndpointHelpers.ToIResult(result);
     }
+
+    #endregion
+
+    #region Attendance requests
 
     /// <summary>
     /// Logs a clock-in or clock-out event for a staff member.
@@ -155,6 +162,10 @@ public static class StaffController
         return EndpointHelpers.ToIResult(result);
     }
 
+    #endregion
+
+    #region Payroll requests
+
     /// <summary>
     /// Creates a new payroll record.
     /// <br/><br/>
@@ -206,4 +217,6 @@ public static class StaffController
         Utils.RequestResult result = await StaffService.DeletePayrollAsync(request);
         return EndpointHelpers.ToIResult(result);
     }
+
+    #endregion
 }

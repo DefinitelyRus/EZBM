@@ -166,7 +166,7 @@ public record DeleteSaleEntryRequest(
 
 #endregion
 
-#region Staff & Attendance
+#region Staff
 
 public record CreateStaffRequest(
     [Required] string Username,
@@ -178,11 +178,6 @@ public record CreateStaffRequest(
     string? Position,
     [Required] Staff.Frequency PayFrequency,
     [Required] float PayRate
-);
-
-public record LogAttendanceRequest(
-    [Required] ulong StaffId,
-    [Required] string ActionType
 );
 
 public record GetStaffRequest(
@@ -215,35 +210,9 @@ public record DeleteStaffRequest(
     [Required] ulong Id
 );
 
-public record CreateAttendanceRequest(
-    [Required] ulong StaffId,
-    [Required] DateTime TimeIn,
-    DateTime? TimeOut
-);
+#endregion
 
-public record GetAttendanceRequest(
-    [Required] ulong Id
-);
-
-public record FindAttendanceRequest(
-    ulong? Id,
-    ulong? StaffId,
-    DateTime? MinTimeIn,
-    DateTime? MaxTimeIn,
-    DateTime? MinTimeOut,
-    DateTime? MaxTimeOut
-);
-
-public record UpdateAttendanceRequest(
-    [Required] ulong Id,
-    ulong? StaffId,
-    DateTime? TimeIn,
-    DateTime? TimeOut
-);
-
-public record DeleteAttendanceRequest(
-    [Required] ulong Id
-);
+#region Payroll
 
 public record CreatePayrollRequest(
     [Required] ulong StaffId,
@@ -274,6 +243,54 @@ public record FindPayrollRequest(
 
 public record DeletePayrollRequest(
     [Required] ulong Id
+);
+
+#endregion
+
+#region Attendance
+
+public record CreateAttendanceRequest(
+    [Required] ulong StaffId,
+    [Required] DateTime TimeIn,
+    DateTime? TimeOut
+);
+
+public record GetAttendanceRequest(
+    [Required] ulong Id
+);
+
+public record FindAttendanceRequest(
+    ulong? Id,
+    ulong? StaffId,
+    DateTime? MinTimeIn,
+    DateTime? MaxTimeIn,
+    DateTime? MinTimeOut,
+    DateTime? MaxTimeOut
+);
+
+public record UpdateAttendanceRequest(
+    [Required] ulong Id,
+    ulong? StaffId,
+    DateTime? TimeIn,
+    DateTime? TimeOut
+);
+
+public record DeleteAttendanceRequest(
+    [Required] ulong Id
+);
+
+public record LogAttendanceRequest(
+    [Required] ulong StaffId,
+    [Required] string ActionType
+);
+
+#endregion
+
+#region Authentication
+
+public record LoginRequest(
+    [Required] string Username,
+    [Required] string Password
 );
 
 #endregion

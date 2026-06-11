@@ -12,6 +12,7 @@ namespace EZBM.DesktopHost.Endpoints;
 /// </summary>
 public static class SalesController
 {
+
     #region Sale Endpoints
 
     /// <summary>
@@ -123,4 +124,5 @@ public static class SalesController
     }
 
     #endregion
+
 }
