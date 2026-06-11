@@ -85,7 +85,39 @@ public static class Utils
 
     #endregion
 
-    #region JSON Helpers
+    #region JSON Handling
+
+    /// <summary>
+    /// Deserializes a JSON string into a dictionary object.
+    /// <br/><br/>
+    /// Example:
+    /// <code>
+    /// var data = Utils.ConvertFromJson("{\"key\":\"value\"}");
+    /// </code>
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    /// <param name="jsonString">The JSON string to parse.</param>
+    public static Dictionary<string, object>? ConvertFromJson(string jsonString)
+    {
+        return JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+    }
+
+    /// <summary>
+    /// Serializes a dictionary object into a JSON string.
+    /// <br/><br/>
+    /// Example:
+    /// <code>
+    /// string json = Utils.ConvertToJson(myDictionary);
+    /// </code>
+    /// <br/><br/>
+    /// <i>Documented by: Google Gemini</i>
+    /// </summary>
+    /// <param name="data">The dictionary data to serialize.</param>
+    public static string ConvertToJson(Dictionary<string, object>? data)
+    {
+        return JsonSerializer.Serialize(data);
+    }
 
     /// <summary>
     /// Safely gets an object as a ulong value.
@@ -212,48 +244,6 @@ public static class Utils
 
         return null;
     }
-
-    #endregion
-
-    #region JSON Handling
-
-    /// <summary>
-    /// Deserializes a JSON string into a dictionary object.
-    /// <br/><br/>
-    /// Example:
-    /// <code>
-    /// var data = Utils.ConvertFromJson("{\"key\":\"value\"}");
-    /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
-    /// </summary>
-    /// <param name="jsonString">The JSON string to parse.</param>
-    public static Dictionary<string, object>? ConvertFromJson(string jsonString)
-    {
-        return JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-    }
-
-    /// <summary>
-    /// Serializes a dictionary object into a JSON string.
-    /// <br/><br/>
-    /// Example:
-    /// <code>
-    /// string json = Utils.ConvertToJson(myDictionary);
-    /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
-    /// </summary>
-    /// <param name="data">The dictionary data to serialize.</param>
-    public static string ConvertToJson(Dictionary<string, object>? data)
-    {
-        return JsonSerializer.Serialize(data);
-    }
-
-    #endregion
-
-    #region Response Result Handling
-
-
 
     #endregion
 
