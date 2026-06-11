@@ -94,6 +94,13 @@ public class Item : Entity
     public List<Tag> Tags { get; set; } = [];
 
     /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+#pragma warning disable CS8618
+    protected Item() { }
+#pragma warning restore CS8618
+
+    /// <summary>
     /// Initializes a new instance of the Item class.
     /// <br/><br/>
     /// <i>Author(s): DefinitelyRus<br/>
