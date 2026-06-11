@@ -251,6 +251,12 @@ public static class Utils
 
     #endregion
 
+    #region Response Result Handling
+
+
+
+    #endregion
+
     #region File Handling
 
     /// <summary>
@@ -334,4 +340,54 @@ public static class Utils
 
     #endregion
 
+    #region Classes, Records, & Enums
+
+    public enum Result
+    {
+        /// <summary>
+        /// Completed with all parameters satisfied and returned expected data.
+        /// </summary>
+        Success,
+
+        /// <summary>
+        /// Results are optional and none were found.
+        /// </summary>
+        Success_NoResults,
+
+        /// <summary>
+        /// Completed the request but with a non-critical issue.
+        /// </summary>
+        Success_Warning,
+
+        /// <summary>
+        /// Results are expected but none were returned.
+        /// </summary>
+        Failed_NoResults,
+
+        /// <summary>
+        /// Could not complete the request due to an invalid query.
+        /// </summary>
+        Failed_InvalidQuery,
+
+        /// <summary>
+        /// Invalid or no user session provided.
+        /// </summary>
+        Failed_Unauthorized,
+
+        /// <summary>
+        /// Could not complete the request due to an unhandled exception.
+        /// </summary>
+        Failed_UnhandledException,
+
+        /// <summary>
+        /// Could not complete the request due to an unknown error.
+        /// </summary>
+        Failed_UnknownError
+    }
+
+    public record RequestResult(Result Type, string? Message);
+
+    public record RequestResult<T>(Result Type, string? Message, T? Data);
+
+    #endregion
 }
