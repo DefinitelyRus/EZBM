@@ -14,7 +14,7 @@ public class Item : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public enum QType { Count, Milligrams, Grams, Kilograms, Ounces, Pounds, Milliliters, Liters, Gallons }
+    public enum Unit { Count, Milligrams, Grams, Kilograms, Ounces, Pounds, Milliliters, Liters, Gallons }
 
     /// <summary>
     /// Categories used to classify the item for filtering or reporting.
@@ -56,14 +56,14 @@ public class Item : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public float Cost { get; set; }
+    public float? Cost { get; set; }
 
     /// <summary>
     /// The price at which the item is sold to customers.
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public float SalePrice { get; set; }
+    public float? SalePrice { get; set; }
 
     /// <summary>
     /// The current amount of stock available.
@@ -77,7 +77,7 @@ public class Item : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public QType UnitOfMeasurement { get; set; }
+    public Unit UnitOfMeasurement { get; set; }
 
     /// <summary>
     /// The date when the item expires, if applicable.
@@ -91,7 +91,7 @@ public class Item : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public List<Tag> Tags { get; protected set; } = [];
+    public List<Tag> Tags { get; set; } = [];
 
     /// <summary>
     /// Initializes a new instance of the Item class.
@@ -113,15 +113,15 @@ public class Item : Entity
     /// <param name="imageUrl">The URL for the item's image.</param>
     public Item(
         ulong id,
-        QType unitOfMeasurement,
+        Unit unitOfMeasurement,
         bool isForSale,
-        float price = 0,
+        float? price = null,
         string? name = null,
         string? description = null,
         List<Tag>? tags = null,
         float quantity = 0,
         DateTime? expirationDate = null,
-        float cost = 0,
+        float? cost = null,
         string? imageUrl = null)
     {
         Id = id;

@@ -1,3 +1,5 @@
+using EZBM.Core.Tools;
+
 namespace EZBM.Core.Entities;
 
 /// <summary>
@@ -14,7 +16,7 @@ public class ItemTransaction : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public enum Type { NewStock, Sale, Damaged_Lost_Expired, Correction }
+    public enum Type { NewStock, Sale, Consumed, Damaged_Lost_Expired, Correction_Sum, Correction_Set }
 
     /// <summary>
     /// The category of this stock movement.
@@ -49,7 +51,7 @@ public class ItemTransaction : Entity
     /// <br/><br/>
     /// <i>Documented by: Google Gemini</i>
     /// </summary>
-    public string? Notes { get; private set; }
+    public string? Note { get; private set; }
 
     /// <summary>
     /// The item associated with this transaction.
@@ -72,31 +74,29 @@ public class ItemTransaction : Entity
     /// Editor(s): Google Antigravity<br/>
     /// Documented by: Google Gemini, Antigravity</i>
     /// </summary>
-    /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="item">The item being tracked.</param>
     /// <param name="transactionType">The type of stock movement.</param>
     /// <param name="saleEntry">Optional reference to a sale record.</param>
     /// <param name="quantity">The amount of stock changed.</param>
     /// <param name="staff">The staff member responsible.</param>
     /// <param name="timestamp">The time of the event.</param>
-    /// <param name="notes">Optional remarks.</param>
+    /// <param name="note">Optional remarks.</param>
     public ItemTransaction(
-        ulong id,
         Item item,
         Type transactionType,
         SaleEntry? saleEntry,
         float quantity,
         Staff staff,
         DateTime timestamp,
-        string? notes = null)
+        string? note = null)
     {
-        Id = id;
+        Id = Utils.GenerateEntityId();
         Item = item;
         TransactionType = transactionType;
         SaleEntry = saleEntry;
         Quantity = quantity;
         Staff = staff;
         Timestamp = timestamp;
-        Notes = notes;
+        Note = note;
     }
 }
