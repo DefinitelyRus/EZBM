@@ -29,6 +29,29 @@ Changes:
 
 ## Logs
 
+### 06/11/2026
+
+Implemented backend API endpoints and supporting database services for staff authentication, inventory management, checkout sales, payroll, and attendance tracking. Unified request/response models and routing structures across the host application.
+
+Changes:
+
+- Created and exposed API controllers for Auth, Inventory, Sales, Attendance, Payroll, and Staff.
+- Implemented asynchronous CRUD and search/filtering operations in the Core services.
+- Added constructor definitions and unique ID generation for the `ItemTransaction` and `SaleEntry` domain entities.
+- Registered endpoints, service dependencies, and configured OpenAPI/Swagger mapping in the WebApplication builder.
+- Introduced `EndpointHelpers` to unify HTTP response formatting from request results.
+- Added comprehensive XML documentation across all newly added endpoints and service methods.
+
+### 06/04/2026
+
+Cleaned up project instructions and updated repository configuration to exclude agent-specific configurations.
+
+Changes:
+
+- Removed agent instructions from the repository.
+- Updated the `.gitignore` rules.
+- Revised the list of actionable prototype micro-tasks in `Actionable Tasks.md`.
+
 ### 06/03/2026
 
 Implemented backend database services for managing staff, inventory, and sales. Updated unique identifiers across all records, added helper functions for reading data, and cleaned up unused components.
@@ -41,7 +64,6 @@ Changes:
 - Removed the obsolete staff management helper class.
 - Switched to strict variable types across the C# projects to ensure safety.
 - Added code documentation and checked off completed items on project lists.
-
 
 ### 06/02/2026
 
