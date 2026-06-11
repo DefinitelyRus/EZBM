@@ -4,16 +4,18 @@
 
 ---
 
-### `feat(api): build authentication endpoints`
+## `feat(api): build authentication endpoints`
 
 **What:** Create the authentication API logic.
 
 **How:**
+
 - Create an `AuthController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost).
 - Find the user record by username using [StaffService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/StaffService.cs).
 - Verify the password in plain text.
 
 **Subtasks:**
+
 - [ ] Create `AuthController.cs` file in the host API project.
 - [ ] Define the `POST /api/auth/login` route handler.
 - [ ] Parse request payload to extract username and password.
@@ -21,6 +23,7 @@
 - [ ] Return staff object (200 OK) if passwords match; return 401 Unauthorized if mismatch/not found.
 
 **Example Request:**
+
 ```json
 {
   "username": "jane_doe",
@@ -29,6 +32,7 @@
 ```
 
 **Example Success Response (200 OK):**
+
 ```json
 {
   "id": 17163019283749,
@@ -40,6 +44,7 @@
 ```
 
 **Example Error Response (401 Unauthorized):**
+
 ```json
 {
   "error": "Invalid username or password."
@@ -47,19 +52,22 @@
 ```
 
 **Complete when:**
+
 - A client login request successfully authenticates and returns user details or a 401 status.
 
 ---
 
-### `feat(api): build inventory endpoints`
+## `feat(api): build inventory endpoints`
 
 **What:** Create endpoints to read and write items.
 
 **How:**
+
 - Create an `InventoryController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost).
 - Use [InventoryService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/InventoryService.cs) to process database operations.
 
 **Subtasks:**
+
 - [ ] Create `InventoryController.cs` in the host API project.
 - [ ] Implement `GET /api/items` endpoint:
   - Call `InventoryService.GetAllItems()` to retrieve the item list.
@@ -71,6 +79,7 @@
   - Return the created item with its new database ID (200 OK) or 400 Bad Request on validation failure.
 
 **Example GET Response (200 OK):**
+
 ```json
 [
   {
@@ -89,6 +98,7 @@
 ```
 
 **Example POST Request:**
+
 ```json
 {
   "name": "Burger Combo",
@@ -104,6 +114,7 @@
 ```
 
 **Example POST Response (200 OK):**
+
 ```json
 {
   "id": 17163019289999,
@@ -120,19 +131,22 @@
 ```
 
 **Complete when:**
+
 - Items can be retrieved and added through the API using a client or Swagger.
 
 ---
 
-### `feat(api): build POS and attendance endpoints`
+## `feat(api): build POS and attendance endpoints`
 
 **What:** Create checkout and attendance endpoints.
 
 **How:**
+
 - Create `SalesController` and `AttendanceController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost).
 - Use [SalesService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/SalesService.cs) and [StaffService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/StaffService.cs) for processing actions.
 
 **Subtasks:**
+
 - [ ] Create `SalesController.cs` and `AttendanceController.cs` in the host API project.
 - [ ] Implement `POST /api/sales` endpoint:
   - Parse the header information to instantiate a `Sale` record via `SalesService.CreateSaleInstance(json, context)`.
@@ -145,6 +159,7 @@
   - Return success (200 OK) with the registered server timestamp.
 
 **Example POST /api/sales Request:**
+
 ```json
 {
   "staffId": 17163019283749,
@@ -167,6 +182,7 @@
 ```
 
 **Example POST /api/sales Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -175,6 +191,7 @@
 ```
 
 **Example POST /api/attendance Request:**
+
 ```json
 {
   "staffId": 17163019283749,
@@ -183,6 +200,7 @@
 ```
 
 **Example POST /api/attendance Response (200 OK):**
+
 ```json
 {
   "success": true,
@@ -191,6 +209,7 @@
 ```
 
 **Complete when:**
+
 - Checking out deducts stock from items, logs transactions, and records the sale in SQLite.
 - Attendance clock actions are saved successfully.
 
@@ -201,11 +220,13 @@
 **What:** Create endpoints to compute metrics for the landing screen.
 
 **How:**
+
 - Create a `DashboardController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost).
 - Calculate total sales and profits for the current day.
 - Fetch all items with a quantity less than 5.
 
 **Subtasks:**
+
 - [ ] Create `DashboardController.cs` in the host API project.
 - [ ] Implement `GET /api/dashboard/summary` endpoint:
   - Query all sales records via `SalesService.GetAllSales()`, filtering for the current calendar date, and sum `TotalAmount` for `todaySales`.
@@ -214,6 +235,7 @@
   - Return the computed dashboard summary payload (200 OK).
 
 **Example Response (200 OK):**
+
 ```json
 {
   "todaySales": 12450.0,
@@ -229,22 +251,26 @@
 ```
 
 **Complete when:**
+
 - The summary endpoint returns correct sums and lists low-stock products.
 
 ---
 
-### `chore(config): setup default settings.json`
+## `chore(config): setup default settings.json`
 
 **What:** Create the default configuration file in the project.
 
 **How:**
+
 - Create `settings.json` in the root workspace directory.
 
 **Subtasks:**
+
 - [ ] Create `settings.json` file in the workspace root directory.
 - [ ] Populate the file with default storefront settings.
 
 **Example Content:**
+
 ```json
 {
   "storeName": "My Store",
@@ -253,23 +279,27 @@
 ```
 
 **Complete when:**
+
 - The configuration file is successfully created in the root directory.
 
 ---
 
-### `init(frontend): bootstrap desktop-first React app`
+## `init(frontend): bootstrap desktop-first React app`
 
 **What:** Initialize the React application directory.
 
 **How:**
+
 - Create the project inside the `Frontend` directory using Vite with React + TypeScript templates.
 - Install Axios.
 
 **Subtasks:**
+
 - [ ] Run Vite project creation tool inside the `Frontend` directory.
 - [ ] Configure `package.json` scripts and run an initial installation.
 - [ ] Install Axios for API communication.
 - [ ] Set up the default dashboard layout and client file setup.
 
 **Complete when:**
+
 - Running `npm run dev` in the frontend folder launches the React app locally.
