@@ -141,12 +141,12 @@
 
 **How:**
 
-- Create `SalesController` and `AttendanceController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost).
+- Create `SalesController` in [EZBM.DesktopHost](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.DesktopHost) and implement attendance/payroll endpoints in `StaffController`.
 - Use [SalesService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/SalesService.cs) and [StaffService](file:///c:/Users/Rus/ALPHA/Projects/Software/EZBM/Backend/EZBM.Core/Services/StaffService.cs) for processing actions.
 
 **Subtasks:**
 
-- [x] Create `SalesController.cs` and `AttendanceController.cs` in the host API project.
+- [x] Create `SalesController.cs` in the host API project and implement attendance/payroll endpoints in `StaffController.cs` (correcting mapping bugs in `Program.cs`).
 - [/] Implement `POST /api/sales` endpoint:
   - Parse the request payload to instantiate a `Sale` record, create `SaleEntry` records, deduct stock, and execute database transactions via `SalesService.CreateSaleAsync(request)`.
   - [ ] **DISCREPANCY/BUG:** Return the success payload containing the generated `saleId` (currently returns an empty 200 OK response on success).
