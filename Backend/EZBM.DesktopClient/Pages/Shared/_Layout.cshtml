@@ -1,0 +1,84 @@
+@using EZBM.DesktopClient.Helpers
+@using EZBM.Core.Entities
+@{
+    Staff? activeStaff = await StateHelper.GetActiveStaffAsync(Context);
+    bool isClockedIn = false;
+    if (activeStaff is not null)
+    {
+        isClockedIn = await StateHelper.IsClockedInAsync(activeStaff.Id);
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - EZBM Testing Platform</title>
+</head>
+<body>
+    <header style="border-bottom: 1px solid #000; padding: 10px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>EZBM Testing Platform</strong>
+            </div>
+            <div>
+                @if (activeStaff is not null)
+                {
+                    <span>Logged in as: <strong>@activeStaff.Username</strong> (@(activeStaff.Position ?? "Staff"))</span>
+                    <span> | </span>
+                    <form method="post" asp-page="/Index" asp-page-handler="ToggleAttendance" style="display: inline;">
+                        <input type="hidden" name="staffId" value="@activeStaff.Id" />
+                        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                        @if (isClockedIn)
+                        {
+                            <button type="submit" style="background-color: #ffcccc; color: #990000; font-weight: bold;">
+                                Clock Out
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" style="background-color: #ccffcc; color: #006600; font-weight: bold;">
+                                Clock In
+                            </button>
+                        }
+                    </form>
+                    <span> | </span>
+                    <form method="post" asp-page="/Login" asp-page-handler="Logout" style="display: inline;">
+                        <button type="submit">Logout</button>
+                    </form>
+                }
+                else
+                {
+                    <span>Not Logged In</span>
+                    <span> | </span>
+                    <a href="/Login">Login Screen</a>
+                }
+            </div>
+        </div>
+    </header>
+
+    <div style="display: flex; min-height: 500px;">
+        <nav style="width: 200px; border-right: 1px solid #000; padding-right: 10px; margin-right: 20px;">
+            <h3>Navigation</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li style="margin-bottom: 10px;"><a href="/">Analytics Dashboard</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Inventory">Inventory Management</a></li>
+                <li style="margin-bottom: 10px;"><a href="/POS">POS Checkout</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Staff">Staff Management</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Logs">Attendance & Payroll Logs</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Login">Login / Session</a></li>
+            </ul>
+        </nav>
+
+        <main style="flex-grow: 1;">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer style="border-top: 1px solid #000; margin-top: 20px; padding: 10px; font-size: 0.8em; text-align: center;">
+        <p>&copy; 2026 - EZBM Testing Platform. Integrated with C# Backend.</p>
+    </footer>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

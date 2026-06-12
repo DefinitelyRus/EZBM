@@ -10,8 +10,8 @@ This directory contains the backend services, business logic, test suites, and d
 | :--- | :--- | :--- |
 | **[EZBM.Core](EZBM.Core/README.md)** | Class Library | The core engine containing data entities, database context, services, and core utilities. |
 | **[EZBM.DesktopHost](EZBM.DesktopHost/README.md)** | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
+| **[EZBM.DesktopClient](EZBM.DesktopClient/README.md)** | Web App (Razor Pages) | The integrated testing platform and local desktop client prototype providing an interactive user interface to run and verify business workflows. |
 | **[EZBM.Tests](EZBM.Tests/README.md)** | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
-| **[TestDb](TestDb/README.md)** | Console App | A minor utility/diagnostic project used to test database creation, configuration, and connectivity independently. |
 
 ---
 
@@ -50,7 +50,24 @@ dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 
 ---
 
-### 3. EZBM.Tests
+### 3. EZBM.DesktopClient
+
+An ASP.NET Core Razor Pages application serving as the integrated testing platform and desktop prototype interface.
+
+* **Features**: Dynamic attendance clock-in/out, operator registration/login state, product inventory management, Point-of-Sale checkouts, payroll verification, and historical logs tracking.
+* **Initialization**: The application automatically runs `DbManager.Initialize()` and seeds the database with exactly 10 distinct, representative entries for each entity.
+
+#### How to Run
+
+To run the local desktop client and serve the pages locally:
+
+```bash
+dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
+```
+
+---
+
+### 4. EZBM.Tests
 
 A console project serving as our integration test suite.
 
@@ -65,18 +82,4 @@ To run endpoint tests and review output:
 cd Backend/EZBM.Tests
 rm results.log # Remove old logs if they exist
 dotnet run --project EZBM.Tests.csproj
-```
-
----
-
-### 4. TestDb
-
-A minimal console application specifically created to isolate and test database lifecycle behavior.
-
-* **Features**: Runs database initialization (`DbManager.Initialize()`) and checks whether the database is successfully created, listing the resolved save directory path.
-
-#### How to Run Diagnostic
-
-```bash
-dotnet run --project Backend/TestDb/TestDb.csproj
 ```

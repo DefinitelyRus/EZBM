@@ -29,6 +29,22 @@ Changes:
 
 ## Logs
 
+### 06/12/2026
+
+Built and integrated a lightweight ASP.NET Core Razor Pages testing client to serve as a desktop console for backend verification. Added a database seeder utility to populate all system entities with diverse mock records, reorganized code structures using region formatting, updated comprehensive project README files, and implemented validation rules to block negative inputs across the client forms (except for payroll modifiers).
+
+Changes:
+
+- Created the `EZBM.DesktopClient` web application project and registered it in the solution file.
+- Designed the main application layout shell featuring employee cookie-based context tracking and a shift attendance toggle.
+- Implemented view pages and page models for Login, Analytics Dashboard, Inventory, POS Checkout, Staff, and Logs.
+- Added client-side real-time filtering for inventory catalog search and local cart logic in the POS workspace.
+- Added a `DataSeeder` helper to automatically populate 10 wildly different entries for all entities when the database is empty.
+- Reorganized members of all desktop client C# source files using region blocks to align with code layout guidelines.
+- Created the project-specific README for the desktop client and updated root and backend-wide README specifications.
+- Implemented numerical value validation constraints in both client-side views and server-side page models of the desktop client to disallow negative numbers (excluding payroll modifier adjustments).
+- Updated the XML documentation for the CartItemDto checkout record to align with code documentation standards.
+
 ### 06/11/2026
 
 Implemented backend API endpoints and supporting database services for staff authentication, inventory management, checkout sales, payroll, and attendance tracking. Unified request/response models and routing structures across the host application.
