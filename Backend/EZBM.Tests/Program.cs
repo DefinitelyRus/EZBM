@@ -1,8 +1,16 @@
 using System.Text;
 
-class Program
+namespace EZBM.Tests;
+
+internal class Program
 {
+    #region Fields
+
     private static readonly StringBuilder resultsBuilder = new();
+
+    #endregion
+
+    #region Main Entry Point
 
     static async Task Main(string[] args)
     {
@@ -39,6 +47,7 @@ class Program
             // 4. SalesController Tests
             await RunSalesTests();
         }
+
         catch (Exception ex)
         {
             resultsBuilder.AppendLine($"### CRITICAL TEST RUN ERROR");
@@ -49,12 +58,29 @@ class Program
         }
 
         // Write Results.md
-        string resultsPath = @"c:\Users\Rus\ALPHA\Projects\Software\EZBM\Backend\Results.md";
+        string? currentDir = AppContext.BaseDirectory;
+        while (currentDir is not null)
+        {
+            if (File.Exists(Path.Combine(currentDir, "EZBM.slnx"))) break;
+            currentDir = Directory.GetParent(currentDir)?.FullName;
+        }
+
+        string resultsDir = currentDir ?? AppContext.BaseDirectory;
+        string resultsPath = Path.Combine(resultsDir, "Results.md");
         await File.WriteAllTextAsync(resultsPath, resultsBuilder.ToString());
         Console.WriteLine($"Tests completed. Results written to {resultsPath}");
     }
 
-    private static void LogResult(string testName, string description, bool success, string details = "")
+    #endregion
+
+    #region Helper Methods
+
+    private static void LogResult(
+        string testName,
+        string description,
+        bool success,
+        string details = ""
+    )
     {
         resultsBuilder.AppendLine($"### {testName}");
         resultsBuilder.AppendLine();
@@ -81,6 +107,10 @@ class Program
         }
         return null;
     }
+
+    #endregion
+
+    #region Test Runners
 
     private static async Task RunStaffTests()
     {
@@ -118,23 +148,31 @@ class Program
         );
         IResult findResult = await StaffController.FindStaff(findRequest);
         ulong staffId = 0;
-        if (findResult is Ok<List<Staff>> okFindList && okFindList.Value != null && okFindList.Value.Count > 0)
+        if (findResult is Ok<List<Staff>> okFindList)
         {
-            staffId = okFindList.Value[0].Id;
+            List<Staff>? staffList = okFindList.Value;
+            if (staffList is not null && staffList.Count > 0)
+            {
+                staffId = staffList[0].Id;
+            }
         }
 
+        Ok<List<Staff>>? okFindListResult = findResult as Ok<List<Staff>>;
+        int staffCount = okFindListResult?.Value?.Count ?? 0;
         LogResult("Find Staff (Success)",
             $"Searched for staff with username 'john_doe'. Found Staff ID: {staffId}.",
             staffId > 0,
-            $"Found {((findResult as Ok<List<Staff>>)?.Value?.Count ?? 0)} records.");
+            $"Found {staffCount} records.");
 
         // GetStaff
         GetStaffRequest getRequest = new(Id: staffId);
         IResult getResult = await StaffController.GetStaff(getRequest);
         int? getStatus = GetStatusCode(getResult);
+        Ok<Staff>? okGetStaffResult = getResult as Ok<Staff>;
+        bool getStaffSuccess = getStatus == 200 && okGetStaffResult?.Value?.Username == "john_doe";
         LogResult("Get Staff (Success)",
             $"Retrieved the staff member with ID {staffId}.",
-            getStatus == 200 && (getResult as Ok<Staff>)?.Value?.Username == "john_doe",
+            getStaffSuccess,
             $"Status: {getStatus}");
 
         // UpdateStaff
@@ -158,7 +196,10 @@ class Program
             $"Status: {updateStatus}");
 
         // Attendance - LogAttendance (In)
-        LogAttendanceRequest clockInRequest = new(StaffId: staffId, ActionType: "In");
+        LogAttendanceRequest clockInRequest = new(
+            StaffId: staffId,
+            ActionType: "In"
+        );
         IResult clockInResult = await StaffController.LogAttendance(clockInRequest);
         int? clockInStatus = GetStatusCode(clockInResult);
 
@@ -195,12 +236,23 @@ class Program
             $"Status: {manualAttendanceStatus}");
 
         // GetAttendance
-        FindAttendanceRequest findAttRequest = new(Id: null, StaffId: staffId, MinTimeIn: null, MaxTimeIn: null, MinTimeOut: null, MaxTimeOut: null);
+        FindAttendanceRequest findAttRequest = new(
+            Id: null,
+            StaffId: staffId,
+            MinTimeIn: null,
+            MaxTimeIn: null,
+            MinTimeOut: null,
+            MaxTimeOut: null
+        );
         IResult findAttResult = await StaffController.FindAttendance(findAttRequest);
         ulong attId = 0;
-        if (findAttResult is Ok<List<Attendance>> okAttList && okAttList.Value != null && okAttList.Value.Count > 0)
+        if (findAttResult is Ok<List<Attendance>> okAttList)
         {
-            attId = okAttList.Value[0].Id;
+            List<Attendance>? attList = okAttList.Value;
+            if (attList is not null && attList.Count > 0)
+            {
+                attId = attList[0].Id;
+            }
         }
 
         GetAttendanceRequest getAttRequest = new(Id: attId);
@@ -257,15 +309,21 @@ class Program
         );
         IResult findPayrollResult = await StaffController.FindPayroll(findPayrollRequest);
         ulong payrollId = 0;
-        if (findPayrollResult is Ok<List<Payroll>> okPayrollList && okPayrollList.Value != null && okPayrollList.Value.Count > 0)
+        if (findPayrollResult is Ok<List<Payroll>> okPayrollList)
         {
-            payrollId = okPayrollList.Value[0].Id;
+            List<Payroll>? payrollList = okPayrollList.Value;
+            if (payrollList is not null && payrollList.Count > 0)
+            {
+                payrollId = payrollList[0].Id;
+            }
         }
 
+        Ok<List<Payroll>>? okPayrollListResult = findPayrollResult as Ok<List<Payroll>>;
+        int payrollCount = okPayrollListResult?.Value?.Count ?? 0;
         LogResult("Find Payroll (Success)",
             $"Searched for payroll records. Found Payroll ID: {payrollId}.",
             payrollId > 0,
-            $"Found {((findPayrollResult as Ok<List<Payroll>>)?.Value?.Count ?? 0)} records.");
+            $"Found {payrollCount} records.");
 
         // GetPayroll
         GetPayrollRequest getPayrollRequest = new(Id: payrollId);
@@ -324,7 +382,10 @@ class Program
         await StaffController.CreateStaff(createRequest);
 
         // Test Login - Success
-        EZBM.DesktopHost.Endpoints.LoginRequest loginSuccessRequest = new(Username: "auth_test_user", Password: "secretPassword");
+        EZBM.DesktopHost.Endpoints.LoginRequest loginSuccessRequest = new(
+            Username: "auth_test_user",
+            Password: "secretPassword"
+        );
         IResult loginSuccessResult = await AuthController.Login(loginSuccessRequest);
         int? loginSuccessStatus = GetStatusCode(loginSuccessResult);
         LogResult("Login (Success Case)",
@@ -333,7 +394,10 @@ class Program
             $"Status: {loginSuccessStatus}");
 
         // Test Login - Invalid Password
-        EZBM.DesktopHost.Endpoints.LoginRequest loginFailRequest = new(Username: "auth_test_user", Password: "wrongPassword");
+        EZBM.DesktopHost.Endpoints.LoginRequest loginFailRequest = new(
+            Username: "auth_test_user",
+            Password: "wrongPassword"
+        );
         IResult loginFailResult = await AuthController.Login(loginFailRequest);
         int? loginFailStatus = GetStatusCode(loginFailResult);
         LogResult("Login (Failure Case - Wrong Password)",
@@ -351,10 +415,14 @@ class Program
             PayFrequency: null
         );
         IResult findResult = await StaffController.FindStaff(findRequest);
-        if (findResult is Ok<List<Staff>> okList && okList.Value != null && okList.Value.Count > 0)
+        if (findResult is Ok<List<Staff>> okList)
         {
-            ulong staffId = okList.Value[0].Id;
-            await StaffController.DeleteStaff(new DeleteStaffRequest(Id: staffId));
+            List<Staff>? staffList = okList.Value;
+            if (staffList is not null && staffList.Count > 0)
+            {
+                ulong staffId = staffList[0].Id;
+                await StaffController.DeleteStaff(new(Id: staffId));
+            }
         }
     }
 
@@ -370,7 +438,7 @@ class Program
             SalePrice: 120f,
             Name: "Burger Combo",
             Description: "Burger with regular fries and drink",
-            Tags: new List<Item.Tag> { Item.Tag.Food },
+            Tags: new() { Item.Tag.Food },
             Quantity: 10f,
             ExpirationDate: null,
             Cost: 80f,
@@ -417,15 +485,21 @@ class Program
         );
         IResult findResult = await InventoryController.FindItems(findRequest);
         ulong itemId = 0;
-        if (findResult is Ok<List<Item>> okList && okList.Value != null && okList.Value.Count > 0)
+        if (findResult is Ok<List<Item>> okList)
         {
-            itemId = okList.Value[0].Id;
+            List<Item>? itemList = okList.Value;
+            if (itemList is not null && itemList.Count > 0)
+            {
+                itemId = itemList[0].Id;
+            }
         }
 
+        Ok<List<Item>>? okItemListResult = findResult as Ok<List<Item>>;
+        int itemCount = okItemListResult?.Value?.Count ?? 0;
         LogResult("Find Items (Success)",
             $"Searched for items matching query. Found Item ID: {itemId}.",
             itemId > 0,
-            $"Found {((findResult as Ok<List<Item>>)?.Value?.Count ?? 0)} records.");
+            $"Found {itemCount} records.");
 
         // GetItem
         GetItemRequest getRequest = new(Id: itemId);
@@ -457,9 +531,18 @@ class Program
             Position: "StockManager"
         );
         await StaffController.CreateStaff(staffReq);
-        FindStaffRequest findStaffReq = new(null, "inv_staff", null, null, null, null);
+
+        FindStaffRequest findStaffReq = new(
+            Id: null,
+            Username: "inv_staff",
+            FirstName: null,
+            LastName: null,
+            Position: null,
+            PayFrequency: null
+        );
         IResult findStaffRes = await StaffController.FindStaff(findStaffReq);
-        ulong staffId = ((findStaffRes as Ok<List<Staff>>)?.Value?[0].Id) ?? 0;
+        Ok<List<Staff>>? okInvStaffRes = findStaffRes as Ok<List<Staff>>;
+        ulong staffId = okInvStaffRes?.Value?[0].Id ?? 0;
 
         // CreateItemTransaction
         CreateItemTransactionRequest txnRequest = new(
@@ -491,15 +574,21 @@ class Program
         );
         IResult findTxnResult = await InventoryController.FindItemTransactions(findTxnRequest);
         ulong txnId = 0;
-        if (findTxnResult is Ok<List<ItemTransaction>> okTxnList && okTxnList.Value != null && okTxnList.Value.Count > 0)
+        if (findTxnResult is Ok<List<ItemTransaction>> okTxnList)
         {
-            txnId = okTxnList.Value[0].Id;
+            List<ItemTransaction>? txnList = okTxnList.Value;
+            if (txnList is not null && txnList.Count > 0)
+            {
+                txnId = txnList[0].Id;
+            }
         }
 
+        Ok<List<ItemTransaction>>? okTxnListResult = findTxnResult as Ok<List<ItemTransaction>>;
+        int txnListCount = okTxnListResult?.Value?.Count ?? 0;
         LogResult("Find Item Transactions (Success)",
             $"Searched for stock transactions. Found Transaction ID: {txnId}.",
             txnId > 0,
-            $"Found {((findTxnResult as Ok<List<ItemTransaction>>)?.Value?.Count ?? 0)} records.");
+            $"Found {txnListCount} records.");
 
         // GetItemTransaction
         GetItemTransactionRequest getTxnRequest = new(Id: txnId);
@@ -529,7 +618,7 @@ class Program
             $"Status: {deleteStatus}");
 
         // Clean up staff
-        await StaffController.DeleteStaff(new DeleteStaffRequest(Id: staffId));
+        await StaffController.DeleteStaff(new(Id: staffId));
     }
 
     private static async Task RunSalesTests()
@@ -550,9 +639,18 @@ class Program
             Position: "Cashier"
         );
         await StaffController.CreateStaff(staffReq);
-        FindStaffRequest findStaffReq = new(null, "sales_staff", null, null, null, null);
+
+        FindStaffRequest findStaffReq = new(
+            Id: null,
+            Username: "sales_staff",
+            FirstName: null,
+            LastName: null,
+            Position: null,
+            PayFrequency: null
+        );
         IResult findStaffRes = await StaffController.FindStaff(findStaffReq);
-        ulong staffId = ((findStaffRes as Ok<List<Staff>>)?.Value?[0].Id) ?? 0;
+        Ok<List<Staff>>? okSalesStaffRes = findStaffRes as Ok<List<Staff>>;
+        ulong staffId = okSalesStaffRes?.Value?[0].Id ?? 0;
 
         CreateItemRequest itemReq = new(
             UnitOfMeasurement: Item.Unit.Count,
@@ -560,16 +658,33 @@ class Program
             SalePrice: 120f,
             Name: "Burger Combo",
             Description: "Burger with regular fries and drink",
-            Tags: new List<Item.Tag> { Item.Tag.Food },
+            Tags: new() { Item.Tag.Food },
             Quantity: 10f,
             ExpirationDate: null,
             Cost: 80f,
             ImageUrl: null
         );
         await InventoryController.CreateItem(itemReq);
-        FindItemRequest findItemReq = new(null, "Burger Combo", null, null, null, null, null, null, null, null, null, null, null, null);
+
+        FindItemRequest findItemReq = new(
+            Id: null,
+            Name: "Burger Combo",
+            Description: null,
+            IsForSale: null,
+            MinCost: null,
+            MaxCost: null,
+            MinSalePrice: null,
+            MaxSalePrice: null,
+            MinQuantity: null,
+            MaxQuantity: null,
+            UnitOfMeasurement: null,
+            MinExpirationDate: null,
+            MaxExpirationDate: null,
+            Tags: null
+        );
         IResult findItemRes = await InventoryController.FindItems(findItemReq);
-        ulong itemId = ((findItemRes as Ok<List<Item>>)?.Value?[0].Id) ?? 0;
+        Ok<List<Item>>? okBurgerItemRes = findItemRes as Ok<List<Item>>;
+        ulong itemId = okBurgerItemRes?.Value?[0].Id ?? 0;
 
         // CreateSale
         CreateSaleRequest createRequest = new(
@@ -577,9 +692,9 @@ class Program
             PaymentMethod: Transaction.PayMethod.Cash,
             TotalAmount: 120f,
             Notes: "Customer checkout",
-            Items: new List<SaleItemRequest>
+            Items: new()
             {
-                new SaleItemRequest(ItemId: itemId, Quantity: 1f, UnitPrice: 120f)
+                new(ItemId: itemId, Quantity: 1f, UnitPrice: 120f)
             }
         );
 
@@ -617,15 +732,21 @@ class Program
         );
         IResult findResult = await SalesController.FindSales(findRequest);
         ulong saleId = 0;
-        if (findResult is Ok<List<Sale>> okList && okList.Value != null && okList.Value.Count > 0)
+        if (findResult is Ok<List<Sale>> okList)
         {
-            saleId = okList.Value[0].Id;
+            List<Sale>? saleList = okList.Value;
+            if (saleList is not null && saleList.Count > 0)
+            {
+                saleId = saleList[0].Id;
+            }
         }
 
+        Ok<List<Sale>>? okSaleListResult = findResult as Ok<List<Sale>>;
+        int saleCount = okSaleListResult?.Value?.Count ?? 0;
         LogResult("Find Sales (Success)",
             $"Searched for sales transactions. Found Sale ID: {saleId}.",
             saleId > 0,
-            $"Found {((findResult as Ok<List<Sale>>)?.Value?.Count ?? 0)} records.");
+            $"Found {saleCount} records.");
 
         // GetSale
         GetSaleRequest getRequest = new(Id: saleId);
@@ -648,15 +769,21 @@ class Program
         );
         IResult findEntryResult = await SalesController.FindSaleEntries(findEntryRequest);
         ulong entryId = 0;
-        if (findEntryResult is Ok<List<SaleEntry>> okEntryList && okEntryList.Value != null && okEntryList.Value.Count > 0)
+        if (findEntryResult is Ok<List<SaleEntry>> okEntryList)
         {
-            entryId = okEntryList.Value[0].Id;
+            List<SaleEntry>? entryList = okEntryList.Value;
+            if (entryList is not null && entryList.Count > 0)
+            {
+                entryId = entryList[0].Id;
+            }
         }
 
+        Ok<List<SaleEntry>>? okEntryListResult = findEntryResult as Ok<List<SaleEntry>>;
+        int entryCount = okEntryListResult?.Value?.Count ?? 0;
         LogResult("Find Sale Entries (Success)",
             $"Searched for sale entry line items. Found Entry ID: {entryId}.",
             entryId > 0,
-            $"Found {((findEntryResult as Ok<List<SaleEntry>>)?.Value?.Count ?? 0)} records.");
+            $"Found {entryCount} records.");
 
         // GetSaleEntry
         GetSaleEntryRequest getEntryRequest = new(Id: entryId);
@@ -686,7 +813,9 @@ class Program
             $"Status: {deleteStatus}");
 
         // Clean up staff and item
-        await InventoryController.DeleteItem(new DeleteItemRequest(Id: itemId));
-        await StaffController.DeleteStaff(new DeleteStaffRequest(Id: staffId));
+        await InventoryController.DeleteItem(new(Id: itemId));
+        await StaffController.DeleteStaff(new(Id: staffId));
     }
+
+    #endregion
 }
