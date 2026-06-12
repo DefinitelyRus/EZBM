@@ -1,0 +1,234 @@
+@page
+@model EZBM.DesktopClient.Pages.POSModel
+@using EZBM.Core.Entities
+@{
+    ViewData["Title"] = "POS Checkout";
+}
+
+<h2>Page 4: Point-of-Sale (POS) Checkout</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+        <strong>Error:</strong> @Model.ErrorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+        <strong>Success:</strong> @Model.SuccessMessage
+    </div>
+}
+
+@if (Model.ActiveStaff is null)
+{
+    <div style="background-color: #ffffcc; border: 1px solid #bbbb00; padding: 15px; margin-bottom: 20px;">
+        <strong>Warning:</strong> You must be <a href="/Login">logged in as an employee</a> to process checkouts. Sales will be recorded under your active session.
+    </div>
+}
+
+<div style="display: flex; gap: 40px; align-items: flex-start;">
+    <!-- Catalog Side (Left) -->
+    <div style="flex: 1; border: 1px solid #000; padding: 15px;">
+        <h3>Available Items for Sale</h3>
+        
+        <div style="margin-bottom: 10px;">
+            <input type="text" id="posSearchInput" placeholder="Search item name..." onkeyup="filterPosCatalog()" style="width: 250px; padding: 5px;" />
+        </div>
+
+        <table border="1" cellpadding="5" cellspacing="0" id="posCatalogTable" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>In Stock</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.CatalogItems)
+                {
+                    <tr>
+                        <td class="pos-item-name"><strong>@item.Name</strong></td>
+                        <td>@((item.SalePrice ?? 0f).ToString("C"))</td>
+                        <td>@item.Quantity @item.UnitOfMeasurement</td>
+                        <td>
+                            @if (item.Quantity > 0 || item.UnitOfMeasurement == Item.Unit.Count)
+                            {
+                                <button type="button" onclick="addToCart(@item.Id, '@item.Name', @(item.SalePrice ?? 0f))">Add to Cart</button>
+                            }
+                            else
+                            {
+                                <span style="color: red;">Out of Stock</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Cart / Checkout Side (Right) -->
+    <div style="width: 380px; border: 1px solid #000; padding: 15px; background-color: #fafafa;">
+        <h3>Shopping Cart</h3>
+        
+        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th>Item</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Rem</th>
+                </tr>
+            </thead>
+            <tbody id="cartTableBody">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #888;">Cart is empty</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 20px;">
+            Total Amount: $<span id="cartTotalText">0.00</span>
+        </div>
+
+        <form method="post" asp-page-handler="Checkout" onsubmit="return confirmCheckout();">
+            <input type="hidden" name="cartJson" id="cartJsonInput" value="" />
+            <input type="hidden" name="totalAmount" id="totalAmountInput" value="0" />
+
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-weight: bold;">Payment Method:</label>
+                <select name="paymentMethod" style="width: 100%; padding: 5px;">
+                    @foreach (Transaction.PayMethod method in Enum.GetValues<Transaction.PayMethod>())
+                    {
+                        <option value="@method">@method</option>
+                    }
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold;">Transaction Notes:</label>
+                <textarea name="notes" placeholder="Optional comments..." style="width: 100%; height: 50px; box-sizing: border-box;"></textarea>
+            </div>
+
+            <button type="submit" id="checkoutBtn" disabled style="width: 100%; font-size: 1.1em; font-weight: bold; padding: 8px;">
+                Complete Checkout
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let cart = [];
+
+        function filterPosCatalog() {
+            let input = document.getElementById("posSearchInput");
+            let filter = input.value.toLowerCase();
+            let table = document.getElementById("posCatalogTable");
+            let rows = table.getElementsByTagName("tr");
+
+            for (let i = 1; i < rows.length; i++) {
+                let nameCell = rows[i].getElementsByClassName("pos-item-name")[0];
+                if (nameCell) {
+                    let txtValue = nameCell.textContent || nameCell.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = "";
+                    } else {
+                        rows[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        function addToCart(itemId, name, price) {
+            let existing = cart.find(i => i.itemId === itemId);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({
+                    itemId: itemId,
+                    name: name,
+                    quantity: 1,
+                    unitPrice: price
+                });
+            }
+            renderCart();
+        }
+
+        function updateQuantity(itemId, qty) {
+            let item = cart.find(i => i.itemId === itemId);
+            if (item) {
+                item.quantity = parseFloat(qty);
+                if (item.quantity <= 0 || isNaN(item.quantity)) {
+                    removeFromCart(itemId);
+                    return;
+                }
+            }
+            renderCart();
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(i => i.itemId !== itemId);
+            renderCart();
+        }
+
+        function renderCart() {
+            let tbody = document.getElementById("cartTableBody");
+            let totalText = document.getElementById("cartTotalText");
+            let cartJsonInput = document.getElementById("cartJsonInput");
+            let totalAmountInput = document.getElementById("totalAmountInput");
+            let checkoutBtn = document.getElementById("checkoutBtn");
+
+            if (cart.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888;">Cart is empty</td></tr>';
+                totalText.innerText = "0.00";
+                cartJsonInput.value = "";
+                totalAmountInput.value = "0";
+                checkoutBtn.disabled = true;
+                return;
+            }
+
+            let html = "";
+            let grandTotal = 0;
+
+            cart.forEach(item => {
+                let rowTotal = item.quantity * item.unitPrice;
+                grandTotal += rowTotal;
+
+                html += `<tr>
+                    <td><strong>${item.name}</strong></td>
+                    <td>
+                        <input type="number" step="0.1" value="${item.quantity}" onchange="updateQuantity(${item.itemId}, this.value)" style="width: 50px;" />
+                    </td>
+                    <td>$${item.unitPrice.toFixed(2)}</td>
+                    <td>$${rowTotal.toFixed(2)}</td>
+                    <td>
+                        <button type="button" onclick="removeFromCart(${item.itemId})" style="color: red; border: none; background: none; cursor: pointer;">X</button>
+                    </td>
+                </tr>`;
+            });
+
+            tbody.innerHTML = html;
+            totalText.innerText = grandTotal.toFixed(2);
+            totalAmountInput.value = grandTotal.toFixed(4);
+            
+            // Format for backend: List<CartItemDto> -> [{itemId, quantity, unitPrice}, ...]
+            let submitData = cart.map(i => ({
+                itemId: i.itemId,
+                quantity: i.quantity,
+                unitPrice: i.unitPrice
+            }));
+            cartJsonInput.value = JSON.stringify(submitData);
+            
+            checkoutBtn.disabled = false;
+        }
+
+        function confirmCheckout() {
+            let total = document.getElementById("cartTotalText").innerText;
+            return confirm("Confirm total checkout amount of $" + total + "?");
+        }
+    </script>
+}
