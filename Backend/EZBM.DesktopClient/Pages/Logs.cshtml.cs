@@ -123,6 +123,24 @@ public class LogsModel : PageModel
         string? notes
     )
     {
+        if (totalHours < 0f)
+        {
+            ErrorMessage = "Total hours cannot be negative.";
+            return RedirectToPage("/Logs", new { tab = "payroll" });
+        }
+
+        if (grossAmount < 0f)
+        {
+            ErrorMessage = "Gross amount cannot be negative.";
+            return RedirectToPage("/Logs", new { tab = "payroll" });
+        }
+
+        if (netAmount < 0f)
+        {
+            ErrorMessage = "Net paid amount cannot be negative.";
+            return RedirectToPage("/Logs", new { tab = "payroll" });
+        }
+
         CreatePayrollRequest request = new(
             StaffId: staffId,
             PeriodStart: periodStart,
