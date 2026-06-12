@@ -153,6 +153,18 @@ public static class DataSeeder
                 email: "jack@ezbm.com",
                 phoneNumber: "555-0110",
                 position: "Marketing Lead"
+            ),
+            new Staff(
+                id: Utils.GenerateEntityId(),
+                username: "teto",
+                payFrequency: Staff.Frequency.Hourly,
+                payRate: 25.00f,
+                password: "teto41",
+                firstName: "Teto",
+                lastName: "Kasane",
+                email: "teto@ezbm.com",
+                phoneNumber: "555-0401",
+                position: "Testing Specialist"
             )
         };
 
