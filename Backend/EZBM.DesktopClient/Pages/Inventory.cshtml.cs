@@ -84,6 +84,24 @@ public class InventoryModel : PageModel
         List<Item.Tag>? tags
     )
     {
+        if (cost.HasValue && cost.Value < 0f)
+        {
+            ErrorMessage = "Cost price cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
+        if (salePrice.HasValue && salePrice.Value < 0f)
+        {
+            ErrorMessage = "Sale price cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
+        if (quantity < 0f)
+        {
+            ErrorMessage = "Stock quantity cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
         CreateItemRequest request = new(
             Name: name,
             Description: description,
@@ -126,6 +144,24 @@ public class InventoryModel : PageModel
         List<Item.Tag>? tags
     )
     {
+        if (cost.HasValue && cost.Value < 0f)
+        {
+            ErrorMessage = "Cost price cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
+        if (salePrice.HasValue && salePrice.Value < 0f)
+        {
+            ErrorMessage = "Sale price cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
+        if (quantity < 0f)
+        {
+            ErrorMessage = "Stock quantity cannot be negative.";
+            return RedirectToPage("/Inventory");
+        }
+
         UpdateItemRequest request = new(
             Id: id,
             Name: name,

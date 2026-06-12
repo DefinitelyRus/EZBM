@@ -84,6 +84,12 @@ public class StaffModel : PageModel
         float payRate
     )
     {
+        if (payRate < 0f)
+        {
+            ErrorMessage = "Pay rate cannot be negative.";
+            return RedirectToPage("/Staff");
+        }
+
         CreateStaffRequest request = new(
             Username: username,
             Password: password,
@@ -125,6 +131,12 @@ public class StaffModel : PageModel
         float payRate
     )
     {
+        if (payRate < 0f)
+        {
+            ErrorMessage = "Pay rate cannot be negative.";
+            return RedirectToPage("/Staff");
+        }
+
         UpdateStaffRequest request = new(
             Id: id,
             Username: username,

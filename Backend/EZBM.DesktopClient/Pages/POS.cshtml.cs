@@ -18,6 +18,8 @@ public class POSModel : PageModel
 
     /// <summary>
     /// Represents an item in the client checkout cart.
+    /// <br/><br/>
+    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public record CartItemDto(
         ulong ItemId,
@@ -127,6 +129,27 @@ public class POSModel : PageModel
             {
                 ErrorMessage = "Cannot checkout: Failed to parse shopping cart items.";
                 return RedirectToPage("/POS");
+            }
+
+            if (totalAmount < 0f)
+            {
+                ErrorMessage = "Cannot checkout: Total amount cannot be negative.";
+                return RedirectToPage("/POS");
+            }
+
+            foreach (CartItemDto item in cartItems)
+            {
+                if (item.Quantity <= 0f)
+                {
+                    ErrorMessage = "Cannot checkout: Item quantity must be greater than zero.";
+                    return RedirectToPage("/POS");
+                }
+
+                if (item.UnitPrice < 0f)
+                {
+                    ErrorMessage = "Cannot checkout: Item unit price cannot be negative.";
+                    return RedirectToPage("/POS");
+                }
             }
 
             List<SaleItemRequest> saleItemsList = cartItems
