@@ -1,0 +1,30 @@
+#alert-button {
+    height: 7rem;
+    padding: 5px 15px;
+
+    pointer-events: none;
+}
+
+#icon {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+
+    align-self: center;
+
+    padding: 0px 15px 0px 0px;
+}
+
+#alert-button p {
+    color: #121212;
+    margin-left: auto;
+}
+
+#alert-button h3 {
+    color: #121212;
+}
+.alert-danger,
+.alert-warning {
+    color: #121212;
+    border: none;
+}

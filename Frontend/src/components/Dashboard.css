@@ -1,0 +1,51 @@
+#dashboard-contents {
+    /* Layout */
+    max-height: 100vh;
+
+    /* Spacing */
+    padding: 20px 20px;
+}
+
+#dashboard-content-left {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+}
+
+#card-container {
+    padding: 0px 0px 20px 0px;
+}
+
+#recents-container {
+    /* Layout */
+    max-height: 100vh;
+    min-width: calc(100vh - 62vh);
+
+    padding: 10px 10px;
+}
+
+#inventory-alerts-container {
+    min-height: calc(100vh - 32vh);
+}
+
+#alerts-container {
+    padding: 15px 15px;
+}
+
+.money-card {
+    width: 34rem;
+    padding: 5px 7px;
+}
+
+/* TEXT */
+#top-text {
+    padding-bottom: 20px;
+}
+
+#inventory-link {
+  margin-left: auto;   
+}
+
+#inventory-link {
+    color: #333333;
+}
