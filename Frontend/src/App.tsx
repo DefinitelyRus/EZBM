@@ -1,6 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
+import Dashboard from './pages/Dashboard';
+import Inventory from './pages/Inventory';
+import Checkout from './pages/Checkout';
+import Staff from './pages/Staff';
+import Attendance_Logs from './pages/Attendance_Logs';
 
 function App() {
   return (
@@ -15,10 +19,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
             <Route path="/dashboard" element={<div><Dashboard/></div>} />
-            <Route path="/inventory" element={<div>This is the Inventory Tab</div>} />
-            <Route path="/pos" element={<div>This is the POS Tab</div>} />
-            <Route path="/staff" element={<div>This is the Staff Tab</div>} />
-            <Route path="/logs" element={<div>This is the Logs Tab</div>} />
+            <Route path="/inventory" element={<div><Inventory/></div>} />
+            <Route path="/pos" element={<div><Checkout/></div>} />
+            <Route path="/staff" element={<div><Staff/></div>} />
+            <Route path="/logs" element={<div><Attendance_Logs/></div>} />
           </Routes>
         </div>
 

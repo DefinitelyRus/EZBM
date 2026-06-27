@@ -1,4 +1,4 @@
-import './Sidebar.css';
+import './sidebar.css';
 import Button from './Button';
 
 import DashboardIcon from '../assets/dashboard.svg?react';

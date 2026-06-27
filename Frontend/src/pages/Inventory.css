@@ -1,0 +1,139 @@
+#inventory-contents {
+    /* Layout */
+    min-height: 100vh;
+    max-height: fit-content;
+
+    /* Spacing */
+    padding: 20px 20px 30px 20px;
+}
+
+#inventory-content-left {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+}
+
+#add-items-container {
+    /* Layout */
+    max-height: fit-content;
+    min-width: calc(100vh - 62vh);
+
+    padding: 10px 10px;
+}
+
+#inventory-content-left .search-bar-container {
+    padding-bottom: 20px;
+}
+
+#item-inputs {
+    padding: 25px 0px;
+}
+
+#add-items-container .form-control, #add-items-container .currency-span {
+    background-color: #FAF4E6;
+    border-color: #121212;
+}
+
+#add-items-container .form-check {
+    padding: 10px 0px 20px 25px;
+}
+
+#add-items-container .date-picker {
+    width: 290px;
+}
+
+#inventory-content-left .form-control {
+    border-color: #121212;
+    border-radius: 5px;
+
+    background-color: #EDE7D9;
+}
+
+/* Button */
+#create-item {
+    /* Layout & Sizing */
+    height: 45px;
+    width: 200px;
+
+    /* Appearance */
+    background-color: #121212;
+    border-radius: 5px;
+    border: none;
+    color: #FAF4E6;
+
+    transition: all 0.3s ease;
+}
+
+#create-item:hover {
+    background-color: #121212;
+    color: #FAF4E6;
+    transform: scale(1.05);
+}
+
+/* Table */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    background: #FAF4E6;
+
+    border: 1px;
+    border-color: #121212;
+}
+
+.inventory-table {
+    padding-top: 10px;
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    border: 1px solid #121212;
+}
+
+.inventory-table th {
+    background-color: #FAF4E6;
+    border-left: 1px solid #121212;
+    padding-left: 10px;
+    color: #121212;
+}
+
+.inventory-table td{
+    border-left: 1px solid #121212;
+    padding-left: 10px;
+}
+
+.inventory-table tbody tr:nth-child(even) {
+    background-color: #FAF4E6;
+    border: 1px solid #121212;
+}
+
+.inventory-table tbody tr:nth-child(odd) {
+    background-color: #EDE7D9;
+    border: 1px solid #121212;
+}
+
+.inventory-table tbody tr:hover {
+    background-color: #121212;
+    color: #E8F0E7;
+    opacity: 0.5;
+}
+
+/* Action Link */
+
+.action-link {
+    text-decoration: underline;
+    cursor: pointer;
+    color: inherit;
+    font-size: 0.9rem;
+}
+
+.action-link:hover {
+    opacity: 0.7;
+}
+
+.edit {
+    color: #8a99b3;
+}
+
+.delete {
+    color: #a54b4b;
+}

@@ -22,10 +22,8 @@
     border: none;
     text-decoration: none;
 
-}
+    transition: all 0.3s ease;
 
-.custom-btn {
-    color: #E7EAEE;
 }
 
 .custom-btn.active {
@@ -34,7 +32,10 @@
 }
 
 .custom-btn:hover {
+    background-color: #FAF4E6;
+    color: #121212;
     opacity: 0.9;
+    transform: scale(1.0);
 }
 
 .custom-btn svg {

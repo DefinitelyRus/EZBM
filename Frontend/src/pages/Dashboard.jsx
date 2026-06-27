@@ -1,25 +1,25 @@
 import './Dashboard.css';
 
-import Alert from './InventoryAlert';
+import Alert from '../components/InventoryAlert';
 
 function Dashboard() {
   return (
     <div id="dashboard-contents" className="d-flex flex-row gap-4">
       <div id="dashboard-content-left" className="d-flex col-9">
-      <div id='top-text'>
+      <div id="top-text">
         <h2>Today's Overview</h2>
         <h4>Welcome back. Here’s what’s happening today</h4>
       </div>
       <div id="card-container" className="d-flex flex-row gap-4" >
         <div className="money-card card" style={{ backgroundColor: '#B7CAEB' }}>
           <div className="card-body d-flex flex-column">
-              <h5 className="card-title">Today's Sales</h5>
+              <h5 className="card-title">Today's Total Sales</h5>
               <h1 className="card-text align-self-center">₱2,439.67</h1>
           </div>
         </div>
         <div className="money-card card" style={{ backgroundColor: '#99AD5E' }}>
           <div className="card-body d-flex flex-column">
-              <h5 className="card-title">Today's Profits</h5>
+              <h5 className="card-title">Today's Total Profits</h5>
               <h1 className="card-text align-self-center">₱1,247.20</h1>
           </div>
         </div>
@@ -33,7 +33,7 @@ function Dashboard() {
           <div id="alerts-container" className="d-flex flex-column gap-2">
               <Alert item="Mousepad" stock="2" />
               <Alert item="Chasis" stock="12" />
-              <Alert item="Headphones" stock="7" />
+              <Alert item="Headphones" stock="15" />
           </div>
         </div>
       </div>

@@ -1,0 +1,14 @@
+#checkout-contents {
+    /* Layout */
+    min-height: 100vh;
+    max-height: fit-content;
+
+    /* Spacing */
+    padding: 20px 20px 30px 20px;
+}
+
+#checkout-content-left {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+}
