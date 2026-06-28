@@ -81,33 +81,45 @@ function Dashboard() {
 
            <div className="table-responsive table-container">
             <table className="inventory-table">
+              <colgroup>
+                <col style={{ width: "22%" }} /> {/* Name */}
+                <col style={{ width: "8%" }} />  {/* For Sale */}
+                <col style={{ width: "10%" }} /> {/* Cost Price */}
+                <col style={{ width: "10%" }} /> {/* Sale Price */}
+                <col style={{ width: "8%" }} />  {/* Quantity */}
+                <col style={{ width: "10%" }} /> {/* Unit */}
+                <col style={{ width: "12%" }} /> {/* Expiration */}
+                <col style={{ width: "12%" }} /> {/* Tags */}
+                <col style={{ width: "8%" }} />  {/* Actions */}
+              </colgroup>
+
               <thead>
                 <tr>
-                <th>Name</th>
-                <th>For<br />Sale?</th>
-                <th>Cost<br />Price</th>
-                <th>Sale<br />Price</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-                <th>Expiration</th>
-                <th>Tags</th>
-                <th>Actions</th>
+                  <th>Name</th>
+                  <th>For<br />Sale?</th>
+                  <th>Cost<br />Price</th>
+                  <th>Sale<br />Price</th>
+                  <th>Quantity</th>
+                  <th>Unit</th>
+                  <th>Expiration</th>
+                  <th>Tags</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
                 {inventoryItems.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.name}</td>
-                    <td>{item.forSale ? "Yes" : "No"}</td>
-                    <td>₱{item.costPrice}</td>
-                    <td>{item.salePrice ? `₱${item.salePrice}` : "-"}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.unit}</td>
-                    <td>{item.expiration}</td>
-                    <td>{item.tags}</td>
+                    <td className="col-left">{item.name}</td>
+                    <td className="col-center">{item.forSale ? "Yes" : "No"}</td>
+                    <td className="col-center">₱{item.costPrice}</td>
+                    <td className="col-center">{item.salePrice ? `₱${item.salePrice}` : "-"}</td>
+                    <td className="col-center">{item.quantity}</td>
+                    <td className="col-left">{item.unit}</td>
+                    <td className="col-left">{item.expiration}</td>
+                    <td className="col-left">{item.tags}</td>
                     <td>
-                      <div className="d-flex flex-direction row">
+                      <div className="d-flex flex-direction row gap-2 col-left">
                         <span className="action-link edit">Edit</span>
                         <span className="action-link delete">Delete</span>
                       </div>
@@ -130,25 +142,42 @@ function Dashboard() {
 
           <div id="item-inputs">
             <div className="input-group mb-3">
-                <input type="text" className="form-control" placeholder="Name" aria-describedby="basic-addon1" />
+                <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Name" 
+                aria-describedby="basic-addon1" />
             </div>
 
             <div className="input-group mb-3">
-                <textarea className="form-control" placeholder="Description" aria-label="With textarea"></textarea>
+                <textarea 
+                className="form-control" 
+                placeholder="Description" 
+                aria-label="With textarea"></textarea>
             </div>
 
             <div className="input-group mb-3">
                 <span className="input-group-text currency-span">₱</span>
-                <input type="text" className="form-control" placeholder="Cost Price" aria-label="Amount (to the nearest dollar)" />
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  placeholder="Cost Price" 
+                  aria-label="Amount (to the nearest peso)" />
             </div>
 
             <div className="input-group mb-3">
                 <span className="input-group-text currency-span">₱</span>
-                <input type="text" className="form-control" placeholder="Sale Price" aria-label="Amount (to the nearest dollar)" />
+                <input type="text" 
+                  className="form-control" 
+                  placeholder="Sale Price" 
+                  aria-label="Amount (to the nearest peso)" />
             </div>
 
             <div className="input-group mb-3">
-                <input type="text" className="form-control" placeholder="Stock Quantity" aria-describedby="basic-addon1" />
+                <input type="text" 
+                  className="form-control" 
+                  placeholder="Stock Quantity" 
+                  aria-describedby="basic-addon1" />
             </div>
 
             <div>

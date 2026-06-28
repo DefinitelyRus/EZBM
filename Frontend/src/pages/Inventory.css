@@ -92,13 +92,12 @@
 .inventory-table th {
     background-color: #FAF4E6;
     border-left: 1px solid #121212;
-    padding-left: 10px;
+    text-align: center;
     color: #121212;
 }
 
 .inventory-table td{
     border-left: 1px solid #121212;
-    padding-left: 10px;
 }
 
 .inventory-table tbody tr:nth-child(even) {
@@ -115,6 +114,14 @@
     background-color: #121212;
     color: #E8F0E7;
     opacity: 0.5;
+}
+
+#inventory-content-left .col-center {
+    text-align: center;
+}
+
+#inventory-content-left .col-left{
+    padding-left: 10px;
 }
 
 /* Action Link */
