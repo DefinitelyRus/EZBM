@@ -1,4 +1,6 @@
 import './Checkout.css';
+import Dropdown from '../components/Dropdown';
+import { dropdownOptions } from "../components/dropdownOptions";
 
 function Checkout() {
   return (
@@ -14,7 +16,27 @@ function Checkout() {
       <div id="recents-container" className="d-flex card" style={{ backgroundColor: '#EDE7D9' }}>
         <div className="card-body">
             <h5>Shopping Cart</h5>
+
+           <div id="item-inputs">
+              <h5>Total Amount:</h5>
+             <div className="dropdown">
+              <Dropdown
+                  title="Payment Methods"
+                  options={dropdownOptions.paymentMethods}
+              />
+            </div>
+
+              <div className="input-group mb-3">
+                  <textarea className="form-control" placeholder="Optional comments..." aria-label="With textarea"></textarea>
+              </div>
+            </div>
         </div>
+         <button
+          id="complete-checkout"
+          className="btn btn-light align-self-center"
+        >
+          Complete Checkout
+        </button>
       </div>
     </div>
   );

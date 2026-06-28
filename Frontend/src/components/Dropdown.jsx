@@ -1,15 +1,7 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-function UnitDropdown() {
-  const [unit, setUnit] = useState('Unit of Measurement');
-
-  const units = [
-    'Kilograms (Kg)',
-    'Packs',
-    'Bottles',
-    'Cartons',
-    'Pieces'
-  ];
+function Dropdown({ title, options }) {
+  const [selected, setSelected] = useState(title);
 
   return (
     <div className="dropdown w-100">
@@ -18,20 +10,20 @@ function UnitDropdown() {
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
-        style={{ backgroundColor: '#121212' }}
+        style={{ backgroundColor: "#121212" }}
       >
-        {unit}
+        {selected}
       </button>
 
       <ul className="dropdown-menu w-100">
-        {units.map((u) => (
-          <li key={u}>
+        {options.map((option) => (
+          <li key={option}>
             <button
               className="dropdown-item"
               type="button"
-              onClick={() => setUnit(u)}
+              onClick={() => setSelected(option)}
             >
-              {u}
+              {option}
             </button>
           </li>
         ))}
@@ -40,4 +32,4 @@ function UnitDropdown() {
   );
 }
 
-export default UnitDropdown;
+export default Dropdown;

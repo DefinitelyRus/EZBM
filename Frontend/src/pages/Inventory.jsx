@@ -1,7 +1,9 @@
 import './Inventory.css';
 
 import React, { useState } from "react";
-import UnitDropdown from '../components/Dropdown';
+import Dropdown from '../components/Dropdown';
+import { dropdownOptions } from "../components/dropdownOptions";
+
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -150,7 +152,10 @@ function Dashboard() {
             </div>
 
             <div>
-              <UnitDropdown />
+              <Dropdown
+                  title="Unit of Measurement"
+                  options={dropdownOptions.units}
+              />
             </div>
 
             <div className="form-check">
