@@ -40,7 +40,7 @@ function Dashboard() {
       </div>
       <div id="recents-container" className="d-flex card" style={{ backgroundColor: '#EDE7D9' }}>
         <div className="card-body">
-          <p>This is a filler thing, we can remove this entirely or put smtg else</p>
+          <h5>Recent Transactions</h5>
         </div>
       </div>
     </div>

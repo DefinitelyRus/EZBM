@@ -75,7 +75,7 @@ function Dashboard() {
           <input
             type="text"
             className="form-control"
-            placeholder="Type in to filter in real time..."
+            placeholder="Type in to filter..."
           />
           </div>
 
@@ -83,27 +83,27 @@ function Dashboard() {
             <table className="inventory-table">
               <colgroup>
                 <col style={{ width: "22%" }} /> {/* Name */}
-                <col style={{ width: "8%" }} />  {/* For Sale */}
-                <col style={{ width: "10%" }} /> {/* Cost Price */}
-                <col style={{ width: "10%" }} /> {/* Sale Price */}
-                <col style={{ width: "8%" }} />  {/* Quantity */}
+                <col style={{ width: "6%" }} />  {/* For Sale */}
+                <col style={{ width: "8%" }} /> {/* Cost Price */}
+                <col style={{ width: "8%" }} /> {/* Sale Price */}
+                <col style={{ width: "10%" }} />  {/* Quantity */}
                 <col style={{ width: "10%" }} /> {/* Unit */}
                 <col style={{ width: "12%" }} /> {/* Expiration */}
                 <col style={{ width: "12%" }} /> {/* Tags */}
-                <col style={{ width: "8%" }} />  {/* Actions */}
+                <col style={{ width: "12%" }} />  {/* Actions */}
               </colgroup>
 
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>For<br />Sale?</th>
-                  <th>Cost<br />Price</th>
-                  <th>Sale<br />Price</th>
-                  <th>Quantity</th>
-                  <th>Unit</th>
-                  <th>Expiration</th>
-                  <th>Tags</th>
-                  <th>Actions</th>
+                  <th className="col-left">Name</th>
+                  <th className="col-center">For<br />Sale?</th>
+                  <th className="col-center">Cost<br />Price</th>
+                  <th className="col-center">Sale<br />Price</th>
+                  <th className="col-center">Quantity</th>
+                  <th className="col-center">Unit</th>
+                  <th className="col-center">Expiration</th>
+                  <th className="col-center">Tags</th>
+                  <th className="col-center">Actions</th>
                 </tr>
               </thead>
 
@@ -118,11 +118,11 @@ function Dashboard() {
                     <td className="col-left">{item.unit}</td>
                     <td className="col-left">{item.expiration}</td>
                     <td className="col-left">{item.tags}</td>
-                    <td>
-                      <div className="d-flex flex-direction row gap-2 col-left">
-                        <span className="action-link edit">Edit</span>
-                        <span className="action-link delete">Delete</span>
-                      </div>
+                    <td className="col-center-btn">
+                        <div className="d-flex flex-direction row gap-1 btn-group">
+                          <button className="edit">Edit</button>
+                          <button className="delete">Delete</button>
+                        </div>
                     </td>
                   </tr>
                 ))}
@@ -153,7 +153,8 @@ function Dashboard() {
                 <textarea 
                 className="form-control" 
                 placeholder="Description" 
-                aria-label="With textarea"></textarea>
+                aria-label="With textarea"
+                style={{ minHeight: "20px" }}></textarea>
             </div>
 
             <div className="input-group mb-3">

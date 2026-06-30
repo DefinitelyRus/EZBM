@@ -1,6 +1,7 @@
 import './sidebar.css';
 import Button from './Button';
 
+import ArrowMenu from '../assets/arrow_menu.svg';
 import DashboardIcon from '../assets/dashboard.svg?react';
 import InventoryIcon from '../assets/inventory.svg?react';
 import CheckoutIcon from '../assets/checkout.svg?react';
@@ -10,7 +11,10 @@ import LogsIcon from '../assets/logs.svg?react';
 function Sidebar() {
   return (
     <div id="side-bar" className="d-flex col-2">
-      <h2 id="user-name" className="fs-2 text">Hello, Red!</h2>
+      <button className="menu-btn">
+        <img src={arrowMenu} alt="Menu" />
+      </button>
+      <h4 id="user-name">Red Sinangote</h4>
 
       <div id="nav-btn-group">
         

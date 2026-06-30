@@ -92,7 +92,6 @@
 .inventory-table th {
     background-color: #FAF4E6;
     border-left: 1px solid #121212;
-    text-align: center;
     color: #121212;
 }
 
@@ -124,23 +123,27 @@
     padding-left: 10px;
 }
 
-/* Action Link */
-
-.action-link {
-    text-decoration: underline;
-    cursor: pointer;
-    color: inherit;
-    font-size: 0.9rem;
+/* Action Buttons*/
+#inventory-content-left .col-center-btn {
+    padding: 5px 0px;
 }
 
-.action-link:hover {
-    opacity: 0.7;
+#inventory-content-left .btn-group {
+    justify-content: center;
 }
 
-.edit {
-    color: #8a99b3;
+#inventory-content-left .edit {
+    width: 70%;
+    border: none;
+    border-radius: 5px;
+    background-color :#8a99b3;
+    color: #EDE7D9;
 }
 
-.delete {
-    color: #a54b4b;
+#inventory-content-left .delete {
+    width: 70%;
+    border: none;
+    border-radius: 5px;
+    background-color :#a54b4b;
+    color: #EDE7D9;
 }
