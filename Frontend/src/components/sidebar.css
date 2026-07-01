@@ -1,0 +1,51 @@
+#side-bar {
+    /* Layout */
+    display: flex;
+    flex-direction: column;
+
+    /* Sizing */
+    min-height: 100vh;
+
+    /* Spacing */
+    padding: 20px 0px 30px 0px;
+
+    /* Appearance */
+    background-color: #121212;
+}
+
+#nav-btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Button */
+#log-out {
+    /* Layout & Sizing */
+    width: 270px;
+
+    /* Spacing */
+    margin-top: auto;
+
+    /* Appearance */
+    background-color: #FAF4E6;
+    border-radius: 5px;
+    color: #121212;
+
+    transition: all 0.3s ease;
+}
+
+#log-out:hover {
+    background-color: #FAF4E6;
+    color: #121212;
+    transform: scale(1.05);
+}
+
+/* Text */
+#user-name {
+    /* Spacing */
+    padding: 20px 0px 25px 20px;
+
+    /* Appearance */
+    color: #E7EAEE;
+}
