@@ -1,0 +1,63 @@
+@page
+@model EZBM.DesktopClient.Pages.SettingsModel
+@{
+    ViewData["Title"] = "Store Settings";
+}
+
+<h2>Page 6: Settings Management</h2>
+
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+        <strong>Error:</strong> @Model.ErrorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+        <strong>Success:</strong> @Model.SuccessMessage
+    </div>
+}
+
+<div style="max-width: 600px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
+    <h3>Edit Storefront Configurations</h3>
+    <form method="post">
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Business / Store Name:</label>
+            <input type="text" asp-for="StoreName" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency Code:</label>
+            <select asp-for="Currency" style="width: 100%; padding: 5px; box-sizing: border-box;">
+                <option value="PHP">PHP - Philippine Peso (₱)</option>
+                <option value="USD">USD - US Dollar ($)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+                <option value="SGD">SGD - Singapore Dollar (S$)</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Warning Threshold:</label>
+            <input type="number" step="1" min="1" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            <small style="color: #666;">Warn on analytics dashboard when items drop below this count.</small>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Written Receipt Requirement Threshold ($):</label>
+            <input type="number" step="0.01" min="0" asp-for="WrittenReceiptThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            <small style="color: #666;">Forces checkouts above this value to print/fill a receipt form.</small>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Grand Opening Date:</label>
+            <input type="datetime-local" asp-for="StoreOpeningDate" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            <small style="color: #666;">Used to determine valid promotion durations (e.g. FREEWEEK opening offsets).</small>
+        </div>
+
+        <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
+            Save Configurations
+        </button>
+    </form>
+</div>

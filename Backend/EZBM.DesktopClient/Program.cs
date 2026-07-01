@@ -5,6 +5,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
 
 WebApplication app = builder.Build();
 
@@ -26,6 +27,29 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+app.Use(async (context, next) =>
+{
+    string? staffIdStr = context.Request.Cookies["ActiveStaffId"];
+    if (ulong.TryParse(staffIdStr, out ulong staffId))
+    {
+        using var db = new AppDbContext();
+        var staff = await db.Staff.FindAsync(staffId);
+        if (staff is not null)
+        {
+            CurrentUserContext.Username = staff.Username;
+        }
+        else
+        {
+            CurrentUserContext.Username = "System";
+        }
+    }
+    else
+    {
+        CurrentUserContext.Username = "System";
+    }
+    await next();
+});
 
 app.UseAuthorization();
 

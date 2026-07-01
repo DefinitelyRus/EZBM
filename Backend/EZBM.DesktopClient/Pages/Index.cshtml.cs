@@ -28,9 +28,14 @@ public class IndexModel : PageModel
     public float TodayProfit { get; set; }
 
     /// <summary>
-    /// List of low stock items (quantity < 5).
+    /// List of low stock items.
     /// </summary>
     public List<Item> LowStockItems { get; set; } = new();
+
+    /// <summary>
+    /// List of recent sales (latest 10 entries).
+    /// </summary>
+    public List<Sale> RecentSales { get; set; } = new();
 
     #endregion
 
@@ -57,8 +62,15 @@ public class IndexModel : PageModel
             e => e.Quantity * (e.UnitPrice - (e.Item.Cost ?? 0f))
         );
 
+        var settings = SettingsService.LoadSettings();
         LowStockItems = await context.Item
-            .Where(i => i.Quantity < 5f)
+            .Where(i => i.Quantity < settings.LowStockThreshold)
+            .ToListAsync();
+
+        RecentSales = await context.Sale
+            .Include(s => s.Staff)
+            .OrderByDescending(s => s.Timestamp)
+            .Take(10)
             .ToListAsync();
     }
 

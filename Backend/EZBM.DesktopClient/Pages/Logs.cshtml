@@ -1,11 +1,13 @@
 @page
 @model EZBM.DesktopClient.Pages.LogsModel
 @{
-    ViewData["Title"] = "Attendance & Payroll Logs";
+    ViewData["Title"] = "System Logs & Records";
     bool isAttendance = Model.ActiveTab == "attendance";
+    bool isPayroll = Model.ActiveTab == "payroll";
+    bool isActions = Model.ActiveTab == "actions";
 }
 
-<h2>Page 6: Shift Attendance & Payroll Logs</h2>
+<h2>Page 6: Shift Attendance, Payroll & Action Audit Logs</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
@@ -22,12 +24,15 @@
 }
 
 <!-- Tab Headers -->
-<div style="margin-bottom: 20px;">
+<div style="margin-bottom: 20px; display: flex; gap: 0;">
     <a href="/Logs?tab=attendance" style="padding: 10px; font-weight: @(isAttendance ? "bold" : "normal"); border: 1px solid #000; background-color: @(isAttendance ? "#eee" : "#fff"); text-decoration: none;">
         Attendance Ledger
     </a>
-    <a href="/Logs?tab=payroll" style="padding: 10px; font-weight: @(!isAttendance ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(!isAttendance ? "#eee" : "#fff"); text-decoration: none;">
+    <a href="/Logs?tab=payroll" style="padding: 10px; font-weight: @(isPayroll ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isPayroll ? "#eee" : "#fff"); text-decoration: none;">
         Payroll Records
+    </a>
+    <a href="/Logs?tab=actions" style="padding: 10px; font-weight: @(isActions ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isActions ? "#eee" : "#fff"); text-decoration: none;">
+        Action Audit Logs
     </a>
 </div>
 
@@ -94,11 +99,11 @@
                     <input type="datetime-local" name="timeOut" style="width: 100%;" />
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold;">Save Log</button>
+                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer;">Save Log</button>
             </form>
         </div>
     }
-    else
+    else if (isPayroll)
     {
         <!-- Payroll Tab Content -->
         <div style="flex-grow: 1;">
@@ -112,7 +117,7 @@
                         <th>Period End</th>
                         <th>Hours</th>
                         <th>Gross Pay</th>
-                        <th>Modifiers</th>
+                        <th>Upgrade Comm.</th>
                         <th>Net Paid</th>
                         <th>Pay Date</th>
                         <th>Notes</th>
@@ -148,10 +153,10 @@
         <!-- Add Payroll Entry -->
         <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
             <h3>Log Payroll Payment</h3>
-            <form method="post" asp-page-handler="CreatePayroll">
+            <form method="post" asp-page-handler="CreatePayroll" id="payrollForm">
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Employee:</label>
-                    <select name="staffId" style="width: 100%;" required>
+                    <select name="staffId" id="payStaffId" style="width: 100%;" required>
                         @foreach (var staff in Model.StaffList)
                         {
                             <option value="@staff.Id">@staff.Username</option>
@@ -161,32 +166,39 @@
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Period Start:</label>
-                    <input type="date" name="periodStart" required style="width: 100%;" />
+                    <input type="date" name="periodStart" id="payPeriodStart" required style="width: 100%;" />
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Period End:</label>
-                    <input type="date" name="periodEnd" required style="width: 100%;" />
+                    <input type="date" name="periodEnd" id="payPeriodEnd" required style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <button type="button" onclick="autoCalculatePayroll()" style="background-color: #007bff; color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer; width: 100%;">
+                        ⚡ Auto-Calculate Stats
+                    </button>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Total Hours:</label>
-                    <input type="number" step="0.1" min="0" name="totalHours" required style="width: 100%;" />
+                    <input type="number" step="0.1" min="0" name="totalHours" id="payTotalHours" required style="width: 100%;" />
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Gross Amount ($):</label>
-                    <input type="number" step="0.01" min="0" name="grossAmount" required style="width: 100%;" />
+                    <input type="number" step="0.01" min="0" name="grossAmount" id="payGrossAmount" required style="width: 100%;" />
                 </div>
 
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Modifiers/Deductions ($):</label>
-                    <input type="number" step="0.01" name="modifiers" value="0.00" required style="width: 100%;" />
+                    <label style="display: block; font-weight: bold;">Upgrade Commissions ($):</label>
+                    <input type="number" step="0.01" name="modifiers" id="payModifiers" value="0.00" required style="width: 100%;" />
+                    <small style="color: #666;">Automatically subtracts lower tier values already paid.</small>
                 </div>
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Net Paid ($):</label>
-                    <input type="number" step="0.01" min="0" name="netAmount" required style="width: 100%;" />
+                    <input type="number" step="0.01" min="0" name="netAmount" id="payNetAmount" required style="width: 100%;" />
                 </div>
 
                 <div style="margin-bottom: 10px;">
@@ -196,11 +208,76 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; font-weight: bold;">Notes:</label>
-                    <input type="text" name="notes" placeholder="e.g. Regular monthly pay" style="width: 100%;" />
+                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Regular monthly pay" style="width: 100%;" />
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold;">Log Payment</button>
+                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer; width: 100%;">Log Payment</button>
             </form>
         </div>
     }
+    else if (isActions)
+    {
+        <!-- Action Audit Logs Tab -->
+        <div style="flex-grow: 1;">
+            <h3>System Action Audit Logs</h3>
+            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th>Timestamp (UTC)</th>
+                        <th>Action Type</th>
+                        <th>Operator</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var log in Model.ActionLogs)
+                    {
+                        <tr>
+                            <td>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td><span style="font-weight: bold;">@log.ActionType</span></td>
+                            <td><strong>@log.OperatorUsername</strong></td>
+                            <td>@log.Details</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    @if (isPayroll)
+    {
+        <script>
+            async function autoCalculatePayroll() {
+                let staffId = document.getElementById("payStaffId").value;
+                let start = document.getElementById("payPeriodStart").value;
+                let end = document.getElementById("payPeriodEnd").value;
+
+                if (!staffId || !start || !end) {
+                    alert("Please select Employee, Period Start, and Period End first.");
+                    return;
+                }
+
+                try {
+                    let url = `/Logs?handler=CalculatePayrollStats&staffId=${staffId}&periodStart=${start}&periodEnd=${end}`;
+                    let response = await fetch(url);
+                    let result = await response.json();
+
+                    if (result.success) {
+                        document.getElementById("payTotalHours").value = result.totalHours;
+                        document.getElementById("payGrossAmount").value = result.grossAmount;
+                        document.getElementById("payModifiers").value = result.commission;
+                        document.getElementById("payNetAmount").value = result.netAmount;
+                        document.getElementById("payNotes").value = `Includes $${result.commission.toFixed(2)} Net Upgrade Commission modifiers`;
+                        alert("Calculations computed! Form populated.");
+                    } else {
+                        alert("Failed to compute payroll stats: " + result.message);
+                    }
+                } catch (e) {
+                    alert("Network error: " + e.message);
+                }
+            }
+        </script>
+    }
+}

@@ -19,7 +19,7 @@
     <header style="border-bottom: 1px solid #000; padding: 10px; margin-bottom: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <strong>EZBM Testing Platform</strong>
+                <strong>@(EZBM.Core.Services.SettingsService.LoadSettings().StoreName) Testing Platform</strong>
             </div>
             <div>
                 @if (activeStaff is not null)
@@ -66,6 +66,7 @@
                 <li style="margin-bottom: 10px;"><a href="/POS">POS Checkout</a></li>
                 <li style="margin-bottom: 10px;"><a href="/Staff">Staff Management</a></li>
                 <li style="margin-bottom: 10px;"><a href="/Logs">Attendance & Payroll Logs</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Settings">Store Settings</a></li>
                 <li style="margin-bottom: 10px;"><a href="/Login">Login / Session</a></li>
             </ul>
         </nav>

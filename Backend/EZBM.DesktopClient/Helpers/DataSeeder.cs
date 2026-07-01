@@ -165,6 +165,8 @@ public static class DataSeeder
             )
         ];
 
+        staffMembers[0].RfidCardId = "alice_card";
+        staffMembers[10].RfidCardId = "teto_card";
         context.Staff.AddRange(staffMembers);
         context.SaveChanges();
 
@@ -293,6 +295,11 @@ public static class DataSeeder
             )
         ];
 
+        itemsList[0].Barcode = "1234";
+        itemsList[1].Barcode = "5678";
+        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 100f, "Silver Upgrade", "Silver membership upgrade tier", null, 9999f, null, 0f, null, "silver_code"));
+        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 250f, "Gold Upgrade", "Gold membership upgrade tier", null, 9999f, null, 0f, null, "gold_code"));
+        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 500f, "Platinum Upgrade", "Platinum membership upgrade tier", null, 9999f, null, 0f, null, "platinum_code"));
         context.Item.AddRange(itemsList);
         context.SaveChanges();
 
@@ -635,6 +642,15 @@ public static class DataSeeder
         ];
 
         context.ItemTransaction.AddRange(itemTransactions);
+        context.SaveChanges();
+
+        // Seed Customer
+        Customer customer = new(Utils.GenerateEntityId(), "John", "Doe", "555-0202", "john.doe@example.com")
+        {
+            RfidCardId = "john_customer_card",
+            ExpirationDate = DateTime.UtcNow.AddDays(30)
+        };
+        context.Customer.Add(customer);
         context.SaveChanges();
     }
 
