@@ -10,16 +10,12 @@ namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for Point-of-Sale checkout interface.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class POSModel : PageModel
 {
 
     /// <summary>
     /// Represents an item in the client checkout cart.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public record CartItemDto(
         ulong ItemId,
@@ -57,8 +53,6 @@ public class POSModel : PageModel
 
     /// <summary>
     /// Handles GET request to load catalog and employee context.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync()
     {
@@ -89,8 +83,6 @@ public class POSModel : PageModel
 
     /// <summary>
     /// Handles checkout submission from the cart form.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCheckoutAsync(
         Transaction.PayMethod paymentMethod,

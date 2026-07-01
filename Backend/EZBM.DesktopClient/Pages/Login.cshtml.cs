@@ -8,8 +8,6 @@ namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for the login screen.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class LoginModel : PageModel
 {
@@ -44,8 +42,6 @@ public class LoginModel : PageModel
 
     /// <summary>
     /// Handles GET requests for the Login page.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public void OnGet()
     {
@@ -54,8 +50,6 @@ public class LoginModel : PageModel
 
     /// <summary>
     /// Handles login submission and sets user context.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostAsync()
     {
@@ -95,8 +89,6 @@ public class LoginModel : PageModel
 
     /// <summary>
     /// Handles logout requests by clearing the login cookie.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public IActionResult OnPostLogout()
     {

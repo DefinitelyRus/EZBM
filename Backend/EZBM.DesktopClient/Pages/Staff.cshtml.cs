@@ -8,8 +8,6 @@ namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for the staff directory and profile configuration.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class StaffModel : PageModel
 {
@@ -44,8 +42,6 @@ public class StaffModel : PageModel
 
     /// <summary>
     /// Handles GET request for listing staff and setting up edit mode.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync(
         string? action,
@@ -69,8 +65,6 @@ public class StaffModel : PageModel
 
     /// <summary>
     /// Handles creating a new staff member profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCreateAsync(
         string username,
@@ -115,8 +109,6 @@ public class StaffModel : PageModel
 
     /// <summary>
     /// Handles updating an existing staff member's profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostUpdateAsync(
         ulong id,
@@ -163,8 +155,6 @@ public class StaffModel : PageModel
 
     /// <summary>
     /// Handles deleting a staff profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostDeleteAsync(
         ulong id

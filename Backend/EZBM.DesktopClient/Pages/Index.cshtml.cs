@@ -11,8 +11,6 @@ namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for the analytics dashboard (home screen).
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class IndexModel : PageModel
 {
@@ -40,8 +38,6 @@ public class IndexModel : PageModel
 
     /// <summary>
     /// Handles GET request to fetch daily performance metrics and low stock alerts.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync()
     {
@@ -69,8 +65,6 @@ public class IndexModel : PageModel
 
     /// <summary>
     /// Handles POST request to toggle employee attendance clock-in/out.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostToggleAttendanceAsync(
         ulong staffId,

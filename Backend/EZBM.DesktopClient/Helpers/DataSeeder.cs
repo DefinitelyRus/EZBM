@@ -1,17 +1,11 @@
 using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Tools;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace EZBM.DesktopClient.Helpers;
 
 /// <summary>
 /// Seeds the SQLite database with 10 wildly different, realistic entries for all entities.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class DataSeeder
 {
@@ -20,20 +14,23 @@ public static class DataSeeder
 
     /// <summary>
     /// Resets the database and populates 10 distinct records for all system entities.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public static void Seed()
     {
+        // Clear active SQLite database connections
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
         using AppDbContext context = new();
 
-        // Clear existing tables to ensure clean slate of exactly 10 entries
+        // Clear existing tables
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        // 1. Generate 10 Staff Members (Wildly different roles, rates, frequencies)
-        List<Staff> staffMembers = new()
-        {
+        // Generate 10 Staff Members
+        List<Staff> staffMembers =
+        [
             new Staff(
                 id: Utils.GenerateEntityId(),
                 username: "cashier_alice",
@@ -166,14 +163,14 @@ public static class DataSeeder
                 phoneNumber: "555-0401",
                 position: "Testing Specialist"
             )
-        };
+        ];
 
         context.Staff.AddRange(staffMembers);
         context.SaveChanges();
 
-        // 2. Generate 10 Items (Varying physical goods, services, unit measurements, tags)
-        List<Item> itemsList = new()
-        {
+        // Generate 10 Items
+        List<Item> itemsList =
+        [
             new Item(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
@@ -181,7 +178,7 @@ public static class DataSeeder
                 price: 0.99f,
                 name: "Fresh Red Apple",
                 description: "Sweet organic gala apple",
-                tags: new List<Item.Tag> { Item.Tag.Food, Item.Tag.Consumable },
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 120.0f,
                 expirationDate: DateTime.UtcNow.AddDays(14),
                 cost: 0.25f
@@ -193,7 +190,7 @@ public static class DataSeeder
                 price: 8.49f,
                 name: "Herbal Essence Shampoo",
                 description: "Moisturizing hair shampoo, 400ml",
-                tags: new List<Item.Tag> { Item.Tag.Hygiene, Item.Tag.Consumable },
+                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 35.0f,
                 expirationDate: null,
                 cost: 3.10f
@@ -205,7 +202,7 @@ public static class DataSeeder
                 price: 2.80f,
                 name: "Whole Wheat Flour",
                 description: "Stoneground organic wheat flour",
-                tags: new List<Item.Tag> { Item.Tag.Food, Item.Tag.Consumable },
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 75.0f,
                 expirationDate: DateTime.UtcNow.AddMonths(6),
                 cost: 1.05f
@@ -217,7 +214,7 @@ public static class DataSeeder
                 price: 1.95f,
                 name: "Organic Whole Milk",
                 description: "Pasteurized farm fresh milk",
-                tags: new List<Item.Tag> { Item.Tag.Food, Item.Tag.Consumable },
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 3.0f, // Low Stock!
                 expirationDate: DateTime.UtcNow.AddDays(5),
                 cost: 0.80f
@@ -229,7 +226,7 @@ public static class DataSeeder
                 price: 1.50f,
                 name: "Recycled Paper Towels",
                 description: "Eco-friendly 2-ply kitchen paper towel roll",
-                tags: new List<Item.Tag> { Item.Tag.Consumable },
+                tags: [Item.Tag.Consumable],
                 quantity: 110.0f,
                 expirationDate: null,
                 cost: 0.45f
@@ -241,7 +238,7 @@ public static class DataSeeder
                 price: 2.00f,
                 name: "Cotton Shopping Bag",
                 description: "Reusable organic cotton tote bag",
-                tags: new List<Item.Tag> { Item.Tag.Reusable },
+                tags: [Item.Tag.Reusable],
                 quantity: 250.0f,
                 expirationDate: null,
                 cost: 0.60f
@@ -253,7 +250,7 @@ public static class DataSeeder
                 price: 0.04f,
                 name: "Extra Virgin Olive Oil",
                 description: "Cold-pressed Greek olive oil, sold per ml",
-                tags: new List<Item.Tag> { Item.Tag.Food, Item.Tag.Consumable },
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 8000.0f,
                 expirationDate: DateTime.UtcNow.AddYears(1),
                 cost: 0.015f
@@ -265,7 +262,7 @@ public static class DataSeeder
                 price: 13.99f,
                 name: "Premium Beef Ribeye",
                 description: "USDA Choice ribeye steak",
-                tags: new List<Item.Tag> { Item.Tag.Food, Item.Tag.Consumable },
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 2.0f, // Low Stock!
                 expirationDate: DateTime.UtcNow.AddDays(3),
                 cost: 6.50f
@@ -277,7 +274,7 @@ public static class DataSeeder
                 price: 3.50f,
                 name: "Antibacterial Dish Soap",
                 description: "Lemon scent liquid soap, 500ml",
-                tags: new List<Item.Tag> { Item.Tag.Hygiene, Item.Tag.Consumable },
+                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 1.0f, // Low Stock!
                 expirationDate: null,
                 cost: 1.20f
@@ -289,20 +286,20 @@ public static class DataSeeder
                 price: null,
                 name: "Industrial Cleaning Alcohol",
                 description: "99% Isopropyl alcohol for store sanitization only",
-                tags: new List<Item.Tag> { Item.Tag.Consumable },
+                tags: [Item.Tag.Consumable],
                 quantity: 25.0f,
                 expirationDate: null,
                 cost: 8.00f
             )
-        };
+        ];
 
         context.Item.AddRange(itemsList);
         context.SaveChanges();
 
-        // 3. Generate 10 Attendances (Varying check-ins, check-outs, shifts)
+        // Generate 10 Attendances
         DateTime baseTime = DateTime.UtcNow.Date.AddDays(-5);
-        List<Attendance> attendances = new()
-        {
+        List<Attendance> attendances =
+        [
             new Attendance(
                 id: Utils.GenerateEntityId(),
                 staff: staffMembers[0],
@@ -349,9 +346,8 @@ public static class DataSeeder
                 id: Utils.GenerateEntityId(),
                 staff: staffMembers[0],
                 timeIn: baseTime.AddDays(4).AddHours(8),
-                timeOut: baseTime.AddDays(4).AddHours(12) // 4 hour half shift
+                timeOut: baseTime.AddDays(4).AddHours(12)
             ),
-            // Currently active clock-ins (no timeOut)
             new Attendance(
                 id: Utils.GenerateEntityId(),
                 staff: staffMembers[0],
@@ -364,14 +360,14 @@ public static class DataSeeder
                 timeIn: DateTime.UtcNow.AddHours(-4),
                 timeOut: null
             )
-        };
+        ];
 
         context.Attendance.AddRange(attendances);
         context.SaveChanges();
 
-        // 4. Generate 10 Payroll payments
-        List<Payroll> payrolls = new()
-        {
+        // Generate 10 Payroll payments
+        List<Payroll> payrolls =
+        [
             new Payroll(
                 id: Utils.GenerateEntityId(),
                 staff: staffMembers[0],
@@ -379,7 +375,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 160.0f,
                 grossAmount: 2480.00f,
-                modifiers: -150.00f, // Tax deduction
+                modifiers: -150.00f,
                 netAmount: 2330.00f,
                 payDate: baseTime.AddDays(1),
                 notes: "Regular hourly salary"
@@ -391,7 +387,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 160.0f,
                 grossAmount: 4500.00f,
-                modifiers: 200.00f, // Store performance bonus
+                modifiers: 200.00f,
                 netAmount: 4700.00f,
                 payDate: baseTime.AddDays(1),
                 notes: "Monthly salary + bonus"
@@ -415,7 +411,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 48.0f,
                 grossAmount: 840.00f,
-                modifiers: 50.00f, // Night shift bonus
+                modifiers: 50.00f,
                 netAmount: 890.00f,
                 payDate: baseTime.AddDays(2),
                 notes: "Security shift pay"
@@ -427,7 +423,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 155.0f,
                 grossAmount: 2945.00f,
-                modifiers: -80.00f, // Uniform deduction
+                modifiers: -80.00f,
                 netAmount: 2865.00f,
                 payDate: baseTime.AddDays(1),
                 notes: "Chef monthly pay"
@@ -439,7 +435,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 160.0f,
                 grossAmount: 5000.00f,
-                modifiers: -450.00f, // Tax withholding
+                modifiers: -450.00f,
                 netAmount: 4550.00f,
                 payDate: baseTime.AddDays(1),
                 notes: "Senior account monthly wage"
@@ -451,7 +447,7 @@ public static class DataSeeder
                 periodEnd: baseTime,
                 totalHours: 85.0f,
                 grossAmount: 1466.25f,
-                modifiers: 120.00f, // Overtime fuel reimbursement
+                modifiers: 120.00f,
                 netAmount: 1586.25f,
                 payDate: baseTime.AddDays(2),
                 notes: "Biweekly delivery pay"
@@ -492,20 +488,20 @@ public static class DataSeeder
                 payDate: baseTime.AddDays(1),
                 notes: "CEO executive salary"
             )
-        };
+        ];
 
         context.Payroll.AddRange(payrolls);
         context.SaveChanges();
 
-        // 5. Generate 10 Sales & SaleEntries (Diverse items, quantities, pay methods)
-        List<Sale> sales = new();
-        List<SaleEntry> saleEntries = new();
+        // Generate 10 Sales & SaleEntries
+        List<Sale> sales = [];
+        List<SaleEntry> saleEntries = [];
 
         for (int i = 0; i < 10; i++)
         {
             DateTime saleTime = DateTime.UtcNow.AddDays(-i).AddHours(-2);
             int invoiceNum = Utils.GenerateInvoiceNumber(saleTime);
-            
+
             // Generate total amount dynamically based on item index
             Item selectedItem = itemsList[i];
             float quantity = 2.0f;
@@ -532,7 +528,6 @@ public static class DataSeeder
                 subtotal: total
             );
 
-            // Deduct stock quantity to reflect sale in DB
             selectedItem.Quantity -= quantity;
 
             sales.Add(sale);
@@ -543,9 +538,9 @@ public static class DataSeeder
         context.SaleEntry.AddRange(saleEntries);
         context.SaveChanges();
 
-        // 6. Generate 10 ItemTransactions (Stock movements logs)
-        List<ItemTransaction> itemTransactions = new()
-        {
+        // Generate 10 ItemTransactions
+        List<ItemTransaction> itemTransactions =
+        [
             new ItemTransaction(
                 item: itemsList[0],
                 transactionType: ItemTransaction.Type.NewStock,
@@ -591,7 +586,7 @@ public static class DataSeeder
                 timestamp: baseTime.AddDays(3),
                 note: "Paper towels used for storefront cleaning"
             ),
-            // Stock transactions representing the POS sales
+
             new ItemTransaction(
                 item: itemsList[0],
                 transactionType: ItemTransaction.Type.Sale,
@@ -637,7 +632,7 @@ public static class DataSeeder
                 timestamp: sales[4].Timestamp,
                 note: $"Sold in Invoice {sales[4].InvoiceId}"
             )
-        };
+        ];
 
         context.ItemTransaction.AddRange(itemTransactions);
         context.SaveChanges();

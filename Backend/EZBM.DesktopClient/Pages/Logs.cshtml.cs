@@ -8,8 +8,6 @@ namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for shift attendance logs and payroll records.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class LogsModel : PageModel
 {
@@ -54,8 +52,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles GET request to fetch logs and staff options.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync(
         string? tab
@@ -80,8 +76,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles manual creation of attendance records.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCreateAttendanceAsync(
         ulong staffId,
@@ -108,8 +102,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles manual creation of payroll logs.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCreatePayrollAsync(
         ulong staffId,
@@ -166,8 +158,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles deleting an attendance record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostDeleteAttendanceAsync(
         ulong id
@@ -187,8 +177,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles deleting a payroll record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostDeletePayrollAsync(
         ulong id
