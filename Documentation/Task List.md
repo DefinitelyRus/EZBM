@@ -39,3 +39,7 @@
 | | Front-end | Design default landing view with large metric cards | Todo |
 | | Front-end | Build Alerts Box for low-stock items | Todo |
 | | Front-end | Display "No current alerts" if sufficiently stocked | Todo |
+
+## User-created tasks
+
+- Remove all in-code comments (but not XML documentation comments) in all files

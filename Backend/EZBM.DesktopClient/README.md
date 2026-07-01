@@ -23,12 +23,14 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
 ## Data Initialization & Seeding
 
 On application startup, the entry point performs the following operations:
+
 1. Automatically runs `DbManager.Initialize()` to ensure the SQLite schema is active.
 2. Invokes `DataSeeder.Seed()` to populate the database with exactly 10 distinct mock records for each entity if they are not already present.
 
 ### Default Test Credentials
 
 For testing and verification purposes, the database is seeded with a default test operator account:
+
 * **Username:** `teto`
 * **Password:** `teto41`
 

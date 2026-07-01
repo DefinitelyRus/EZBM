@@ -114,12 +114,28 @@ Here, the user will be asked:
 - The customer's payment method (dropdown, cash by default)
 - How much they're paying (auto-filled to exact if non-cash, exact if empty)
 - Additional remarks (optional)
+- Whether to show a receipt (checkbox)
+
+If the total is PHP 500.00 or higher (currency and amount configurable in admin settings), the checkbox will be pre-checked and a notice will appear above the "Confirm Sale" button. "Note: Written receipts MUST be issued for purchases totaling PHP 500.00 or higher."
+
+#### Receipt Modal
+
+The receipt will be a modal that displays the following information:
+
+- Item name
+- Item quantity
+- Item subtotal
+- Total price
+- Date and time of the transaction
+- Payment method
+- Amount paid
+- Change to give
 
 Display the change to give (if any) on a separate line.
 
 Clicking the "Confirm Sale" button will clear the cart, save the transaction to the database, and display the receipt containing info needed for a physical written receipt (items, quanities, subtotals, total, date, time, etc.)
 
-If the total is PHP 500.00 or higher, display the following message on the checkout modal above the "Confirm Sale" button and in the bottom of the receipt modal: "Note: Written receipts MUST be issued for purchases totaling PHP 500.00 or higher."
+If the total is PHP 500.00 or higher, the "Confirm Sale" button will be locked for 10 seconds (configurable in admin settings) and a countdown timer will appear in the "Confirm Sale" text, counting down to when the button will be unlocked (i.e., "Confirm Sale (10s)").
 
 ### Analytics
 
@@ -129,7 +145,64 @@ The analytics tab will display a dashboard with charts and graphs of sales, prof
 
 ### Payroll
 
-*To plan later...*
+The payroll tab will display a scrollable list of staff members, each with their total hours worked for the current pay period, total pay for the current pay period, and an "Edit" button.
+
+The list will be sortable and filterable by:
+
+- (All staff properties)
+- Total hours worked (current pay period)
+- Total pay (current pay period)
+
+The bottom of the page will have a footer displaying the total pay for all staff members for the current pay period. At the right edge of the footer, there will be a "Generate Payroll" button.
+
+When clicked, it will calculate the total pay for all staff members for the current pay period and display it in a modal. If the total pay is greater than PHP 500.00 (configurable in admin settings), the user will be required to confirm the payroll generation by entering their password. Once confirmed, the payroll will be saved to the database and displayed in a modal.
+
+*TODO: Incentives, Commissions*
+
+#### Sidebar actions
+
+##### Advance pay & bonuses
+
+The advance pay and bonuses action will display a modal that allows the user to give advance pay or bonuses to one or more staff members.
+
+The modal will display a list of staff members, identical to the one in the staff tab. When hovered over, a checkbox will appear on the top-left corner of the card, marking the staff as selected.
+
+The right sidebar contains the following options:
+
+**Pay Type:**
+A dropdown menu with the options:
+
+- Bonus (default)
+- Advance Pay
+
+This is purely for bookkeeping purposes and does not have any effects.
+
+**Pay for select days (Optional):**
+A custom date picker that allows the user to select specific days to pay for.
+
+This is useful for:
+
+- Holidays
+- Birthday rewards
+- When the staff asks for 3 days' salary (e.g. if they usually get paid on the 30th, but need to go on the 25th).
+
+**Amount:**
+A number field (default: "0.00").
+
+**Deduct from current payroll:**
+This is useful for staff-requested salary deductions (e.g. "Can I have 3 days' salary in advance?").
+
+If checked, the amount will be deducted from their earliest workday on the current pay period, and then the next earliest, and so on, until the full amount is deducted. As such, those work days will be recorded as already paid.
+
+**Remarks (Optional):**
+A short text field for any additional information (e.g. "advance pay for birthday").
+
+**Confirm Pay:**
+A button that will add the advance pay/bonus to the selected staff member(s).
+
+If the total amount to be given is greater than PHP 500.00 (configurable in admin settings), the user will be required to confirm the advance pay/bonus by entering their password. Once confirmed, the advance pay/bonus will be saved to the database and the modal will close.
+
+This action is irreversible.
 
 ### Settings
 
@@ -138,6 +211,8 @@ The analytics tab will display a dashboard with charts and graphs of sales, prof
 ### Staff
 
 *To plan later...*
+
+TODO: Permissions list--view/edit permissions on each tab
 
 ### Header
 

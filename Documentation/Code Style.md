@@ -208,15 +208,10 @@ This document outlines the coding standards, conventions, and style guidelines f
 All public classes, methods, and fields must have XML comments.
 
 * Include `<summary>`, `<param>`, and `<returns>` tags where appropriate.
-* Document authorship and tools using italicized HTML metadata tags at the end of the summary.
 
   ```xml
   /// <summary>
   /// Gets a staff profile by username.
-  /// <br/><br/>
-  /// <i>Author(s): DefinitelyRus<br/>
-  /// Editor(s): None<br/>
-  /// Documented by: Google Antigravity</i>
   /// </summary>
   ```
 
