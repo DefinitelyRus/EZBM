@@ -7,8 +7,6 @@ namespace EZBM.Core.Services;
 
 /// <summary>
 /// Provides services for managing staff, attendance, and payroll records.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class StaffService
 {
@@ -16,8 +14,6 @@ public static class StaffService
 
     /// <summary>
     /// Gets a staff profile by username.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="username">The username to search for.</param>
     /// <returns>The Staff entity if found, otherwise null.</returns>
@@ -41,8 +37,6 @@ public static class StaffService
 
         /// <summary>
     /// Creates a new staff member profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing staff profile details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -108,8 +102,6 @@ public static class StaffService
 
     /// <summary>
     /// Retrieves a specific staff member by identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the staff ID.</param>
     /// <returns>A RequestResult containing the Staff entity.</returns>
@@ -155,8 +147,6 @@ public static class StaffService
 
     /// <summary>
     /// Finds staff profiles matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Staff members.</returns>
@@ -243,8 +233,6 @@ public static class StaffService
 
     /// <summary>
     /// Updates an existing staff member's profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing update fields and ID.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -302,8 +290,6 @@ public static class StaffService
 
     /// <summary>
     /// Deletes a specific staff profile.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the staff ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -355,8 +341,6 @@ public static class StaffService
 
     /// <summary>
     /// Logs a clock-in or clock-out event for a staff member.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing staff ID and action type.</param>
     /// <returns>A RequestResult containing the timestamp of the logged event.</returns>
@@ -486,8 +470,6 @@ public static class StaffService
 
     /// <summary>
     /// Creates a manual attendance entry.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing attendance details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -543,8 +525,6 @@ public static class StaffService
 
     /// <summary>
     /// Retrieves a specific attendance record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the attendance ID.</param>
     /// <returns>A RequestResult containing the Attendance entity.</returns>
@@ -594,8 +574,6 @@ public static class StaffService
 
     /// <summary>
     /// Finds attendance records matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Attendance records.</returns>
@@ -678,8 +656,6 @@ public static class StaffService
 
     /// <summary>
     /// Updates a specific attendance record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing update fields and ID.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -746,8 +722,6 @@ public static class StaffService
 
     /// <summary>
     /// Deletes a specific attendance record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the attendance ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -800,8 +774,6 @@ public static class StaffService
 
     /// <summary>
     /// Creates a new payroll record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing payroll details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -863,8 +835,6 @@ public static class StaffService
 
     /// <summary>
     /// Retrieves a specific payroll record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the payroll ID.</param>
     /// <returns>A RequestResult containing the Payroll entity.</returns>
@@ -914,8 +884,6 @@ public static class StaffService
 
     /// <summary>
     /// Finds payroll records matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Payroll records.</returns>
@@ -1009,8 +977,6 @@ public static class StaffService
 
     /// <summary>
     /// Deletes a specific payroll record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the payroll ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>

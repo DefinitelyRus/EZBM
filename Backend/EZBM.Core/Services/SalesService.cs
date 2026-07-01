@@ -7,8 +7,6 @@ namespace EZBM.Core.Services;
 
 /// <summary>
 /// Provides services for managing sales transactions and sale entries.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class SalesService
 {
@@ -16,8 +14,6 @@ public static class SalesService
 
     /// <summary>
     /// Creates a new sale and updates inventory.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing sale details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -138,8 +134,6 @@ public static class SalesService
 
     /// <summary>
     /// Retrieves a specific sale record by identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale ID.</param>
     /// <returns>A RequestResult containing the Sale entity.</returns>
@@ -190,8 +184,6 @@ public static class SalesService
 
     /// <summary>
     /// Finds sale records matching query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Sales.</returns>
@@ -283,8 +275,6 @@ public static class SalesService
 
     /// <summary>
     /// Deletes a specific sale record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -338,8 +328,6 @@ public static class SalesService
 
     /// <summary>
     /// Creates a manual sale entry.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing sale entry details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -409,8 +397,6 @@ public static class SalesService
 
     /// <summary>
     /// Retrieves a specific sale entry record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale entry ID.</param>
     /// <returns>A RequestResult containing the SaleEntry entity.</returns>
@@ -462,8 +448,6 @@ public static class SalesService
 
     /// <summary>
     /// Finds sale entries matching query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching SaleEntries.</returns>
@@ -555,8 +539,6 @@ public static class SalesService
 
     /// <summary>
     /// Deletes a specific sale entry record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale entry ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
