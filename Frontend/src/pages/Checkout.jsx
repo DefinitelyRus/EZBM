@@ -48,6 +48,7 @@ function Checkout() {
       <div id="checkout-content-left" className="d-flex col-8">
       <div id="top-text">
         <h2>Point-of-Sale Checkout</h2>
+        <h5>Process customer transactions quickly.</h5>
       </div>
       
       <div className="input-group flex-direction row">
@@ -94,7 +95,7 @@ function Checkout() {
         </div>
 
       </div>
-      <div id="cart-container" className="d-flex card" style={{ backgroundColor: '#EDE7D9' }}>
+      <div id="cart-container" className="d-flex card" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="card-body">
             <h5>Shopping Cart</h5>
 

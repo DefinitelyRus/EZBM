@@ -39,10 +39,11 @@
 }
 
 #checkout-content-left .form-control {
-    border-color: #121212;
-    border-radius: 5px;
+    width: 60%;
+    border-color: #9097A8;
+    border-radius: 25px;
 
-    background-color: #EDE7D9;
+    background-color: #FFFFFF;
 }
 
 #checkout-content-left .add-btn {

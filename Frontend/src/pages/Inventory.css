@@ -26,12 +26,23 @@
 }
 
 #item-inputs {
-    padding: 25px 0px;
+    padding: 15px 0px;
 }
 
-#add-items-container .form-control, #add-items-container .currency-span {
-    background-color: #FAF4E6;
-    border-color: #121212;
+#item-inputs .form-control.usr-input,
+#item-inputs .input-group-text.currency-span {
+    background-color: #F3F4F6 !important;
+    border-color: #9097A8;
+}
+
+#item-inputs .tag-btn {
+    border: none;
+    border-radius: 15px;
+    padding: 4px 12px;
+}
+
+#add-items-container h5 {
+    font-weight: bold;
 }
 
 #add-items-container .form-check {
@@ -39,14 +50,59 @@
 }
 
 #add-items-container .date-picker {
-    width: 290px;
+    width: 100%;
+    background-color: #F3F4F6;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    color: #1C1E21;
+}
+
+#add-items-container .date-picker:focus {
+    background-color: #FFFFFF;
+    border-color: #1877F2;
+    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+    outline: none;
 }
 
 #inventory-content-left .form-control {
-    border-color: #121212;
-    border-radius: 5px;
+    width: 60%;
+    border-color: #9097A8;
+    border-radius: 25px;
 
-    background-color: #EDE7D9;
+    background-color: #FFFFFF;
+}
+
+/* Form Labels */
+#add-items-container .form-label {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Form Groups */
+#add-items-container .mb-3 {
+    margin-bottom: 0.6rem !important;
+}
+
+/* Inputs */
+#item-inputs .form-control.usr-input,
+#item-inputs .input-group-text.currency-span {
+    background-color: #F3F4F6 !important;
+    border: 1px solid #D1D5DB;
+    color: #1C1E21;
+}
+
+#item-inputs .form-control.usr-input:focus {
+    background-color: #FFFFFF;
+    border-color: #1877F2;
+    box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
+}
+
+/* Placeholder (if you keep any) */
+#item-inputs .usr-input::placeholder {
+    color: #9CA3AF;
 }
 
 /* Button */
@@ -56,25 +112,33 @@
     width: 200px;
 
     /* Appearance */
-    background-color: #121212;
-    border-radius: 5px;
+    background-color: #42B72A;
+    border-radius: 25px;
     border: none;
-    color: #FAF4E6;
-
-    transition: all 0.3s ease;
+    color: #FFFFFF;
 }
 
 #create-item:hover {
-    background-color: #121212;
-    color: #FAF4E6;
-    transform: scale(1.05);
+    background-color: #38A823;
+}
+
+#clear-item {
+    /* Layout & Sizing */
+    height: 45px;
+    width: 100px;
+
+    /* Appearance */
+    background-color: #C62828;
+    border-radius: 25px;
+    border: none;
+    color: #FFFFFF;
 }
 
 /* Table */
 .table-container {
     width: 100%;
     overflow-x: auto;
-    background: #FAF4E6;
+    background: #ECF2F9;
 
     border: 1px;
     border-color: #121212;
@@ -85,34 +149,30 @@
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
-
-    border: 1px solid #121212;
 }
 
 .inventory-table th {
-    background-color: #FAF4E6;
-    border-left: 1px solid #121212;
-    color: #121212;
+    background-color: #d7d0e9;
+    color: #1D1D1F;
+    border: 1px solid #83909e;
 }
 
 .inventory-table td{
-    border-left: 1px solid #121212;
+    border: 1px solid #83909e;
 }
 
 .inventory-table tbody tr:nth-child(even) {
-    background-color: #FAF4E6;
-    border: 1px solid #121212;
+    background-color: #F3F0FA;
+    border: 1px solid #D8E2EC;
 }
 
 .inventory-table tbody tr:nth-child(odd) {
-    background-color: #EDE7D9;
-    border: 1px solid #121212;
+    background: #FFFFFF;
+    border: 1px solid #D8E2EC;
 }
 
 .inventory-table tbody tr:hover {
-    background-color: #121212;
-    color: #E8F0E7;
-    opacity: 0.5;
+    
 }
 
 #inventory-content-left .col-center {
@@ -133,17 +193,13 @@
 }
 
 #inventory-content-left .edit {
-    width: 70%;
+    background-color: transparent;
     border: none;
-    border-radius: 5px;
-    background-color :#8a99b3;
-    color: #EDE7D9;
+    padding: 0;
 }
 
 #inventory-content-left .delete {
-    width: 70%;
+    background-color: transparent;
     border: none;
-    border-radius: 5px;
-    background-color :#a54b4b;
-    color: #EDE7D9;
+    padding: 0;
 }

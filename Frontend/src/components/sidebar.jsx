@@ -1,20 +1,24 @@
 import './sidebar.css';
-import Button from './Button';
+import Button from './button';
 
-import ArrowMenu from '../assets/arrow_menu.svg';
+import ArrowMenu from '../assets/arrow_menu.svg?react';
+
 import DashboardIcon from '../assets/dashboard.svg?react';
 import InventoryIcon from '../assets/inventory.svg?react';
 import CheckoutIcon from '../assets/checkout.svg?react';
 import StaffIcon from '../assets/staff.svg?react';
 import LogsIcon from '../assets/logs.svg?react';
+import LogOutIcon from '../assets/log_out.svg?react';
 
 function Sidebar() {
   return (
     <div id="side-bar" className="d-flex col-2">
-      <button className="menu-btn">
-        <img src={arrowMenu} alt="Menu" />
-      </button>
-      <h4 id="user-name">Red Sinangote</h4>
+      <div className="d-flex header-cont">
+        <h4 id="user-name" className="align-self-center">Krishna Reformina</h4>
+        <button>
+          <ArrowMenu />
+        </button>
+      </div>
 
       <div id="nav-btn-group">
         
@@ -47,12 +51,15 @@ function Sidebar() {
           text="Attendance & Payroll Logs"
           icon={<LogsIcon />}
         />
-
       </div>
 
-      <button id="log-out" className="btn btn-light align-self-center">
-        Log out
-      </button>
+      <div id="log-out">
+          <Button
+            to="/"
+            text="Log out"
+            icon={<LogOutIcon />}
+          />
+        </div>
     </div>
   );
 }

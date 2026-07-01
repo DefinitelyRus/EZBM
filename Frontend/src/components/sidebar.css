@@ -10,42 +10,61 @@
     padding: 20px 0px 30px 0px;
 
     /* Appearance */
-    background-color: #121212;
+    background-color: #FFFFFF;
+    border: 1px solid #E4E6EB;
+}
+
+#side-bar .header-cont {
+    padding: 20px 15px 40px 15px;
+    justify-content: space-between;
+}
+
+#side-bar .header-cont button {
+    background-color: #FFFFFF;
+    border-radius: 25px;
+    border: 3px solid #EAF4FF;
+    width: 38px;
+    height: 38px;
+}
+
+#side-bar .header-cont button:active {
+    background-color: #EAF4FF;
+}
+
+#side-bar .header-cont button svg {
+    padding-left: 2px;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+}
+
+#side-bar .header-cont button:hover {
+    background-color: #e5e8f0;
+    color: #1C1E21;
+    opacity: 0.9;
 }
 
 #nav-btn-group {
+    padding-left: 10px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 5px;
 }
 
 /* Button */
 #log-out {
-    /* Layout & Sizing */
-    width: 270px;
-
-    /* Spacing */
+    padding-left: 20px;
     margin-top: auto;
-
-    /* Appearance */
-    background-color: #FAF4E6;
-    border-radius: 5px;
-    color: #121212;
-
-    transition: all 0.3s ease;
-}
-
-#log-out:hover {
-    background-color: #FAF4E6;
-    color: #121212;
-    transform: scale(1.05);
 }
 
 /* Text */
 #user-name {
-    /* Spacing */
-    padding: 20px 0px 25px 20px;
-
     /* Appearance */
-    color: #E7EAEE;
+    font-weight: 600;
+    justify-content: start;
+    color: #1C1E21;
 }

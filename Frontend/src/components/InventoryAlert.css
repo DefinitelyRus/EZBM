@@ -1,6 +1,7 @@
 #alert-button {
     height: 7rem;
     padding: 5px 15px;
+    border: 1px solid #CBCBCB;
 
     pointer-events: none;
 }
@@ -16,15 +17,9 @@
 }
 
 #alert-button p {
-    color: #121212;
-    margin-left: auto;
+    font-weight: 500;
 }
 
-#alert-button h3 {
-    color: #121212;
-}
-.alert-danger,
-.alert-warning {
-    color: #121212;
-    border: none;
+#alert-button h5 {
+    font-weight: 700;
 }
