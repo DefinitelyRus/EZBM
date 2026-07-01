@@ -1,4 +1,12 @@
 using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using EZBM.Core.Entities;
+using EZBM.Core.Data;
+using EZBM.Core.Services;
+using EZBM.Core.Tools;
 
 namespace EZBM.Tests;
 
@@ -46,6 +54,9 @@ internal class Program
 
             // 4. SalesController Tests
             await RunSalesTests();
+
+            // 5. New Features Tests (Mixed Payments, Promos, Lazy Expire, Audit Logs)
+            await RunNewFeatureTests();
         }
 
         catch (Exception ex)
@@ -815,6 +826,128 @@ internal class Program
         // Clean up staff and item
         await InventoryController.DeleteItem(new(Id: itemId));
         await StaffController.DeleteStaff(new(Id: staffId));
+    }
+
+    private static async Task RunNewFeatureTests()
+    {
+        resultsBuilder.AppendLine("## Custom New Features Verification");
+        resultsBuilder.AppendLine();
+
+        using var db = new AppDbContext();
+
+        // 1. Verify lazy permissions expiry check
+        var user = new Customer(
+            id: Utils.GenerateEntityId(),
+            firstName: "Lazy",
+            lastName: "Tester"
+        )
+        {
+            RfidCardId = "lazy_card",
+            Permissions = new List<string> { "EnterStore", "Checkout" },
+            PermissionsAfterExpiry = new List<string> { "GuestViewOnly" },
+            ExpirationDate = DateTime.UtcNow.AddMinutes(-5) // already expired
+        };
+        db.Customer.Add(user);
+        await db.SaveChangesAsync();
+
+        var activePerms = user.GetActivePermissions();
+        bool lazyOk = activePerms.Count == 1 && activePerms[0] == "GuestViewOnly";
+        LogResult("Lazy Permissions Expiry Override",
+            "Verified that active permissions default to PermissionsAfterExpiry when ExpirationDate has passed.",
+            lazyOk,
+            $"Active permissions: {string.Join(", ", activePerms)}");
+
+        // 2. Verify audit logs (DB SaveChanges interceptor)
+        // Edit user and save
+        user.FirstName = "LazyUpdated";
+        await db.SaveChangesAsync();
+
+        var latestLog = await db.ActionLog
+            .OrderByDescending(l => l.Timestamp)
+            .FirstOrDefaultAsync();
+
+        bool auditOk = latestLog != null && latestLog.ActionType == "Edit" && latestLog.Details.Contains("LazyUpdated");
+        LogResult("Audit Logs Automatic Capturing",
+            "Verified that editing an entity automatically triggers and logs an ActionLog entry.",
+            auditOk,
+            latestLog != null ? $"Log Details: {latestLog.Details}" : "No logs captured.");
+
+        // 3. Verify mixed payment split payloads saving
+        // Create an item and staff
+        var staff = new Staff(Utils.GenerateEntityId(), "test_mixed_cashier", Staff.Frequency.Hourly, 10f);
+        var item = new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 20f, "Mixed Test Apple");
+        db.Staff.Add(staff);
+        db.Item.Add(item);
+        await db.SaveChangesAsync();
+
+        var splitPayments = new List<SplitPaymentRequest>
+        {
+            new SplitPaymentRequest(Transaction.PayMethod.Cash, 10f),
+            new SplitPaymentRequest(Transaction.PayMethod.EWallet, 10f)
+        };
+
+        var saleReq = new CreateSaleRequest(
+            StaffId: staff.Id,
+            PaymentMethod: Transaction.PayMethod.Mixed,
+            TotalAmount: 20f,
+            Notes: "Mixed Payment Test",
+            Items: new List<SaleItemRequest> { new SaleItemRequest(item.Id, 1f, 20f) },
+            SplitPayments: splitPayments
+        );
+
+        var saleRes = await SalesService.CreateSaleAsync(saleReq);
+        bool mixedOk = false;
+        if (saleRes.Type == Utils.Result.Success)
+        {
+            ulong parentSaleId = saleRes.Data;
+            var childTxs = await db.Transaction
+                .Where(t => t.ParentTransactionId == parentSaleId)
+                .ToListAsync();
+
+            mixedOk = childTxs.Count == 2 &&
+                      childTxs.Any(t => t.PaymentMethod == Transaction.PayMethod.Cash && t.Amount == 10f) &&
+                      childTxs.Any(t => t.PaymentMethod == Transaction.PayMethod.EWallet && t.Amount == 10f);
+        }
+
+        LogResult("Mixed Payment Split Record Decoupling",
+            "Verified that mixed payment checkouts correctly register parent Sale and multiple child split payment records.",
+            mixedOk,
+            $"Parent Sale Status: {saleRes.Type}. Child Payment Records count: {(saleRes.Type == Utils.Result.Success ? db.Transaction.Count(t => t.ParentTransactionId == saleRes.Data).ToString() : "N/A")}");
+
+        // 4. Verify FREEWEEK promo offset validation
+        var settings = SettingsService.LoadSettings();
+        // Temporarily set opening date to today so FREEWEEK is active
+        var oldOpeningDate = settings.StoreOpeningDate;
+        settings.StoreOpeningDate = DateTime.UtcNow;
+        SettingsService.SaveSettings(settings);
+
+        var promoReqValid = new CreateSaleRequest(
+            StaffId: staff.Id,
+            PaymentMethod: Transaction.PayMethod.Cash,
+            TotalAmount: 20f,
+            Notes: "Promo code valid",
+            Items: new List<SaleItemRequest> { new SaleItemRequest(item.Id, 1f, 20f) },
+            PromoCode: "FREEWEEK"
+        );
+
+        var promoResValid = await SalesService.CreateSaleAsync(promoReqValid);
+        
+        // Restore opening date
+        settings.StoreOpeningDate = oldOpeningDate;
+        SettingsService.SaveSettings(settings);
+
+        bool promoOk = promoResValid.Type == Utils.Result.Success;
+        if (promoOk)
+        {
+            var verifiedSale = await db.Sale.FindAsync(promoResValid.Data);
+            // FREEWEEK discounts total amount to 0
+            promoOk = verifiedSale != null && verifiedSale.Amount == 0f;
+        }
+
+        LogResult("FREEWEEK Promotion Validity Offset",
+            "Verified that applying 'FREEWEEK' within 7 days of store opening discounts the total amount to $0.",
+            promoOk,
+            $"Promo checkout result: {promoResValid.Type}. Final Sale Amount charged: {(promoOk ? "0.00" : "error")}");
     }
 
     #endregion
