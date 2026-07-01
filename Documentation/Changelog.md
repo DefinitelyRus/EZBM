@@ -29,6 +29,24 @@ Changes:
 
 ## Logs
 
+### 07/01/2026
+
+Enacted major backend and frontend feature enhancements including user TPH database reparenting, ambient operator context tracking, automatic change tracking audit logs, POS mixed payment split transactions, cash drawer hardware overrides, modular upgrade commissions calculation, and dynamic storefront settings management.
+
+Changes:
+
+- Created the base `User` entity to unify common profile, RFID, and lazy access permissions expiry validations across `Staff` and `Customer` records.
+- Configured Table-Per-Hierarchy (TPH) mappings for the user hierarchy and configured permission list semi-colon conversion filters in `AppDbContext`.
+- Implemented automatic DB audit logs intercepting and saving edit/delete actions for all tracked entities.
+- Added `/api/logs` and integrated an **Action Audit Logs** tab in the client page workspace to display system access history.
+- Introduced parent-child payment relationship tracking for `Mixed` checkout modes, mapping line items to the parent Sale and finance channels to child Transaction records.
+- Built a Split Payment checkout modal prompting for payment method details when checking out via mixed methods.
+- Implemented console-logged `ICashRegisterService` drawer controls, global barcode reader key listeners, and an RFID manual register override button.
+- Added modular payroll upgrade commission calculations (subtracting lower tier values already paid/earned) with an auto-calculate action in the client form.
+- Exposed REST API endpoints `/api/settings` and built a settings configuration editor page.
+- Added a recent transactions activity feed side container to the dashboard.
+- Updated the automated integration test suite to verify lazy permissions, audit logs, split payments, and promos.
+
 ### 06/12/2026
 
 Built and integrated a lightweight ASP.NET Core Razor Pages testing client to serve as a desktop console for backend verification. Added a database seeder utility to populate all system entities with diverse mock records, reorganized code structures using region formatting, updated comprehensive project README files, and implemented validation rules to block negative inputs across the client forms (except for payroll modifiers).
