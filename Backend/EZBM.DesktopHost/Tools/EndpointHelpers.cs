@@ -4,8 +4,6 @@ namespace EZBM.DesktopHost.Tools;
 
 /// <summary>
 /// Helper methods for endpoint mapping and conversion.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class EndpointHelpers
 {
@@ -16,8 +14,6 @@ public static class EndpointHelpers
     /// <code>
     /// IResult result = EndpointHelpers.ToIResult(myRequestResult);
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="result">The RequestResult to convert.</param>
     public static IResult ToIResult<TData>(RequestResult<TData> result)
@@ -35,8 +31,6 @@ public static class EndpointHelpers
 
     /// <summary>
     /// Converts a basic RequestResult to an IResult.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="result">The RequestResult to convert.</param>
     /// <returns>An IResult representing the outcome.</returns>
