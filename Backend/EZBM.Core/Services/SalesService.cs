@@ -40,15 +40,51 @@ public static class SalesService
                 return noStaffResult;
             }
 
+            // Validate mixed payment
+            if (request.PaymentMethod == Transaction.PayMethod.Mixed)
+            {
+                if (request.SplitPayments == null || request.SplitPayments.Count == 0)
+                {
+                    message = "Cannot checkout: Mixed payment selected but no split payment items provided.";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+                float sum = request.SplitPayments.Sum(s => s.Amount);
+                if (Math.Abs(sum - request.TotalAmount) > 0.01f)
+                {
+                    message = $"Cannot checkout: Split payments sum (${sum}) does not match total amount (${request.TotalAmount}).";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+            }
+
+            // Verify promo code
+            bool hasFreeWeekPromo = false;
+            if (!string.IsNullOrEmpty(request.PromoCode) && request.PromoCode.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
+            {
+                var settings = SettingsService.LoadSettings();
+                if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
+                {
+                    hasFreeWeekPromo = true;
+                }
+                else
+                {
+                    message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+            }
+
             // Begin db transaction or let EF Core save atomically
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
+            float finalAmount = hasFreeWeekPromo ? 0f : request.TotalAmount;
 
             // Create Sale entity
             Sale sale = new(
                 id: Utils.GenerateEntityId(),
                 invoiceNumber: invoiceNumber,
-                amount: request.TotalAmount,
+                amount: finalAmount,
                 paymentMethod: request.PaymentMethod,
                 staff: staff,
                 timestamp: serverTime,
@@ -56,6 +92,27 @@ public static class SalesService
             );
 
             context.Sale.Add(sale);
+
+            // Save child payment records if mixed payment
+            if (request.PaymentMethod == Transaction.PayMethod.Mixed && request.SplitPayments != null)
+            {
+                foreach (var split in request.SplitPayments)
+                {
+                    Transaction childTx = new(
+                        id: Utils.GenerateEntityId(),
+                        transactionType: Transaction.Type.Income,
+                        amount: split.Amount,
+                        timestamp: serverTime,
+                        staff: staff,
+                        paymentMethod: split.PaymentMethod,
+                        invoiceNumber: invoiceNumber,
+                        invoicePrefix: "SALE-SPLIT",
+                        notes: $"Split payment component of Invoice {sale.InvoiceId}"
+                    );
+                    childTx.ParentTransactionId = sale.Id;
+                    context.Transaction.Add(childTx);
+                }
+            }
 
             // Add Sale entries (line items)
             foreach (SaleItemRequest itemReq in request.Items)
