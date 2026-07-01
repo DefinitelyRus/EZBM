@@ -4,17 +4,9 @@ using System;
 
 /// <summary>
 /// Represents a payroll record for a staff member, detailing earnings and payment status for a specific period.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): Google Antigravity<br/>
-/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 /// <remarks>
 /// Initializes a new instance of the Payroll class.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): Google Antigravity<br/>
-/// Documented by: Google Gemini, Google Antigravity</i>
 /// </remarks>
 /// <param name="id">The unique identifier for this entity.</param>
 /// <param name="staff">The staff member associated with this record.</param>
@@ -30,36 +22,26 @@ public class Payroll : Transaction
 {
     /// <summary>
     /// The start date of the pay period.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DateTime PeriodStart { get; private set; }
 
     /// <summary>
     /// The end date of the pay period.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DateTime PeriodEnd { get; private set; }
 
     /// <summary>
     /// The total number of hours worked during the period.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public float TotalHours { get; private set; }
 
     /// <summary>
     /// The total earnings before any deductions or additions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public float GrossAmount { get; private set; }
 
     /// <summary>
     /// Adjustments made to the gross amount, such as bonuses or deductions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public float Modifiers { get; private set; }
 

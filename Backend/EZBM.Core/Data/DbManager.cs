@@ -4,40 +4,28 @@ namespace EZBM.Core.Data;
 
 /// <summary>
 /// Manages the database lifecycle, including initialization and error handling.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Gemini</i>
 /// </summary>
 public static class DbManager
 {
 
     /// <summary>
     /// The name of the database file.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static readonly string DbFileName = "business_data.db";
 
     /// <summary>
     /// The full system path to the database file.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static readonly string DbFilePath = Path.Combine(Utils.UserSavePath, DbFileName);
 
     /// <summary>
     /// Occurs when the database fails to initialize.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static event EventHandler<DbInitializationFailedEventArgs>? InitializationFailed;
 
 
     /// <summary>
     /// Triggers the InitializationFailed event.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="e">The event data.</param>
     private static void OnInitializationFailed(DbInitializationFailedEventArgs e)
@@ -48,8 +36,6 @@ public static class DbManager
 
     /// <summary>
     /// Ensures the database is created and ready for use.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static void Initialize()
     {
@@ -74,8 +60,6 @@ public static class DbManager
 
     /// <summary>
     /// Deletes the existing database file and creates a fresh one.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static void Reset()
     {
@@ -106,10 +90,6 @@ public static class DbManager
 
 /// <summary>
 /// Provides data for the database initialization failure event.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Gemini</i>
 /// </summary>
 /// <param name="e">The exception that caused the failure.</param>
 /// <param name="message">A descriptive error message.</param>
@@ -117,15 +97,11 @@ public class DbInitializationFailedEventArgs(Exception e, string message) : Even
 {
     /// <summary>
     /// The exception captured during initialization.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public Exception Exception { get; } = e;
 
     /// <summary>
     /// The error message describing the failure.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public string Message { get; } = message;
 }

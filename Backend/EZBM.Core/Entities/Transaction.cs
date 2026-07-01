@@ -4,10 +4,6 @@ namespace EZBM.Core.Entities;
 
 /// <summary>
 /// Represents a financial transaction within the system, tracking income, expenses, and corrections.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): Google Antigravity<br/>
-/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 public class Transaction : Entity
 {
@@ -15,15 +11,11 @@ public class Transaction : Entity
 
     /// <summary>
     /// Defines the nature of the financial transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public enum Type { Income, Expense, Correction }
 
     /// <summary>
     /// Defines the supported payment methods for a transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public enum PayMethod { Cash, EWallet, Savings, Credit, Other }
 
@@ -33,43 +25,31 @@ public class Transaction : Entity
 
     /// <summary>
     /// The category of this financial record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public Type TransactionType { get; private set; }
 
     /// <summary>
     /// The monetary value of the transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public float Amount { get; private set; }
 
     /// <summary>
     /// The date and time when the transaction was recorded.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DateTime Timestamp { get; private set; }
 
     /// <summary>
     /// The staff member associated with the transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public Staff Staff { get; private set; }
 
     /// <summary>
     /// The method used for payment, if applicable.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public PayMethod? PaymentMethod { get; private set; }
 
     /// <summary>
     /// The numeric sequence for the invoice.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public int InvoiceNumber { get; private set; }
 
@@ -77,8 +57,6 @@ public class Transaction : Entity
     /// The unique generated invoice string, if applicable.
     /// <br/><br/>
     /// <b>Note:</b> This property does not have a direct database equivalent.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <remarks>
     /// </remarks>
@@ -86,8 +64,6 @@ public class Transaction : Entity
 
     /// <summary>
     /// Additional context or remarks about the transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public string? Notes { get; private set; }
 
@@ -102,10 +78,6 @@ public class Transaction : Entity
 
     /// <summary>
     /// Initializes a new instance of the Transaction class.
-    /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus<br/>
-    /// Editor(s): Google Antigravity<br/>
-    /// Documented by: Google Gemini, Google Antigravity</i>
     /// </summary>
     /// <param name="id">The unique identifier for this entity.</param>
     /// <param name="transactionType">The type of financial movement.</param>
