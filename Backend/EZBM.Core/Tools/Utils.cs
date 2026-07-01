@@ -10,10 +10,6 @@ namespace EZBM.Core.Tools;
 /// <code>
 /// string json = Utils.ConvertToJson(data);
 /// </code>
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): None<br/>
-/// Documented by: Antigravity</i>
 /// </summary>
 public static class Utils
 {
@@ -28,10 +24,6 @@ public static class Utils
     /// <code>
     /// this.Id = Utils.GenerateEntityId();
     /// </code>
-    /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus, Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static ulong GenerateEntityId()
     {
@@ -64,10 +56,6 @@ public static class Utils
     /// <code>
     /// int num = Utils.GenerateInvoiceNumber(DateTime.UtcNow);
     /// </code>
-    /// <br/><br/>
-    /// <i>Author(s): DefinitelyRus, Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="timestamp">The timestamp of the transaction.</param>
     public static int GenerateInvoiceNumber(DateTime timestamp)
@@ -94,8 +82,6 @@ public static class Utils
     /// <code>
     /// var data = Utils.ConvertFromJson("{\"key\":\"value\"}");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="jsonString">The JSON string to parse.</param>
     public static Dictionary<string, object>? ConvertFromJson(string jsonString)
@@ -110,8 +96,6 @@ public static class Utils
     /// <code>
     /// string json = Utils.ConvertToJson(myDictionary);
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="data">The dictionary data to serialize.</param>
     public static string ConvertToJson(Dictionary<string, object>? data)
@@ -121,10 +105,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets an object as a ulong value.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static ulong? GetAsUlong(object? obj)
     {
@@ -141,10 +121,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets an object as a string.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static string? GetAsString(object? obj)
     {
@@ -160,10 +136,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets an object as a float value.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static float? GetAsFloat(object? obj)
     {
@@ -180,10 +152,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets an object as a boolean.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static bool? GetAsBool(object? obj)
     {
@@ -200,10 +168,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets an object as a DateTime.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static DateTime? GetAsDateTime(object? obj)
     {
@@ -218,10 +182,6 @@ public static class Utils
 
     /// <summary>
     /// Safely gets a list of Item tags from a JsonElement array.
-    /// <br/><br/>
-    /// <i>Author(s): Google Antigravity<br/>
-    /// Editor(s): None<br/>
-    /// Documented by: Google Antigravity</i>
     /// </summary>
     public static List<Item.Tag>? GetAsTagsList(object? obj)
     {
@@ -256,8 +216,6 @@ public static class Utils
     /// <code>
     /// string path = Utils.UserSavePath;
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public static string UserSavePath { get; private set; } = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
@@ -268,8 +226,6 @@ public static class Utils
     /// <code>
     /// await Utils.WriteFileAsync("data.txt", "Hello World", true);
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="filename">The filename including the file extension.</param>
     /// <param name="content">The text content to write to the file.</param>
@@ -302,8 +258,6 @@ public static class Utils
     /// <code>
     /// string? content = await Utils.ReadFileAsync("data.txt");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="filename">The filename including the file extension.</param>
     public static async Task<string?> ReadFileAsync(string filename)
