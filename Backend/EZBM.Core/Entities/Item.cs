@@ -66,6 +66,11 @@ public class Item : Entity
     public List<Tag> Tags { get; set; } = [];
 
     /// <summary>
+    /// The barcode of the item, if applicable.
+    /// </summary>
+    public string? Barcode { get; set; }
+
+    /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
 #pragma warning disable CS8618
@@ -86,6 +91,7 @@ public class Item : Entity
     /// <param name="expirationDate">Optional expiration date.</param>
     /// <param name="cost">The acquisition cost.</param>
     /// <param name="imageUrl">The URL for the item's image.</param>
+    /// <param name="barcode">The item's barcode.</param>
     public Item(
         ulong id,
         Unit unitOfMeasurement,
@@ -97,7 +103,8 @@ public class Item : Entity
         float quantity = 0,
         DateTime? expirationDate = null,
         float? cost = null,
-        string? imageUrl = null)
+        string? imageUrl = null,
+        string? barcode = null)
     {
         Id = id;
         Name = name ?? $"Item #{Id}";
@@ -110,5 +117,6 @@ public class Item : Entity
         IsForSale = isForSale;
         ImageUrl = imageUrl;
         SalePrice = price;
+        Barcode = barcode;
     }
 }

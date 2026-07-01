@@ -48,6 +48,11 @@ public class ItemTransaction : Entity
     public SaleEntry? SaleEntry { get; private set; }
 
     /// <summary>
+    /// The transactions associated with this stock movement.
+    /// </summary>
+    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+
+    /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
 #pragma warning disable CS8618

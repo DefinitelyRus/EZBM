@@ -17,7 +17,7 @@ public class Transaction : Entity
     /// <summary>
     /// Defines the supported payment methods for a transaction.
     /// </summary>
-    public enum PayMethod { Cash, EWallet, Savings, Credit, Other }
+    public enum PayMethod { Cash, EWallet, Savings, Credit, Mixed, Other }
 
     #endregion
 
@@ -66,6 +66,31 @@ public class Transaction : Entity
     /// Additional context or remarks about the transaction.
     /// </summary>
     public string? Notes { get; private set; }
+
+    /// <summary>
+    /// The parent transaction ID if this transaction is part of a split or mixed payment.
+    /// </summary>
+    public ulong? ParentTransactionId { get; set; }
+
+    /// <summary>
+    /// The parent transaction entity.
+    /// </summary>
+    public virtual Transaction? ParentTransaction { get; set; }
+
+    /// <summary>
+    /// The collection of child transactions under this parent transaction.
+    /// </summary>
+    public virtual ICollection<Transaction> ChildTransactions { get; set; } = new List<Transaction>();
+
+    /// <summary>
+    /// The customer associated with this transaction, if applicable.
+    /// </summary>
+    public virtual Customer? Customer { get; set; }
+
+    /// <summary>
+    /// The item transactions representing inventory movements linked to this transaction.
+    /// </summary>
+    public virtual ICollection<ItemTransaction> ItemTransactions { get; set; } = new List<ItemTransaction>();
 
     #endregion
 

@@ -3,7 +3,7 @@ namespace EZBM.Core.Entities;
 /// <summary>
 /// Represents a staff member in the system, including their personal information, employment details, and current status.
 /// </summary>
-public class Staff : Entity
+public class Staff : User
 {
     /// <summary>
     /// Defines the frequency or method of payment.
@@ -21,26 +21,6 @@ public class Staff : Entity
     public string? Password { get; set; } //TEMP: Uses plain text password, should be hashed in production
 
     /// <summary>
-    /// The first name of the staff member.
-    /// </summary>
-    public string? FirstName { get; set; }
-
-    /// <summary>
-    /// The last name of the staff member.
-    /// </summary>
-    public string? LastName { get; set; }
-
-    /// <summary>
-    /// The contact email address.
-    /// </summary>
-    public string? Email { get; set; }
-
-    /// <summary>
-    /// The contact phone number.
-    /// </summary>
-    public string? PhoneNumber { get; set; }
-
-    /// <summary>
     /// The job title or role of the staff member.
     /// </summary>
     public string? Position { get; set; }
@@ -54,6 +34,14 @@ public class Staff : Entity
     /// The monetary value paid based on the payment type.
     /// </summary>
     public float PayRate { get; set; }
+
+
+    /// <summary>
+    /// Parameterless constructor for EF Core.
+    /// </summary>
+#pragma warning disable CS8618
+    protected Staff() : base() { }
+#pragma warning restore CS8618
 
     /// <summary>
     /// Initializes a new instance of the Staff class.
@@ -94,5 +82,6 @@ public class Staff : Entity
 
         PayFrequency = payFrequency;
         PayRate = payRate;
+        AccessType = AccessCardType.Staff;
     }
 }
