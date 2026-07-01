@@ -19,8 +19,8 @@ Lastly, make sure to update your Notion task list to reflect what you're *actual
 
 ### Tasks
 
-* [ ] Bootstrap the React codebase.
-* [ ] Structure the main layout showing a navigation panel, user header, and active workspace panel.
+* [x] Bootstrap the React codebase.
+* [x] Structure the main layout showing a navigation panel, user header, and active workspace panel.
 
 ---
 
@@ -58,9 +58,10 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ### Tasks
 
-* [ ] Build summary cards for today's total sales and today's total profit.
-* [ ] Build a Low Stock Alerts list that flags items with quantity below 5 units, with an alternative state when all items are fully stocked.
+* [x] Build summary cards for today's total sales and today's total profit.
+* [x] Build a Low Stock Alerts list that flags items with quantity below 5 units, with an alternative state when all items are fully stocked.
 * [ ] Build the shift attendance toggle button, using distinct colors or labels to show if the user is clocked in or clocked out.
+* [x] Build a Recent Transactions list feed panel.
 
 ---
 
@@ -78,9 +79,9 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ### Tasks
 
-* [ ] Build an inventory table showing details (Name, Type, Cost, Retail, Quantity, Unit, Tags).
-* [ ] Build a real-time search input that filters the catalog table.
-* [ ] Build the "Add/Edit Item" form with inputs for item properties (including dropdowns for unit types and multi-select tags).
+* [x] Build an inventory table showing details (Name, Type, Cost, Retail, Quantity, Unit, Tags).
+* [x] Build a real-time search input that filters the catalog table.
+* [x] Build the "Add/Edit Item" form with inputs for item properties (including dropdowns for unit types and multi-select tags).
 * [ ] Build a confirmation prompt to prevent accidental item deletion.
 
 ---
@@ -94,10 +95,13 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ### Tasks
 
-* [ ] Build a searchable list showing only items marked as "for sale."
-* [ ] Build a shopping cart panel that displays selected item details, subtotals, and adjustable quantity selectors.
-* [ ] Build checkout fields for Total Amount, Payment Method (dropdown), and optional transaction notes.
+* [x] Build a searchable list showing only items marked as "for sale."
+* [x] Build a shopping cart panel that displays selected item details, subtotals, and adjustable quantity selectors.
+* [x] Build checkout fields for Total Amount, Payment Method (dropdown), and optional transaction notes.
 * [ ] Build a checkout confirmation dialog that resets the cart when the sale is completed.
+* [ ] Build a split/mixed payment modal with a live balance remaining display.
+* [ ] Integrate a global barcode keyboard listener to automatically scan and add items to the cart.
+* [ ] Build a manual cash drawer override RFID card prompt.
 
 ---
 
@@ -126,6 +130,26 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 * [ ] Build a tabbed panel to swap between attendance ledger and payroll records.
 * [ ] Build formatted tables for time logs and payroll history, converting dates, times, and financial totals into easy-to-read listings.
+
+---
+
+## Page 7: Settings Menu
+
+### App Settings & User Preferences
+
+* **Description:** Configuration options for individual staff settings (UI preferences, passwords) and business configurations (currency, limits).
+* **Purpose:** Allows administrators to modify application thresholds (business name, low stock levels, written receipt limits, card expiration days) and users to manage their profiles.
+
+### Tasks
+
+* [ ] Build a settings workspace page routing in `App.tsx` and its sidebar link.
+* [ ] Build a User Settings sub-tab to allow staff members to change their password or details.
+* [ ] Build a Business Settings sub-tab (admin-only view check) to configure:
+  * Business Name (text field)
+  * Currency (dropdown)
+  * Low Stock Threshold (number field)
+  * Written Receipt Threshold (number field)
+  * Card Access rules and automatic expiration date offsets by Access Type (Staff, OneTime, Member).
 
 ---
 

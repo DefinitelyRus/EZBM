@@ -24,34 +24,69 @@
 
 <hr />
 
-<h3>Low Stock Alerts</h3>
-<p>Flags physical items with stock level below 5 units.</p>
+<div style="display: flex; gap: 40px; align-items: flex-start;">
+    <!-- Low Stock Alerts Side -->
+    <div style="flex: 1;">
+        <h3>Low Stock Alerts</h3>
+        @{
+            var lowStockThreshold = EZBM.Core.Services.SettingsService.LoadSettings().LowStockThreshold;
+        }
+        <p>Flags physical items with stock level below @lowStockThreshold units.</p>
 
-@if (Model.LowStockItems.Count == 0)
-{
-    <div style="background-color: #ccffcc; padding: 15px; border: 1px solid #00aa00;">
-        <strong>Notice:</strong> All items are fully stocked.
+        @if (Model.LowStockItems.Count == 0)
+        {
+            <div style="background-color: #ccffcc; padding: 15px; border: 1px solid #00aa00;">
+                <strong>Notice:</strong> All items are fully stocked.
+            </div>
+        }
+        else
+        {
+            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th>Item Name</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.LowStockItems)
+                    {
+                        <tr style="background-color: #ffcccc;">
+                            <td>@item.Name</td>
+                            <td><strong>@item.Quantity</strong></td>
+                            <td>@item.UnitOfMeasurement</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
-}
-else
-{
-    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; max-width: 600px; border-collapse: collapse;">
-        <thead>
-            <tr style="background-color: #eee;">
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.LowStockItems)
-            {
-                <tr style="background-color: #ffcccc;">
-                    <td>@item.Name</td>
-                    <td><strong>@item.Quantity</strong></td>
-                    <td>@item.UnitOfMeasurement</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+
+    <!-- Recent Sales Feed Side -->
+    <div style="width: 400px; border: 1px solid #000; padding: 15px; background-color: #fafafa;">
+        <h3>Recent Transactions (Latest 10)</h3>
+        @if (Model.RecentSales.Count == 0)
+        {
+            <p style="color: #888; text-align: center;">No transactions recorded yet.</p>
+        }
+        else
+        {
+            <ul style="list-style-type: none; padding-left: 0; margin: 0;">
+                @foreach (var sale in Model.RecentSales)
+                {
+                    <li style="border-bottom: 1px solid #ddd; padding: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
+                            <span>@sale.InvoiceId</span>
+                            <span>@sale.Amount.ToString("C")</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #555; margin-top: 3px;">
+                            <span>By: @sale.Staff.Username</span>
+                            <span>@sale.Timestamp.ToString("yyyy-MM-dd HH:mm")</span>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</div>

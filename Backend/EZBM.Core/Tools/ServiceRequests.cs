@@ -111,12 +111,19 @@ public record SaleItemRequest(
     [Required] float UnitPrice
 );
 
+public record SplitPaymentRequest(
+    [Required] Transaction.PayMethod PaymentMethod,
+    [Required] float Amount
+);
+
 public record CreateSaleRequest(
     [Required] ulong StaffId,
     [Required] Transaction.PayMethod PaymentMethod,
     [Required] float TotalAmount,
     string? Notes,
-    [Required] List<SaleItemRequest> Items
+    [Required] List<SaleItemRequest> Items,
+    List<SplitPaymentRequest>? SplitPayments = null,
+    string? PromoCode = null
 );
 
 public record FindSaleRequest(

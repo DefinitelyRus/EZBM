@@ -1,25 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
+using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
 using EZBM.DesktopClient.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 
 namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
 /// Page model for Point-of-Sale checkout interface.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public class POSModel : PageModel
 {
+    private readonly ICashRegisterService _cashRegisterService;
 
     /// <summary>
     /// Represents an item in the client checkout cart.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public record CartItemDto(
         ulong ItemId,
@@ -53,12 +56,18 @@ public class POSModel : PageModel
 
     #endregion
 
+    /// <summary>
+    /// Initializes a new instance of the POSModel page model.
+    /// </summary>
+    public POSModel(ICashRegisterService cashRegisterService)
+    {
+        _cashRegisterService = cashRegisterService;
+    }
+
     #region Handlers
 
     /// <summary>
     /// Handles GET request to load catalog and employee context.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync()
     {
@@ -86,17 +95,16 @@ public class POSModel : PageModel
         CatalogItems = result.Data ?? new List<Item>();
     }
 
-
     /// <summary>
     /// Handles checkout submission from the cart form.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCheckoutAsync(
         Transaction.PayMethod paymentMethod,
         float totalAmount,
         string? notes,
-        string cartJson
+        string cartJson,
+        string? splitPaymentsJson,
+        string? promoCode
     )
     {
         ActiveStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
@@ -160,12 +168,23 @@ public class POSModel : PageModel
                 ))
                 .ToList();
 
+            List<SplitPaymentRequest>? splitPayments = null;
+            if (paymentMethod == Transaction.PayMethod.Mixed && !string.IsNullOrEmpty(splitPaymentsJson))
+            {
+                splitPayments = JsonSerializer.Deserialize<List<SplitPaymentRequest>>(
+                    splitPaymentsJson,
+                    serializeOptions
+                );
+            }
+
             CreateSaleRequest checkoutRequest = new(
                 StaffId: ActiveStaff.Id,
                 PaymentMethod: paymentMethod,
                 TotalAmount: totalAmount,
                 Notes: notes,
-                Items: saleItemsList
+                Items: saleItemsList,
+                SplitPayments: splitPayments,
+                PromoCode: promoCode
             );
 
             Utils.RequestResult<ulong> saleResult = await SalesService.CreateSaleAsync(checkoutRequest);
@@ -179,7 +198,6 @@ public class POSModel : PageModel
                 ErrorMessage = $"Checkout failed: {saleResult.Message}";
             }
         }
-
         catch (Exception ex)
         {
             ErrorMessage = $"System checkout exception: {ex.Message}";
@@ -188,6 +206,50 @@ public class POSModel : PageModel
         return RedirectToPage("/POS");
     }
 
-    #endregion
+    /// <summary>
+    /// Handles manual override to open the cash register drawer via an RFID swipe code.
+    /// </summary>
+    public async Task<IActionResult> OnPostOpenRegisterAsync(string rfidCardId)
+    {
+        if (string.IsNullOrEmpty(rfidCardId))
+        {
+            ErrorMessage = "RFID card code is required to override register.";
+            return RedirectToPage("/POS");
+        }
 
+        try
+        {
+            using AppDbContext db = new();
+            var user = await db.User.FirstOrDefaultAsync(u => u.RfidCardId == rfidCardId);
+            if (user is null || user.AccessType != AccessCardType.Staff)
+            {
+                ErrorMessage = "Access Denied: Invalid RFID Card or card is not a registered Staff profile.";
+                return RedirectToPage("/POS");
+            }
+
+            // Trigger physical drawer open
+            _cashRegisterService.OpenDrawer();
+
+            // Save to audit logs
+            var log = new ActionLog(
+                id: Utils.GenerateEntityId(),
+                actionType: "RegisterOverride",
+                operatorUsername: user.FirstName ?? user.RfidCardId ?? "Unknown Staff",
+                details: $"Manual cash register drawer override triggered by RFID swipe of Staff: '{user.FirstName} {user.LastName}' (RFID: {user.RfidCardId}).",
+                timestamp: DateTime.UtcNow
+            );
+            db.ActionLog.Add(log);
+            await db.SaveChangesAsync();
+
+            SuccessMessage = $"Cash Register override successful. Drawer opened by {user.FirstName}!";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Register override failed: {ex.Message}";
+        }
+
+        return RedirectToPage("/POS");
+    }
+
+    #endregion
 }

@@ -2,6 +2,7 @@ using EZBM.DesktopHost.Endpoints;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
 WebApplication app = builder.Build();
 
 EZBM.Core.Data.DbManager.Initialize();
@@ -9,6 +10,19 @@ EZBM.Core.Data.DbManager.Initialize();
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Headers.TryGetValue("X-Operator-Username", out var username))
+    {
+        EZBM.Core.Data.CurrentUserContext.Username = username.ToString();
+    }
+    else
+    {
+        EZBM.Core.Data.CurrentUserContext.Username = "System";
+    }
+    await next();
+});
 
 app.MapPost("/api/auth/login", AuthController.Login);
 
@@ -58,6 +72,13 @@ app.MapPost("/api/payroll/create", StaffController.CreatePayroll);
 app.MapPost("/api/payroll/get", StaffController.GetPayroll);
 app.MapPost("/api/payroll/find", StaffController.FindPayroll);
 app.MapPost("/api/payroll/delete", StaffController.DeletePayroll);
+
+// Action Audit Logs Endpoint
+app.MapGet("/api/logs", LogsController.GetActionLogs);
+
+// Settings Endpoints
+app.MapGet("/api/settings", SettingsController.GetSettings);
+app.MapPost("/api/settings", SettingsController.SaveSettings);
 
 app.Run();
 

@@ -6,17 +6,11 @@ namespace EZBM.Core.Tools;
 
 /// <summary>
 /// Provides enhanced logging capabilities with contextual information and stack tracing.
-/// <br/><br/>
-/// <i>Author(s): OpenAI ChatGPT, Google Gemini, DefinitelyRus<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Gemini</i>
 /// </summary>
 public class Log
 {
     /// <summary>
     /// Defines the severity levels for log messages.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public enum Mode
     {
@@ -38,8 +32,6 @@ public class Log
 
     /// <summary>
     /// Logs a trace message with contextual information to the console.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="message">The message to log.</param>
     /// <param name="printAs">Specifies the severity level of the message.</param>
@@ -130,8 +122,6 @@ public class Log
     /// <code>
     /// Log.Me("Operation started.");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="message">The message to log.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -150,8 +140,6 @@ public class Log
     /// <code>
     /// Log.Me(() => $"Count: {list.Count}");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="messageFactory">The delegate returning the log message.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -170,8 +158,6 @@ public class Log
     /// <code>
     /// Log.Warn("Disk space low.");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="message">The warning message to log.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -190,8 +176,6 @@ public class Log
     /// <code>
     /// Log.Warn(() => "Connection timeout.");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="messageFactory">The delegate returning the warning message.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -210,8 +194,6 @@ public class Log
     /// <code>
     /// Log.Err("Database connection failed.");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="message">The error message to log.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -230,8 +212,6 @@ public class Log
     /// <code>
     /// Log.Err(() => "Transaction failed.");
     /// </code>
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="messageFactory">The delegate returning the error message.</param>
     /// <param name="enabled">Whether logging is enabled.</param>
@@ -245,8 +225,6 @@ public class Log
 
     /// <summary>
     /// Filters out stack frames belonging to system, Microsoft, or logging namespaces.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="frames">The original array of stack frames.</param>
     /// <returns>An array of filtered stack frames relevant to the application.</returns>

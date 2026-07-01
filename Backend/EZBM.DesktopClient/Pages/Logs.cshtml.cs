@@ -1,23 +1,26 @@
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
+using EZBM.Core.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EZBM.DesktopClient.Pages;
 
 /// <summary>
-/// Page model for shift attendance logs and payroll records.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
+/// Page model for shift attendance logs, payroll records, and system audit logs.
 /// </summary>
 public class LogsModel : PageModel
 {
-
     #region Properties
 
     /// <summary>
-    /// The currently selected tab (either "attendance" or "payroll").
+    /// The currently selected tab (either "attendance", "payroll", or "actions").
     /// </summary>
     public string ActiveTab { get; set; } = "attendance";
 
@@ -30,6 +33,11 @@ public class LogsModel : PageModel
     /// List of payroll history records.
     /// </summary>
     public List<Payroll> PayrollLogs { get; set; } = new();
+
+    /// <summary>
+    /// List of system action logs.
+    /// </summary>
+    public List<ActionLog> ActionLogs { get; set; } = new();
 
     /// <summary>
     /// List of all staff members (used in payroll/attendance creation forms).
@@ -54,8 +62,6 @@ public class LogsModel : PageModel
 
     /// <summary>
     /// Handles GET request to fetch logs and staff options.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task OnGetAsync(
         string? tab
@@ -63,6 +69,8 @@ public class LogsModel : PageModel
     {
         if (!string.IsNullOrEmpty(tab))
             ActiveTab = tab.ToLower();
+
+        using AppDbContext context = new();
 
         // Load attendance
         Utils.RequestResult<List<Attendance>> attendanceResult = await StaffService.FindAttendanceAsync(null!);
@@ -75,13 +83,13 @@ public class LogsModel : PageModel
         // Load staff for dropdowns
         Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
         StaffList = staffResult.Data ?? new List<Staff>();
-    }
 
+        // Load action logs
+        ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
+    }
 
     /// <summary>
     /// Handles manual creation of attendance records.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCreateAttendanceAsync(
         ulong staffId,
@@ -105,11 +113,8 @@ public class LogsModel : PageModel
         return RedirectToPage("/Logs", new { tab = "attendance" });
     }
 
-
     /// <summary>
     /// Handles manual creation of payroll logs.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostCreatePayrollAsync(
         ulong staffId,
@@ -163,11 +168,8 @@ public class LogsModel : PageModel
         return RedirectToPage("/Logs", new { tab = "payroll" });
     }
 
-
     /// <summary>
     /// Handles deleting an attendance record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostDeleteAttendanceAsync(
         ulong id
@@ -184,11 +186,8 @@ public class LogsModel : PageModel
         return RedirectToPage("/Logs", new { tab = "attendance" });
     }
 
-
     /// <summary>
     /// Handles deleting a payroll record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     public async Task<IActionResult> OnPostDeletePayrollAsync(
         ulong id
@@ -205,6 +204,106 @@ public class LogsModel : PageModel
         return RedirectToPage("/Logs", new { tab = "payroll" });
     }
 
-    #endregion
+    /// <summary>
+    /// Calculates stats (hours, gross pay, upgrade commission, net pay) dynamically for payroll form.
+    /// </summary>
+    public async Task<IActionResult> OnGetCalculatePayrollStatsAsync(ulong staffId, DateTime periodStart, DateTime periodEnd)
+    {
+        try
+        {
+            using AppDbContext db = new();
+            var staff = await db.Staff.FindAsync(staffId);
+            if (staff is null)
+            {
+                return new JsonResult(new { success = false, message = "Staff member not found" });
+            }
 
+            // Sum logged attendance hours
+            var attendanceLogs = await db.Attendance
+                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut != null)
+                .ToListAsync();
+
+            double totalHours = attendanceLogs.Sum(a => (a.TimeOut!.Value - a.TimeIn).TotalHours);
+            float grossAmount = (float)(totalHours * staff.PayRate);
+
+            // Compute net upgrade commission commissions (subtracting lower tier values already paid/earned)
+            float commission = await CalculateUpgradeCommissionsAsync(staffId, periodStart, periodEnd);
+            float netAmount = grossAmount + commission;
+
+            return new JsonResult(new
+            {
+                success = true,
+                totalHours = Math.Round(totalHours, 2),
+                grossAmount = Math.Round(grossAmount, 2),
+                commission = Math.Round(commission, 2),
+                netAmount = Math.Round(netAmount, 2)
+            });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+    }
+
+    private static async Task<float> CalculateUpgradeCommissionsAsync(ulong staffId, DateTime periodStart, DateTime periodEnd)
+    {
+        using var db = new AppDbContext();
+        var settings = SettingsService.LoadSettings();
+        var commissionRates = settings.MembershipCommissions;
+
+        // Find sales by this staff in period
+        var sales = await db.Sale
+            .Include(s => s.Customer)
+            .Where(s => s.Staff.Id == staffId && s.Timestamp >= periodStart && s.Timestamp <= periodEnd)
+            .ToListAsync();
+
+        float totalCommission = 0f;
+
+        foreach (var sale in sales)
+        {
+            var entries = await db.SaleEntry
+                .Include(se => se.Item)
+                .Where(se => se.Sale.Id == sale.Id)
+                .ToListAsync();
+
+            foreach (var entry in entries)
+            {
+                string itemName = entry.Item.Name;
+                if (commissionRates.ContainsKey(itemName))
+                {
+                    float currentRate = commissionRates[itemName];
+                    float subtractRate = 0f;
+
+                    if (sale.Customer != null)
+                    {
+                        // Check previous purchases of membership items to subtract lower tier values already paid/earned
+                        var prevEntries = await db.SaleEntry
+                            .Include(se => se.Sale)
+                            .Include(se => se.Item)
+                            .Where(se => se.Sale.Customer != null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
+                            .ToListAsync();
+
+                        foreach (var prevEntry in prevEntries)
+                        {
+                            string prevItemName = prevEntry.Item.Name;
+                            if (commissionRates.ContainsKey(prevItemName))
+                            {
+                                float prevRate = commissionRates[prevItemName];
+                                if (prevRate > subtractRate && prevRate < currentRate)
+                                {
+                                    subtractRate = prevRate;
+                                }
+                            }
+                        }
+                    }
+
+                    totalCommission += (currentRate - subtractRate);
+                }
+            }
+        }
+
+        return totalCommission;
+    }
+
+    #endregion
 }

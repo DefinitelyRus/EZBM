@@ -8,8 +8,6 @@ namespace EZBM.DesktopHost.Endpoints;
 
 /// <summary>
 /// Exposes endpoints for managing sales and sale entries.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class SalesController
 {
@@ -18,8 +16,6 @@ public static class SalesController
 
     /// <summary>
     /// Creates a new sale record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing sale details.</param>
     /// <returns>An HTTP result indicating the status of the sale creation.</returns>
@@ -41,8 +37,6 @@ public static class SalesController
 
     /// <summary>
     /// Retrieves a specific sale record by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing the sale ID.</param>
     /// <returns>An HTTP result with the sale details if found.</returns>
@@ -54,8 +48,6 @@ public static class SalesController
 
     /// <summary>
     /// Finds sale records matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing search filters.</param>
     /// <returns>An HTTP result with the list of matching sales.</returns>
@@ -67,8 +59,6 @@ public static class SalesController
 
     /// <summary>
     /// Deletes a specific sale record by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing the sale ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>
@@ -84,8 +74,6 @@ public static class SalesController
 
     /// <summary>
     /// Creates a new sale entry record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing sale entry details.</param>
     /// <returns>An HTTP result indicating the status of the sale entry creation.</returns>
@@ -97,8 +85,6 @@ public static class SalesController
 
     /// <summary>
     /// Retrieves a specific sale entry record by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing the sale entry ID.</param>
     /// <returns>An HTTP result with the sale entry details if found.</returns>
@@ -110,8 +96,6 @@ public static class SalesController
 
     /// <summary>
     /// Finds sale entry records matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing search filters.</param>
     /// <returns>An HTTP result with the list of matching sale entries.</returns>
@@ -123,8 +107,6 @@ public static class SalesController
 
     /// <summary>
     /// Deletes a specific sale entry record by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing the sale entry ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>

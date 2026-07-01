@@ -7,8 +7,6 @@ namespace EZBM.Core.Services;
 
 /// <summary>
 /// Provides services for managing items and stock transactions in the inventory.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class InventoryService
 {
@@ -17,8 +15,6 @@ public static class InventoryService
 
     /// <summary>
     /// Retrieves a specific inventory item by identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the item ID.</param>
     /// <returns>A RequestResult containing the Item entity.</returns>
@@ -56,8 +52,6 @@ public static class InventoryService
 
     /// <summary>
     /// Finds items matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Items.</returns>
@@ -180,8 +174,6 @@ public static class InventoryService
 
     /// <summary>
     /// Updates an existing inventory item's details.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing update fields and ID.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -231,8 +223,6 @@ public static class InventoryService
 
     /// <summary>
     /// Creates a new inventory item.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing new item details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -288,8 +278,6 @@ public static class InventoryService
 
     /// <summary>
     /// Deletes a specific inventory item.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the item ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -333,8 +321,6 @@ public static class InventoryService
 
     /// <summary>
     /// Retrieves a specific item transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the transaction ID.</param>
     /// <returns>A RequestResult containing the ItemTransaction entity.</returns>
@@ -384,8 +370,6 @@ public static class InventoryService
 
     /// <summary>
     /// Finds item transactions matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching ItemTransactions.</returns>
@@ -591,8 +575,6 @@ public static class InventoryService
 
     /// <summary>
     /// Creates a new stock/item transaction (stock movement log) and adjusts item quantity.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing transaction details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -740,8 +722,6 @@ public static class InventoryService
 
     /// <summary>
     /// Deletes a specific item transaction.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the transaction ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>

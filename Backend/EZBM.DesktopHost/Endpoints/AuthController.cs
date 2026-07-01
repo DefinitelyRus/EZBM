@@ -8,8 +8,6 @@ namespace EZBM.DesktopHost.Endpoints;
 
 /// <summary>
 /// Represents a login request payload.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public record LoginRequest(
     [Required] string Username,
@@ -18,15 +16,11 @@ public record LoginRequest(
 
 /// <summary>
 /// Exposes authentication and authorization endpoints.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class AuthController
 {
     /// <summary>
     /// Authenticates a staff member.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The credentials request payload.</param>
     /// <returns>An HTTP result containing the staff member details if successful.</returns>

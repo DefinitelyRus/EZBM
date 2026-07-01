@@ -6,8 +6,6 @@ namespace EZBM.DesktopClient.Helpers;
 
 /// <summary>
 /// Helper for managing active employee login state and attendance status via cookies and database checks.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class StateHelper
 {
@@ -16,8 +14,6 @@ public static class StateHelper
 
     /// <summary>
     /// Retrieves the currently logged-in staff member based on the cookie.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="httpContext">The current HTTP context.</param>
     /// <returns>The active Staff member, or null if not logged in.</returns>
@@ -49,8 +45,6 @@ public static class StateHelper
 
     /// <summary>
     /// Checks if the given staff member is currently clocked in.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="staffId">The ID of the staff member.</param>
     /// <returns>True if clocked in, false otherwise.</returns>

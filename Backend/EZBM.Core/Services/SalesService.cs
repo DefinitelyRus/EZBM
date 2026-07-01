@@ -7,8 +7,6 @@ namespace EZBM.Core.Services;
 
 /// <summary>
 /// Provides services for managing sales transactions and sale entries.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class SalesService
 {
@@ -16,8 +14,6 @@ public static class SalesService
 
     /// <summary>
     /// Creates a new sale and updates inventory.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing sale details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -44,15 +40,51 @@ public static class SalesService
                 return noStaffResult;
             }
 
+            // Validate mixed payment
+            if (request.PaymentMethod == Transaction.PayMethod.Mixed)
+            {
+                if (request.SplitPayments == null || request.SplitPayments.Count == 0)
+                {
+                    message = "Cannot checkout: Mixed payment selected but no split payment items provided.";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+                float sum = request.SplitPayments.Sum(s => s.Amount);
+                if (Math.Abs(sum - request.TotalAmount) > 0.01f)
+                {
+                    message = $"Cannot checkout: Split payments sum (${sum}) does not match total amount (${request.TotalAmount}).";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+            }
+
+            // Verify promo code
+            bool hasFreeWeekPromo = false;
+            if (!string.IsNullOrEmpty(request.PromoCode) && request.PromoCode.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
+            {
+                var settings = SettingsService.LoadSettings();
+                if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
+                {
+                    hasFreeWeekPromo = true;
+                }
+                else
+                {
+                    message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                    Log.Me(message);
+                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                }
+            }
+
             // Begin db transaction or let EF Core save atomically
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
+            float finalAmount = hasFreeWeekPromo ? 0f : request.TotalAmount;
 
             // Create Sale entity
             Sale sale = new(
                 id: Utils.GenerateEntityId(),
                 invoiceNumber: invoiceNumber,
-                amount: request.TotalAmount,
+                amount: finalAmount,
                 paymentMethod: request.PaymentMethod,
                 staff: staff,
                 timestamp: serverTime,
@@ -60,6 +92,27 @@ public static class SalesService
             );
 
             context.Sale.Add(sale);
+
+            // Save child payment records if mixed payment
+            if (request.PaymentMethod == Transaction.PayMethod.Mixed && request.SplitPayments != null)
+            {
+                foreach (var split in request.SplitPayments)
+                {
+                    Transaction childTx = new(
+                        id: Utils.GenerateEntityId(),
+                        transactionType: Transaction.Type.Income,
+                        amount: split.Amount,
+                        timestamp: serverTime,
+                        staff: staff,
+                        paymentMethod: split.PaymentMethod,
+                        invoiceNumber: invoiceNumber,
+                        invoicePrefix: "SALE-SPLIT",
+                        notes: $"Split payment component of Invoice {sale.InvoiceId}"
+                    );
+                    childTx.ParentTransactionId = sale.Id;
+                    context.Transaction.Add(childTx);
+                }
+            }
 
             // Add Sale entries (line items)
             foreach (SaleItemRequest itemReq in request.Items)
@@ -138,8 +191,6 @@ public static class SalesService
 
     /// <summary>
     /// Retrieves a specific sale record by identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale ID.</param>
     /// <returns>A RequestResult containing the Sale entity.</returns>
@@ -190,8 +241,6 @@ public static class SalesService
 
     /// <summary>
     /// Finds sale records matching query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching Sales.</returns>
@@ -283,8 +332,6 @@ public static class SalesService
 
     /// <summary>
     /// Deletes a specific sale record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -338,8 +385,6 @@ public static class SalesService
 
     /// <summary>
     /// Creates a manual sale entry.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing sale entry details.</param>
     /// <returns>A RequestResult representing the outcome.</returns>
@@ -409,8 +454,6 @@ public static class SalesService
 
     /// <summary>
     /// Retrieves a specific sale entry record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale entry ID.</param>
     /// <returns>A RequestResult containing the SaleEntry entity.</returns>
@@ -462,8 +505,6 @@ public static class SalesService
 
     /// <summary>
     /// Finds sale entries matching query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>A RequestResult containing the list of matching SaleEntries.</returns>
@@ -555,8 +596,6 @@ public static class SalesService
 
     /// <summary>
     /// Deletes a specific sale entry record.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the sale entry ID to delete.</param>
     /// <returns>A RequestResult representing the outcome.</returns>

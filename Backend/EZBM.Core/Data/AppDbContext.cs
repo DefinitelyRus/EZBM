@@ -1,77 +1,76 @@
 using Microsoft.EntityFrameworkCore;
 using EZBM.Core.Entities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace EZBM.Core.Data;
 
 /// <summary>
 /// Represents the database context for the EZBM application, managing database connections and entity configurations.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): None<br/>
-/// Documented by: Google Gemini</i>
 /// </summary>
 public class AppDbContext : DbContext
 {
     /// <summary>
+    /// Gets or sets the database set for user profiles.
+    /// </summary>
+    public DbSet<User> User { get; set; }
+
+    /// <summary>
     /// Gets or sets the database set for staff members.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Staff> Staff { get; set; }
 
     /// <summary>
+    /// Gets or sets the database set for customers.
+    /// </summary>
+    public DbSet<Customer> Customer { get; set; }
+
+    /// <summary>
+    /// Gets or sets the database set for system action audit logs.
+    /// </summary>
+    public DbSet<ActionLog> ActionLog { get; set; }
+
+    /// <summary>
     /// Gets or sets the database set for attendance records.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Attendance> Attendance { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for payroll transactions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Payroll> Payroll { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for inventory items.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Item> Item { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for item transactions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<ItemTransaction> ItemTransaction { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for sale transactions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Sale> Sale { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for individual sale entries.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<SaleEntry> SaleEntry { get; set; }
 
     /// <summary>
     /// Gets or sets the database set for financial transactions.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     public DbSet<Transaction> Transaction { get; set; }
 
+
     /// <summary>
     /// Configures the database to be used for this context (SQLite).
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="optionsBuilder">A builder used to configure database connection options.</param>
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -81,13 +80,36 @@ public class AppDbContext : DbContext
 
     /// <summary>
     /// Configures the model mapping, database schemas, and relationships using Fluent API.
-    /// <br/><br/>
-    /// <i>Documented by: Google Gemini</i>
     /// </summary>
     /// <param name="modelBuilder">The builder used to construct the database model.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // TPH Mapping for User hierarchy
+        modelBuilder.Entity<User>()
+            .HasDiscriminator<string>("UserType")
+            .HasValue<Staff>("Staff")
+            .HasValue<Customer>("Customer");
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.AccessType)
+            .HasConversion<string>();
+
+        // Convert List<string> to/from semi-colon string for SQLite storage
+        modelBuilder.Entity<User>()
+            .Property(u => u.Permissions)
+            .HasConversion(
+                v => string.Join(";", v),
+                v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+
+        modelBuilder.Entity<User>()
+            .Property(u => u.PermissionsAfterExpiry)
+            .HasConversion(
+                v => string.Join(";", v),
+                v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
 
         // Map Enums to strings automatically
         modelBuilder.Entity<Staff>()
@@ -111,6 +133,24 @@ public class AppDbContext : DbContext
             .HasOne(t => t.Staff)
             .WithMany()
             .HasForeignKey("StaffId");
+
+        // Self-referencing Transaction split relationship
+        modelBuilder.Entity<Transaction>()
+            .HasOne(t => t.ParentTransaction)
+            .WithMany(t => t.ChildTransactions)
+            .HasForeignKey(t => t.ParentTransactionId);
+
+        // Link Transaction to Customer
+        modelBuilder.Entity<Transaction>()
+            .HasOne(t => t.Customer)
+            .WithMany(c => c.TransactionHistory)
+            .HasForeignKey("CustomerId");
+
+        // Transaction and ItemTransaction many-to-many junction table configuration
+        modelBuilder.Entity<Transaction>()
+            .HasMany(t => t.ItemTransactions)
+            .WithMany(it => it.Transactions)
+            .UsingEntity(j => j.ToTable("TransactionItemTransactions"));
 
         modelBuilder.Entity<Attendance>()
             .HasOne(a => a.Staff)
@@ -141,5 +181,72 @@ public class AppDbContext : DbContext
             .HasOne(se => se.Item)
             .WithMany()
             .HasForeignKey("ItemId");
+    }
+
+    /// <summary>
+    /// Saves all changes made in this context to the database, automatically intercepting and auditing modifications.
+    /// </summary>
+    public override int SaveChanges()
+    {
+        AuditChanges();
+        return base.SaveChanges();
+    }
+
+    /// <summary>
+    /// Asynchronously saves all changes made in this context to the database, automatically intercepting and auditing modifications.
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        AuditChanges();
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private void AuditChanges()
+    {
+        var auditEntries = new List<ActionLog>();
+        var entries = ChangeTracker.Entries()
+            .Where(e => (e.State == EntityState.Modified || e.State == EntityState.Deleted) && !(e.Entity is ActionLog))
+            .ToList();
+
+        foreach (var entry in entries)
+        {
+            var entityName = entry.Entity.GetType().Name;
+            var action = entry.State == EntityState.Modified ? "Edit" : "Delete";
+            var entityId = entry.Property("Id").CurrentValue?.ToString() ?? "Unknown";
+
+            var details = $"{action} on {entityName} (ID: {entityId}).";
+            if (entry.State == EntityState.Modified)
+            {
+                var changes = new List<string>();
+                foreach (var property in entry.OriginalValues.Properties)
+                {
+                    var original = entry.OriginalValues[property];
+                    var current = entry.CurrentValues[property];
+                    if (!Equals(original, current))
+                    {
+                        changes.Add($"{property.Name}: '{original}' -> '{current}'");
+                    }
+                }
+                if (changes.Count > 0)
+                {
+                    details += " Changes: " + string.Join(", ", changes);
+                }
+            }
+
+            var operatorUsername = CurrentUserContext.Username ?? "System";
+            var log = new ActionLog(
+                id: Tools.Utils.GenerateEntityId(),
+                actionType: action,
+                operatorUsername: operatorUsername,
+                details: details,
+                timestamp: DateTime.UtcNow
+            );
+            auditEntries.Add(log);
+        }
+
+        if (auditEntries.Count > 0)
+        {
+            ActionLog.AddRange(auditEntries);
+        }
     }
 }

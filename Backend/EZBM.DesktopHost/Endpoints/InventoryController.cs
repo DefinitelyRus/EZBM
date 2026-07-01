@@ -8,8 +8,6 @@ namespace EZBM.DesktopHost.Endpoints;
 
 /// <summary>
 /// Exposes endpoints for managing inventory items and item transactions.
-/// <br/><br/>
-/// <i>Documented by: Google Antigravity</i>
 /// </summary>
 public static class InventoryController
 {
@@ -18,8 +16,6 @@ public static class InventoryController
 
     /// <summary>
     /// Retrieves a specific inventory item by identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the item ID.</param>
     /// <returns>An HTTP result with the item details if found.</returns>
@@ -31,8 +27,6 @@ public static class InventoryController
 
     /// <summary>
     /// Finds items matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>An HTTP result with the list of matching items.</returns>
@@ -44,8 +38,6 @@ public static class InventoryController
 
     /// <summary>
     /// Creates a new inventory item.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing new item details.</param>
     /// <returns>An HTTP result indicating the status of the item creation.</returns>
@@ -58,8 +50,6 @@ public static class InventoryController
 
     /// <summary>
     /// Deletes a specific inventory item by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the item ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>
@@ -71,8 +61,6 @@ public static class InventoryController
 
     /// <summary>
     /// Retrieves all inventory items.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <returns>An HTTP result containing the list of all items.</returns>
     public static async Task<IResult> GetAllItems()
@@ -87,8 +75,6 @@ public static class InventoryController
 
     /// <summary>
     /// Creates a new stock transaction movement.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request parameters containing transaction details.</param>
     /// <returns>An HTTP result indicating the status of the transaction creation.</returns>
@@ -100,8 +86,6 @@ public static class InventoryController
 
     /// <summary>
     /// Retrieves a specific item transaction by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the transaction ID.</param>
     /// <returns>An HTTP result with the transaction details if found.</returns>
@@ -113,8 +97,6 @@ public static class InventoryController
 
     /// <summary>
     /// Finds item transactions matching the specified query filters.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>An HTTP result with the list of matching transactions.</returns>
@@ -126,8 +108,6 @@ public static class InventoryController
 
     /// <summary>
     /// Deletes a specific item transaction by its identifier.
-    /// <br/><br/>
-    /// <i>Documented by: Google Antigravity</i>
     /// </summary>
     /// <param name="request">The request containing the transaction ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>

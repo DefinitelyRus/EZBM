@@ -1,0 +1,17 @@
+{
+  "StoreName": "EZBM Store",
+  "Currency": "PHP",
+  "LowStockThreshold": 5,
+  "WrittenReceiptThreshold": 1000,
+  "StoreOpeningDate": "2026-07-01T09:22:47.9928312Z",
+  "CardExpirationOffsets": {
+    "Staff": 365,
+    "OneTime": 1,
+    "Member": 30
+  },
+  "MembershipCommissions": {
+    "Silver Upgrade": 10,
+    "Gold Upgrade": 25,
+    "Platinum Upgrade": 50
+  }
+}

@@ -7,10 +7,6 @@ using System;
 /// <br/><br/>
 /// <b>Note:</b> This class has no additional members compared to <see cref="Transaction"/>.
 /// It is made purely to distinguish from other <see cref="Transaction"/> subtypes.
-/// <br/><br/>
-/// <i>Author(s): DefinitelyRus<br/>
-/// Editor(s): Google Antigravity<br/>
-/// Documented by: Google Gemini, Google Antigravity</i>
 /// </summary>
 /// <param name="id">The unique identifier for this entity.</param>
 /// <param name="invoiceNumber">The numeric sequence for the invoice.</param>
