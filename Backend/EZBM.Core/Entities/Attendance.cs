@@ -5,6 +5,8 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class Attendance : Entity
 {
+    #region Properties
+
     /// <summary>
     /// The staff member associated with this record.
     /// </summary>
@@ -20,6 +22,10 @@ public class Attendance : Entity
     /// </summary>
     public DateTime? TimeOut { get; set; }
 
+    #endregion
+
+    #region Constructors
+
     /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
@@ -34,11 +40,17 @@ public class Attendance : Entity
     /// <param name="staff">The ID of the staff member.</param>
     /// <param name="timeIn">The clock-in timestamp.</param>
     /// <param name="timeOut">The optional clock-out timestamp.</param>
-    public Attendance(ulong id, Staff staff, DateTime timeIn, DateTime? timeOut = null)
+    public Attendance(
+        ulong id,
+        Staff staff,
+        DateTime timeIn,
+        DateTime? timeOut = null)
     {
         Id = id;
         Staff = staff;
         TimeIn = timeIn;
         TimeOut = timeOut;
     }
+
+    #endregion
 }
