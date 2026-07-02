@@ -11,7 +11,6 @@ namespace EZBM.DesktopHost.Endpoints;
 /// </summary>
 public static class InventoryController
 {
-
     #region Item Requests
 
     /// <summary>
@@ -19,7 +18,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request containing the item ID.</param>
     /// <returns>An HTTP result with the item details if found.</returns>
-    public static async Task<IResult> GetItem([FromBody] GetItemRequest request)
+    public static async Task<IResult> GetItem(
+        [FromBody] GetItemRequest request)
     {
         Utils.RequestResult<Item> result = await InventoryService.GetItemAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -30,7 +30,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>An HTTP result with the list of matching items.</returns>
-    public static async Task<IResult> FindItems([FromBody] FindItemRequest request)
+    public static async Task<IResult> FindItems(
+        [FromBody] FindItemRequest request)
     {
         Utils.RequestResult<List<Item>> result = await InventoryService.FindItemAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -41,7 +42,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request containing new item details.</param>
     /// <returns>An HTTP result indicating the status of the item creation.</returns>
-    public static async Task<IResult> CreateItem([FromBody] CreateItemRequest request)
+    public static async Task<IResult> CreateItem(
+        [FromBody] CreateItemRequest request)
     {
         Utils.RequestResult<Item> result = await InventoryService.CreateItemAsync(request);
 
@@ -53,7 +55,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request containing the item ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>
-    public static async Task<IResult> DeleteItem([FromBody] DeleteItemRequest request)
+    public static async Task<IResult> DeleteItem(
+        [FromBody] DeleteItemRequest request)
     {
         Utils.RequestResult result = await InventoryService.DeleteItemAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -78,7 +81,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request parameters containing transaction details.</param>
     /// <returns>An HTTP result indicating the status of the transaction creation.</returns>
-    public static async Task<IResult> CreateItemTransaction([FromBody] CreateItemTransactionRequest request)
+    public static async Task<IResult> CreateItemTransaction(
+        [FromBody] CreateItemTransactionRequest request)
     {
         Utils.RequestResult result = await InventoryService.CreateItemTransactionAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -89,7 +93,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request containing the transaction ID.</param>
     /// <returns>An HTTP result with the transaction details if found.</returns>
-    public static async Task<IResult> GetItemTransaction([FromBody] GetItemTransactionRequest request)
+    public static async Task<IResult> GetItemTransaction(
+        [FromBody] GetItemTransactionRequest request)
     {
         Utils.RequestResult<ItemTransaction> result = await InventoryService.GetItemTransactionAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -100,7 +105,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The search query parameters.</param>
     /// <returns>An HTTP result with the list of matching transactions.</returns>
-    public static async Task<IResult> FindItemTransactions([FromBody] FindItemTransactionRequest request)
+    public static async Task<IResult> FindItemTransactions(
+        [FromBody] FindItemTransactionRequest request)
     {
         Utils.RequestResult<List<ItemTransaction>> result = await InventoryService.FindItemTransactionAsync(request);
         return EndpointHelpers.ToIResult(result);
@@ -111,7 +117,8 @@ public static class InventoryController
     /// </summary>
     /// <param name="request">The request containing the transaction ID to delete.</param>
     /// <returns>An HTTP result indicating the status of the deletion.</returns>
-    public static async Task<IResult> DeleteItemTransaction([FromBody] DeleteItemTransactionRequest request)
+    public static async Task<IResult> DeleteItemTransaction(
+        [FromBody] DeleteItemTransactionRequest request)
     {
         Utils.RequestResult result = await InventoryService.DeleteItemTransactionAsync(request);
         return EndpointHelpers.ToIResult(result);

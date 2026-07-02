@@ -29,6 +29,7 @@ public static class LogsController
 
             return Results.Ok(logs);
         }
+
         catch (Exception ex)
         {
             return Results.Problem($"Failed to retrieve action logs: {ex.Message}");

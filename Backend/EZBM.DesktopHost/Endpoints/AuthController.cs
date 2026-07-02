@@ -42,7 +42,6 @@ public static class AuthController
 
         Log.Me(() => "Logged in successfully.");
 
-        // Return as a filtered object
         return Results.Ok(new
         {
             id = staff.Id,

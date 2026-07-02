@@ -21,7 +21,7 @@ public static class SettingsController
     /// </summary>
     public static IResult SaveSettings([FromBody] StoreSettings settings)
     {
-        if (settings == null)
+        if (settings is null)
         {
             return Results.BadRequest("Settings payload cannot be null.");
         }
