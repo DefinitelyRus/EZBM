@@ -10,7 +10,7 @@ function Dropdown({ title, options }) {
         type="button"
         data-bs-toggle="dropdown"
         aria-expanded="false"
-        style={{ backgroundColor: "#121212" }}
+        style={{ backgroundColor: '#FFFFFF', color: '#1C1E21', borderRadius: '25px' }}
       >
         {selected}
       </button>

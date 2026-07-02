@@ -7,4 +7,9 @@ export default defineConfig({
     react(),
     svgr(),
   ],
-})
+  server: {
+        watch: {
+          usePolling: true, 
+        },
+  },
+});

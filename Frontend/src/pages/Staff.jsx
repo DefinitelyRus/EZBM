@@ -11,7 +11,7 @@ function Staff() {
         
       </div>
       </div>
-      <div id="recents-container" className="d-flex card" style={{ backgroundColor: '#EDE7D9' }}>
+      <div id="recents-container" className="d-flex card" style={{ backgroundColor: '#FFFFFF' }}>
         <div className="card-body">
             <h5>Add New Employee</h5>
         </div>

@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import Dropdown from '../components/Dropdown';
 import { dropdownOptions } from "../components/dropdownOptions";
 
+import SearchIcon from "../assets/search.svg?react";
+import DeleteIcon from "../assets/delete.svg";
+import EditIcon from "../assets/edit.svg";
+
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -34,7 +38,7 @@ const inventoryItems = [
     costPrice: 50,
     salePrice: 0,
     quantity: 10,
-    unit: "Kg",
+    unit: "Kilograms",
     expiration: "N/A",
     tags: "Ingredient"
   },
@@ -63,26 +67,39 @@ const inventoryItems = [
 function Dashboard() {
   const [expiryDate, setExpiryDate] = useState(new Date());
 
+  const [search, setSearch] = useState("");
+
+  const filteredItems = inventoryItems.filter((item) => {
+  const query = search.toLowerCase();
+
+  return (
+    item.name.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div id="inventory-contents" className="d-flex flex-row gap-4">
       <div id="inventory-content-left" className="d-flex col-9">
         <div id='top-text'>
-          <h2>Product & Service Catalogue</h2>
+          <h2>Inventory Management</h2>
+          <h5>Keep track of your products and stock levels.</h5>
         </div>
 
         <div className="input-group flex-direction row">
           <div className="search-bar-container">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Type in to filter..."
-          />
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type in to filter..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
 
            <div className="table-responsive table-container">
             <table className="inventory-table">
               <colgroup>
-                <col style={{ width: "22%" }} /> {/* Name */}
+                <col style={{ width: "27%" }} /> {/* Name */}
                 <col style={{ width: "6%" }} />  {/* For Sale */}
                 <col style={{ width: "8%" }} /> {/* Cost Price */}
                 <col style={{ width: "8%" }} /> {/* Sale Price */}
@@ -90,7 +107,7 @@ function Dashboard() {
                 <col style={{ width: "10%" }} /> {/* Unit */}
                 <col style={{ width: "12%" }} /> {/* Expiration */}
                 <col style={{ width: "12%" }} /> {/* Tags */}
-                <col style={{ width: "12%" }} />  {/* Actions */}
+                <col style={{ width: "7%" }} />  {/* Actions */}
               </colgroup>
 
               <thead>
@@ -108,24 +125,42 @@ function Dashboard() {
               </thead>
 
               <tbody>
-                {inventoryItems.map((item) => (
-                  <tr key={item.id}>
-                    <td className="col-left">{item.name}</td>
-                    <td className="col-center">{item.forSale ? "Yes" : "No"}</td>
-                    <td className="col-center">₱{item.costPrice}</td>
-                    <td className="col-center">{item.salePrice ? `₱${item.salePrice}` : "-"}</td>
-                    <td className="col-center">{item.quantity}</td>
-                    <td className="col-left">{item.unit}</td>
-                    <td className="col-left">{item.expiration}</td>
-                    <td className="col-left">{item.tags}</td>
-                    <td className="col-center-btn">
-                        <div className="d-flex flex-direction row gap-1 btn-group">
-                          <button className="edit">Edit</button>
-                          <button className="delete">Delete</button>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item) => (
+                    <tr key={item.name}>
+                      <td className="col-left">{item.name}</td>
+                      <td className="col-center">
+                        {item.forSale ? "Yes" : "No"}
+                      </td>
+                      <td className="col-center">₱{item.costPrice}</td>
+                      <td className="col-center">
+                        {item.salePrice ? `₱${item.salePrice}` : "-"}
+                      </td>
+                      <td className="col-center">{item.quantity}</td>
+                      <td className="col-left">{item.unit}</td>
+                      <td className="col-left">{item.expiration}</td>
+                      <td className="col-left">{item.tags}</td>
+
+                      <td className="col-center-btn">
+                        <div className="d-flex flex-direction col gap-2 btn-group">
+                          <button className="edit" title="Edit">
+                            <img src={EditIcon} alt="Edit" />
+                          </button>
+
+                          <button className="delete" title="Delete">
+                            <img src={DeleteIcon} alt="Delete" />
+                          </button>
                         </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center py-4">
+                      No items found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -135,56 +170,64 @@ function Dashboard() {
       <div
         id="add-items-container"
         className="d-flex card"
-        style={{ backgroundColor: '#EDE7D9' }}
+        style={{ backgroundColor: '#FFFFFF' }}
       >
         <div className="card-body">
-          <h5>Add New Item</h5>
+          <h5 >Add New Item</h5>
 
           <div id="item-inputs">
-            <div className="input-group mb-3">
-                <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Name" 
-                aria-describedby="basic-addon1" />
+            <div className="mb-3">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                className="form-control usr-input"
+              />
             </div>
 
-            <div className="input-group mb-3">
-                <textarea 
-                className="form-control" 
-                placeholder="Description" 
-                aria-label="With textarea"
-                style={{ minHeight: "20px" }}></textarea>
+            <div className="mb-3">
+              <label className="form-label">Description</label>
+              <textarea
+                className="form-control usr-input"
+                style={{ minHeight: "80px" }}
+              ></textarea>
             </div>
 
-            <div className="input-group mb-3">
+            <div className="mb-3">
+              <label className="form-label">Cost Price</label>
+              <div className="input-group">
                 <span className="input-group-text currency-span">₱</span>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="Cost Price" 
-                  aria-label="Amount (to the nearest peso)" />
+                <input
+                  type="text"
+                  className="form-control usr-input"
+                />
+              </div>
             </div>
 
-            <div className="input-group mb-3">
+            <div className="mb-3">
+              <label className="form-label">Sale Price</label>
+              <div className="input-group">
                 <span className="input-group-text currency-span">₱</span>
-                <input type="text" 
-                  className="form-control" 
-                  placeholder="Sale Price" 
-                  aria-label="Amount (to the nearest peso)" />
+                <input
+                  type="text"
+                  className="form-control usr-input"
+                />
+              </div>
             </div>
 
-            <div className="input-group mb-3">
-                <input type="text" 
-                  className="form-control" 
-                  placeholder="Stock Quantity" 
-                  aria-describedby="basic-addon1" />
+            <div className="mb-3">
+              <label className="form-label">Stock Quantity</label>
+              <input
+                type="text"
+                className="form-control usr-input"
+              />
             </div>
 
-            <div>
+            <div className="mb-3">
+              <label className="form-label">Unit of Measurement</label>
               <Dropdown
-                  title="Unit of Measurement"
+                  title="Select an option"
                   options={dropdownOptions.units}
+                  className="usr-input"
               />
             </div>
 
@@ -202,15 +245,15 @@ function Dashboard() {
               </label>
             </div>
 
-            <div className="mb-3 d-flex flex-direction row">
+            <div className="mb-3">
               <label className="form-label">
-                Expiry Date:
+                Expiry Date
               </label>
 
               <DatePicker
                 selected={expiryDate}
                 onChange={(date) => setExpiryDate(date)}
-                className="form-control date-picker"
+                className="form-control usr-input date-picker"
                 dateFormat="MM/dd/yyyy"
               />
             </div>
@@ -218,16 +261,32 @@ function Dashboard() {
             <label className="form-label">
               Tags:
             </label>
+                <div className="d-flex flex-wrap gap-1">
+                  <button className="tag-btn">Beverage</button>
+                  <button className="tag-btn">Food</button>
+                  <button className="tag-btn">Ingredient</button>
+                  <button className="tag-btn">Dairy</button>
+                  <button className="tag-btn">Supplies</button>
+                  <button className="tag-btn">Hygiene</button>
+                </div>
             </div>
           </div>
         </div>
-
-        <button
-          id="create-item"
-          className="btn btn-light align-self-center"
-        >
-          Create Item
-        </button>
+        
+        <div className="d-flex justify-content-center gap-3">
+          <button
+            id="create-item"
+            className="btn btn-light align-self-center"
+          >
+            Create Item
+          </button>
+          <button
+            id="clear-item"
+            className="btn btn-light align-self-center"
+          >
+            Clear
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -32,14 +32,44 @@
     padding: 15px 15px;
 }
 
-.money-card {
+.money-card-1 {
     width: 34rem;
     padding: 5px 7px;
+
+    box-shadow:
+    0 1px 2px #1877F2;
+        
+}
+
+.money-card-2 {
+    width: 34rem;
+    padding: 5px 7px;
+
+    box-shadow:
+    0 1px 2px #42B72A;
 }
 
 /* TEXT */
 #top-text {
     padding-bottom: 20px;
+}
+
+#top-text h2 {
+    font-weight: bold;
+}
+
+#top-text h5 {
+    color: #65676B;
+    font-style: italic;
+}
+
+#card-container .card-title {
+    font-style: oblique;
+    font-weight: 500;
+}
+
+#inventory-alerts-container .card-title {
+    font-weight: 600;
 }
 
 #inventory-link {
