@@ -833,10 +833,9 @@ internal class Program
         resultsBuilder.AppendLine("## Custom New Features Verification");
         resultsBuilder.AppendLine();
 
-        using var db = new AppDbContext();
+        using AppDbContext db = new();
 
-        // 1. Verify lazy permissions expiry check
-        var user = new Customer(
+        Customer user = new(
             id: Utils.GenerateEntityId(),
             firstName: "Lazy",
             lastName: "Tester"
@@ -845,48 +844,44 @@ internal class Program
             RfidCardId = "lazy_card",
             Permissions = new List<string> { "EnterStore", "Checkout" },
             PermissionsAfterExpiry = new List<string> { "GuestViewOnly" },
-            ExpirationDate = DateTime.UtcNow.AddMinutes(-5) // already expired
+            ExpirationDate = DateTime.UtcNow.AddMinutes(-5)
         };
         db.Customer.Add(user);
         await db.SaveChangesAsync();
 
-        var activePerms = user.GetActivePermissions();
+        List<string> activePerms = user.GetActivePermissions();
         bool lazyOk = activePerms.Count == 1 && activePerms[0] == "GuestViewOnly";
         LogResult("Lazy Permissions Expiry Override",
             "Verified that active permissions default to PermissionsAfterExpiry when ExpirationDate has passed.",
             lazyOk,
             $"Active permissions: {string.Join(", ", activePerms)}");
 
-        // 2. Verify audit logs (DB SaveChanges interceptor)
-        // Edit user and save
         user.FirstName = "LazyUpdated";
         await db.SaveChangesAsync();
 
-        var latestLog = await db.ActionLog
+        ActionLog? latestLog = await db.ActionLog
             .OrderByDescending(l => l.Timestamp)
             .FirstOrDefaultAsync();
 
-        bool auditOk = latestLog != null && latestLog.ActionType == "Edit" && latestLog.Details.Contains("LazyUpdated");
+        bool auditOk = latestLog is not null && latestLog.ActionType == "Edit" && latestLog.Details.Contains("LazyUpdated");
         LogResult("Audit Logs Automatic Capturing",
             "Verified that editing an entity automatically triggers and logs an ActionLog entry.",
             auditOk,
-            latestLog != null ? $"Log Details: {latestLog.Details}" : "No logs captured.");
+            latestLog is not null ? $"Log Details: {latestLog.Details}" : "No logs captured.");
 
-        // 3. Verify mixed payment split payloads saving
-        // Create an item and staff
-        var staff = new Staff(Utils.GenerateEntityId(), "test_mixed_cashier", Staff.Frequency.Hourly, 10f);
-        var item = new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 20f, "Mixed Test Apple");
+        Staff staff = new(Utils.GenerateEntityId(), "test_mixed_cashier", Staff.Frequency.Hourly, 10f);
+        Item item = new(Utils.GenerateEntityId(), Item.Unit.Count, true, 20f, "Mixed Test Apple");
         db.Staff.Add(staff);
         db.Item.Add(item);
         await db.SaveChangesAsync();
 
-        var splitPayments = new List<SplitPaymentRequest>
+        List<SplitPaymentRequest> splitPayments = new()
         {
             new SplitPaymentRequest(Transaction.PayMethod.Cash, 10f),
             new SplitPaymentRequest(Transaction.PayMethod.EWallet, 10f)
         };
 
-        var saleReq = new CreateSaleRequest(
+        CreateSaleRequest saleReq = new(
             StaffId: staff.Id,
             PaymentMethod: Transaction.PayMethod.Mixed,
             TotalAmount: 20f,
@@ -895,12 +890,12 @@ internal class Program
             SplitPayments: splitPayments
         );
 
-        var saleRes = await SalesService.CreateSaleAsync(saleReq);
+        Utils.RequestResult<ulong> saleRes = await SalesService.CreateSaleAsync(saleReq);
         bool mixedOk = false;
         if (saleRes.Type == Utils.Result.Success)
         {
             ulong parentSaleId = saleRes.Data;
-            var childTxs = await db.Transaction
+            List<Transaction> childTxs = await db.Transaction
                 .Where(t => t.ParentTransactionId == parentSaleId)
                 .ToListAsync();
 
@@ -914,14 +909,12 @@ internal class Program
             mixedOk,
             $"Parent Sale Status: {saleRes.Type}. Child Payment Records count: {(saleRes.Type == Utils.Result.Success ? db.Transaction.Count(t => t.ParentTransactionId == saleRes.Data).ToString() : "N/A")}");
 
-        // 4. Verify FREEWEEK promo offset validation
-        var settings = SettingsService.LoadSettings();
-        // Temporarily set opening date to today so FREEWEEK is active
-        var oldOpeningDate = settings.StoreOpeningDate;
+        StoreSettings settings = SettingsService.LoadSettings();
+        DateTime oldOpeningDate = settings.StoreOpeningDate;
         settings.StoreOpeningDate = DateTime.UtcNow;
         SettingsService.SaveSettings(settings);
 
-        var promoReqValid = new CreateSaleRequest(
+        CreateSaleRequest promoReqValid = new(
             StaffId: staff.Id,
             PaymentMethod: Transaction.PayMethod.Cash,
             TotalAmount: 20f,
@@ -930,18 +923,16 @@ internal class Program
             PromoCode: "FREEWEEK"
         );
 
-        var promoResValid = await SalesService.CreateSaleAsync(promoReqValid);
+        Utils.RequestResult<ulong> promoResValid = await SalesService.CreateSaleAsync(promoReqValid);
         
-        // Restore opening date
         settings.StoreOpeningDate = oldOpeningDate;
         SettingsService.SaveSettings(settings);
 
         bool promoOk = promoResValid.Type == Utils.Result.Success;
         if (promoOk)
         {
-            var verifiedSale = await db.Sale.FindAsync(promoResValid.Data);
-            // FREEWEEK discounts total amount to 0
-            promoOk = verifiedSale != null && verifiedSale.Amount == 0f;
+            Sale? verifiedSale = await db.Sale.FindAsync(promoResValid.Data);
+            promoOk = verifiedSale is not null && verifiedSale.Amount == 0f;
         }
 
         LogResult("FREEWEEK Promotion Validity Offset",
