@@ -1,6 +1,10 @@
 import './Checkout.css';
+import { useState } from "react";
+
 import Dropdown from '../components/Dropdown';
 import { dropdownOptions } from "../components/dropdownOptions";
+
+import AddCartIcon from "../assets/add_cart.svg";
 
 const forSaleItems = [
   {
@@ -43,6 +47,13 @@ const forSaleItems = [
 const availableItems = forSaleItems.filter(item => item.forSale);
 
 function Checkout() {
+
+  const [search, setSearch] = useState("");
+
+  const filteredItems = availableItems.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div id="checkout-contents" className="d-flex flex-row gap-4">
       <div id="checkout-content-left" className="d-flex col-8">
@@ -57,6 +68,8 @@ function Checkout() {
             type="text"
             className="form-control"
             placeholder="Search item name..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
           </div>
 
@@ -66,12 +79,12 @@ function Checkout() {
                 <col style={{ width: "45%" }} />
                 <col style={{ width: "15%" }} />
                 <col style={{ width: "20%" }} />
-                <col style={{ width: "15%" }} />
+                <col style={{ width: "7%" }} />
               </colgroup>
 
               <thead>
                 <tr>
-                  <th>Name</th>
+                  <th className="col-left">Name</th>
                   <th className="col-center">Price</th>
                   <th className="col-center">In Stock</th>
                   <th className="col-center">Action</th>
@@ -79,17 +92,27 @@ function Checkout() {
               </thead>
 
               <tbody>
-                {availableItems.map((item) => (
-                  <tr key={item.id}>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item) => (
+                    <tr key={item.name}>
                     <td className="col-left">{item.name}</td>
                     <td className="col-center">₱{item.salePrice}</td>
                     <td className="col-center">{item.quantity} {item.unit}</td>
                     <td className="col-center">
-                      <button className="add-btn">Add to Cart</button>
+                      <button className="addCart" title="Add to Cart">
+                        <img src={AddCartIcon} alt="AddCart" />
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
+                    ))
+                    ):(
+                      <tr>
+                        <td colSpan="4" className="text-center py-3">
+                          No items found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
             </table>
           </div>
         </div>
@@ -110,7 +133,7 @@ function Checkout() {
 
                 <thead>
                   <tr>
-                    <th>Item</th>
+                    <th className="col-left">Item</th>
                     <th className="col-center">QTY</th>
                     <th className="col-center">Price</th>
                     <th className="col-center">Total</th>

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Dropdown from '../components/Dropdown';
 import { dropdownOptions } from "../components/dropdownOptions";
 
+import SearchIcon from "../assets/search.svg?react";
 import DeleteIcon from "../assets/delete.svg";
 import EditIcon from "../assets/edit.svg";
 
@@ -66,6 +67,16 @@ const inventoryItems = [
 function Dashboard() {
   const [expiryDate, setExpiryDate] = useState(new Date());
 
+  const [search, setSearch] = useState("");
+
+  const filteredItems = inventoryItems.filter((item) => {
+  const query = search.toLowerCase();
+
+  return (
+    item.name.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div id="inventory-contents" className="d-flex flex-row gap-4">
       <div id="inventory-content-left" className="d-flex col-9">
@@ -76,11 +87,13 @@ function Dashboard() {
 
         <div className="input-group flex-direction row">
           <div className="search-bar-container">
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Type in to filter..."
-          />
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type in to filter..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
 
            <div className="table-responsive table-container">
@@ -112,28 +125,42 @@ function Dashboard() {
               </thead>
 
               <tbody>
-                {inventoryItems.map((item) => (
-                  <tr key={item.id}>
-                    <td className="col-left">{item.name}</td>
-                    <td className="col-center">{item.forSale ? "Yes" : "No"}</td>
-                    <td className="col-center">₱{item.costPrice}</td>
-                    <td className="col-center">{item.salePrice ? `₱${item.salePrice}` : "-"}</td>
-                    <td className="col-center">{item.quantity}</td>
-                    <td className="col-left">{item.unit}</td>
-                    <td className="col-left">{item.expiration}</td>
-                    <td className="col-left">{item.tags}</td>
-                    <td className="col-center-btn">
+                {filteredItems.length > 0 ? (
+                  filteredItems.map((item) => (
+                    <tr key={item.name}>
+                      <td className="col-left">{item.name}</td>
+                      <td className="col-center">
+                        {item.forSale ? "Yes" : "No"}
+                      </td>
+                      <td className="col-center">₱{item.costPrice}</td>
+                      <td className="col-center">
+                        {item.salePrice ? `₱${item.salePrice}` : "-"}
+                      </td>
+                      <td className="col-center">{item.quantity}</td>
+                      <td className="col-left">{item.unit}</td>
+                      <td className="col-left">{item.expiration}</td>
+                      <td className="col-left">{item.tags}</td>
+
+                      <td className="col-center-btn">
                         <div className="d-flex flex-direction col gap-2 btn-group">
-                          <button className="edit">
-                             <img src={EditIcon} alt="Edit" />
+                          <button className="edit" title="Edit">
+                            <img src={EditIcon} alt="Edit" />
                           </button>
-                          <button className="delete">
+
+                          <button className="delete" title="Delete">
                             <img src={DeleteIcon} alt="Delete" />
                           </button>
                         </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="text-center py-4">
+                      No items found.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -195,10 +222,12 @@ function Dashboard() {
               />
             </div>
 
-            <div>
+            <div className="mb-3">
+              <label className="form-label">Unit of Measurement</label>
               <Dropdown
-                  title="Unit of Measurement"
+                  title="Select an option"
                   options={dropdownOptions.units}
+                  className="usr-input"
               />
             </div>
 

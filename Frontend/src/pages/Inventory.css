@@ -46,15 +46,17 @@
 }
 
 #add-items-container .form-check {
-    padding: 10px 0px 20px 25px;
+    padding: 0px 0px 5px 25px;
 }
 
 #add-items-container .date-picker {
-    width: 100%;
+    width: 60%;
     background-color: #F3F4F6;
     border: 1px solid #D1D5DB;
     border-radius: 6px;
     color: #1C1E21;
+
+    text-align: center;
 }
 
 #add-items-container .date-picker:focus {
@@ -138,9 +140,8 @@
 .table-container {
     width: 100%;
     overflow-x: auto;
-    background: #ECF2F9;
+    background: none;
 
-    border: 1px;
     border-color: #121212;
 }
 
@@ -172,7 +173,7 @@
 }
 
 .inventory-table tbody tr:hover {
-    
+    font-weight: 600;
 }
 
 #inventory-content-left .col-center {
@@ -202,4 +203,15 @@
     background-color: transparent;
     border: none;
     padding: 0;
+}
+
+/* Search Icon */
+.search-wrapper {
+    position: relative;
+    width: 60%; /* or 100% */
+}
+
+.search-wrapper .form-control {
+    width: 100%;
+    padding-left: 42px;
 }
