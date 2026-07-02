@@ -5,10 +5,16 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class Staff : User
 {
+    #region Enums
+
     /// <summary>
     /// Defines the frequency or method of payment.
     /// </summary>
     public enum Frequency { Hourly, Daily, Weekly, Biweekly, Monthly, Invalid }
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// The unique username used for authentication.
@@ -18,7 +24,7 @@ public class Staff : User
     /// <summary>
     /// The password for the account. Note: Currently stored in plain text.
     /// </summary>
-    public string? Password { get; set; } //TEMP: Uses plain text password, should be hashed in production
+    public string? Password { get; set; }
 
     /// <summary>
     /// The job title or role of the staff member.
@@ -35,6 +41,9 @@ public class Staff : User
     /// </summary>
     public float PayRate { get; set; }
 
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Parameterless constructor for EF Core.
@@ -84,4 +93,6 @@ public class Staff : User
         PayRate = payRate;
         AccessType = AccessCardType.Staff;
     }
+
+    #endregion
 }

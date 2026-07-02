@@ -7,10 +7,16 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class ItemTransaction : Entity
 {
+    #region Enums
+
     /// <summary>
     /// Defines the reason or nature of the item transaction.
     /// </summary>
     public enum Type { NewStock, Sale, Consumed, Damaged_Lost_Expired, Correction_Sum, Correction_Set }
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// The category of this stock movement.
@@ -52,6 +58,10 @@ public class ItemTransaction : Entity
     /// </summary>
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 
+    #endregion
+
+    #region Constructors
+
     /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
@@ -87,4 +97,6 @@ public class ItemTransaction : Entity
         Timestamp = timestamp;
         Note = note;
     }
+
+    #endregion
 }

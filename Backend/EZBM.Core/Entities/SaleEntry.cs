@@ -7,6 +7,8 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class SaleEntry : Entity
 {
+    #region Properties
+
     /// <summary>
     /// The amount of the item purchased.
     /// </summary>
@@ -32,13 +34,16 @@ public class SaleEntry : Entity
     /// </summary>
     public Item Item { get; private set; }
 
+    #endregion
+
+    #region Constructors
+
     /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
 #pragma warning disable CS8618
     protected SaleEntry() { }
 #pragma warning restore CS8618
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="SaleEntry"/> class.
@@ -48,7 +53,12 @@ public class SaleEntry : Entity
     /// <param name="quantity">The amount of the item purchased.</param>
     /// <param name="unitPrice">The price per unit of the item at the time of the sale.</param>
     /// <param name="subtotal"></param>
-    public SaleEntry(Sale sale, Item item, float quantity, float unitPrice, float subtotal)
+    public SaleEntry(
+        Sale sale,
+        Item item,
+        float quantity,
+        float unitPrice,
+        float subtotal)
     {
         Id = Utils.GenerateEntityId();
         Sale = sale;
@@ -57,4 +67,6 @@ public class SaleEntry : Entity
         UnitPrice = unitPrice;
         Subtotal = subtotal;
     }
+
+    #endregion
 }

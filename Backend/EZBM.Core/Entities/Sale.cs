@@ -1,6 +1,6 @@
-namespace EZBM.Core.Entities;
-
 using System;
+
+namespace EZBM.Core.Entities;
 
 /// <summary>
 /// Represents a completed sales transaction.
@@ -17,6 +17,8 @@ using System;
 /// <param name="notes">Optional notes about the sale.</param>
 public class Sale : Transaction
 {
+    #region Constructors
+
     /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
@@ -44,4 +46,6 @@ public class Sale : Transaction
             notes)
     {
     }
+
+    #endregion
 }

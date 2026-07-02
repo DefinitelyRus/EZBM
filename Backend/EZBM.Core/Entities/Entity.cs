@@ -5,6 +5,8 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public abstract class Entity
 {
+    #region Properties
+
     /// <summary>
     /// The unique identifier for the entity.
     /// </summary>
@@ -19,4 +21,6 @@ public abstract class Entity
     /// The date and time when the entity was last modified.
     /// </summary>
     public DateTime UpdatedAt { get; protected set; } = DateTime.UtcNow;
+
+    #endregion
 }

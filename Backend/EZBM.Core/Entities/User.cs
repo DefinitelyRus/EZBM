@@ -19,6 +19,8 @@ public enum AccessCardType
 /// </summary>
 public abstract class User : Entity
 {
+    #region Properties
+
     /// <summary>
     /// The first name of the user.
     /// </summary>
@@ -64,6 +66,9 @@ public abstract class User : Entity
     /// </summary>
     public DateTime? ExpirationDate { get; set; }
 
+    #endregion
+
+    #region Public Methods
 
     /// <summary>
     /// Lazy permission check that evaluates the current expiration date.
@@ -77,4 +82,6 @@ public abstract class User : Entity
         }
         return Permissions;
     }
+
+    #endregion
 }

@@ -8,11 +8,16 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class Customer : User
 {
+    #region Properties
+
     /// <summary>
     /// The ledger of all transactions performed by or associated with this customer.
     /// </summary>
     public virtual ICollection<Transaction> TransactionHistory { get; set; } = new List<Transaction>();
 
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Parameterless constructor for EF Core.
@@ -36,4 +41,6 @@ public class Customer : User
         Email = email;
         AccessType = AccessCardType.Member;
     }
+
+    #endregion
 }

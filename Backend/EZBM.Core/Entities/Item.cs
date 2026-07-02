@@ -5,6 +5,8 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class Item : Entity
 {
+    #region Enums
+
     /// <summary>
     /// Defines the units used to measure the quantity of the item.
     /// </summary>
@@ -14,6 +16,10 @@ public class Item : Entity
     /// Categories used to classify the item for filtering or reporting.
     /// </summary>
     public enum Tag { Food, Hygiene, Consumable, Reusable }
+
+    #endregion
+
+    #region Properties
 
     /// <summary>
     /// The display name of the item.
@@ -70,6 +76,10 @@ public class Item : Entity
     /// </summary>
     public string? Barcode { get; set; }
 
+    #endregion
+
+    #region Constructors
+
     /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
@@ -119,4 +129,6 @@ public class Item : Entity
         SalePrice = price;
         Barcode = barcode;
     }
+
+    #endregion
 }

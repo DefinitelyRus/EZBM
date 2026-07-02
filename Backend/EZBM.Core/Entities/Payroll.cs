@@ -1,6 +1,6 @@
-namespace EZBM.Core.Entities;
-
 using System;
+
+namespace EZBM.Core.Entities;
 
 /// <summary>
 /// Represents a payroll record for a staff member, detailing earnings and payment status for a specific period.
@@ -20,6 +20,8 @@ using System;
 /// <param name="notes">Optional remarks about the payroll.</param>
 public class Payroll : Transaction
 {
+    #region Properties
+
     /// <summary>
     /// The start date of the pay period.
     /// </summary>
@@ -44,6 +46,10 @@ public class Payroll : Transaction
     /// Adjustments made to the gross amount, such as bonuses or deductions.
     /// </summary>
     public float Modifiers { get; private set; }
+
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Parameterless constructor for EF Core.
@@ -81,5 +87,6 @@ public class Payroll : Transaction
         Modifiers = modifiers;
     }
 
+    #endregion
 }
 

@@ -7,6 +7,8 @@ namespace EZBM.Core.Entities;
 /// </summary>
 public class ActionLog : Entity
 {
+    #region Properties
+
     /// <summary>
     /// The classification of action performed (e.g., Login, ClockAction, RegisterOverride, Edit, Delete, DoorLog).
     /// </summary>
@@ -27,6 +29,9 @@ public class ActionLog : Entity
     /// </summary>
     public DateTime Timestamp { get; set; }
 
+    #endregion
+
+    #region Constructors
 
     /// <summary>
     /// Parameterless constructor for EF Core.
@@ -51,4 +56,6 @@ public class ActionLog : Entity
         Details = details;
         Timestamp = timestamp;
     }
+
+    #endregion
 }
