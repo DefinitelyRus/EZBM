@@ -50,7 +50,7 @@ public class Log
         StackTrace trace = new(frameDepth, true);
         StackFrame[]? frames = trace.GetFrames();
 
-        bool noFrames = frames == null || frames.Length == 0;
+        bool noFrames = frames is null || frames.Length == 0;
         if (noFrames)
         {
             string err = "No stack frames available for trace logging.";
@@ -66,7 +66,7 @@ public class Log
             string indent = new(' ', depth);
             string prefix;
 
-            if (method != null)
+            if (method is not null)
             {
                 string className = method.DeclaringType?.Name ?? "UNKNOWN_CLASS";
                 string methodName = method.Name;
@@ -234,7 +234,7 @@ public class Log
         {
             MethodBase? method = f.GetMethod();
             Type? type = method?.DeclaringType;
-            if (type == null) return false;
+            if (type is null) return false;
 
             string? ns = type.Namespace;
             if (string.IsNullOrEmpty(ns)) return true;

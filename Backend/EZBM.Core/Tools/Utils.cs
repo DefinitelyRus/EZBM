@@ -35,7 +35,6 @@ public static class Utils
             ulong id = BitConverter.ToUInt64(bytes, 0);
             if (id == 0) continue;
 
-            // Check all DB sets to see if this ID exists
             bool exists = context.Staff.Any(s => s.Id == id) ||
                           context.Attendance.Any(a => a.Id == id) ||
                           context.Payroll.Any(p => p.Id == id) ||
@@ -234,7 +233,6 @@ public static class Utils
     {
         string filePath = Path.Combine(UserSavePath, filename);
 
-        // Check if the file already exists
         if (!overwriteExisting && File.Exists(filePath))
         {
             Log.Warn($"The file '{filename}' already exists in path '{UserSavePath}'. Re-run the method with `overwriteExisting` set to true to proceed anyway.");
@@ -245,6 +243,7 @@ public static class Utils
         {
             await File.WriteAllTextAsync(filePath, content ?? string.Empty);
         }
+
         catch (Exception e)
         {
             Log.Warn($"Failed to write '{filename}' to path '{UserSavePath}':\n{e.StackTrace}");
@@ -264,7 +263,6 @@ public static class Utils
     {
         string filePath = Path.Combine(UserSavePath, filename);
 
-        // Check if the file exists
         if (!File.Exists(filePath))
         {
             Log.Warn($"The file '{filename}' does not exist in path '{UserSavePath}'.");
@@ -275,6 +273,7 @@ public static class Utils
         {
             return await File.ReadAllTextAsync(filePath);
         }
+
         catch (Exception e)
         {
             Log.Warn($"Failed to read file '{filename}':\n{e.Message}");
