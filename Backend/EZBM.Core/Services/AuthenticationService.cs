@@ -7,6 +7,8 @@ namespace EZBM.Core.Services;
 
 public static class AuthenticationService
 {
+    #region Public Methods
+
     public static async Task<Utils.RequestResult<string>> LoginAsync(LoginRequest request)
     {
         string message;
@@ -61,4 +63,6 @@ public static class AuthenticationService
             return errorResult;
         }
     }
+
+    #endregion
 }

@@ -48,7 +48,6 @@ public static class StaffService
         {
             using AppDbContext context = new();
 
-            // Check if username already exists
             bool exists = await context.Staff.AnyAsync(
                 s => s.Username == request.Username
             );
@@ -58,14 +57,14 @@ public static class StaffService
                 message = $"Staff username '{request.Username}' already exists.";
                 Log.Me(message);
                 Utils.RequestResult conflictResult = new(
-                    Utils.Result.Failed_InvalidQuery, message
+                    Utils.Result.Failed_Conflict, message
                 );
 
                 return conflictResult;
             }
 
             Staff staff = new(
-                id: Utils.GenerateEntityId(),
+                id: request.Id ?? Utils.GenerateEntityId(),
                 username: request.Username,
                 payFrequency: request.PayFrequency,
                 payRate: request.PayRate,
@@ -88,6 +87,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when creating staff: {ex.Message}";
@@ -133,6 +133,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when getting staff with ID {request.Id}: {ex.Message}.";
@@ -176,19 +177,19 @@ public static class StaffService
 
                 if (!string.IsNullOrEmpty(request.FirstName))
                     query = query.Where(
-                        s => s.FirstName != null &&
+                        s => s.FirstName is not null &&
                         s.FirstName.Contains(request.FirstName)
                     );
 
                 if (!string.IsNullOrEmpty(request.LastName))
                     query = query.Where(
-                        s => s.LastName != null &&
+                        s => s.LastName is not null &&
                         s.LastName.Contains(request.LastName)
                     );
 
                 if (!string.IsNullOrEmpty(request.Position))
                     query = query.Where(
-                        s => s.Position != null &&
+                        s => s.Position is not null &&
                         s.Position.Contains(request.Position)
                     );
 
@@ -219,6 +220,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when finding staff: {ex.Message}";
@@ -276,6 +278,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when updating staff: {ex.Message}";
@@ -323,6 +326,7 @@ public static class StaffService
             );
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when deleting staff with ID {request.Id}: {ex.Message}.";
@@ -370,7 +374,7 @@ public static class StaffService
             {
                 Attendance? activeAttendance = await context.Attendance
                     .FirstOrDefaultAsync(
-                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
+                        a => a.Staff.Id == request.StaffId && a.TimeOut is null
                     );
 
                 if (activeAttendance is not null)
@@ -406,7 +410,7 @@ public static class StaffService
             {
                 Attendance? activeAttendance = await context.Attendance
                     .Where(
-                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
+                        a => a.Staff.Id == request.StaffId && a.TimeOut is null
                     )
                     .OrderByDescending(
                         a => a.TimeIn
@@ -456,6 +460,7 @@ public static class StaffService
                 return invalidResult;
             }
         }
+
         catch (Exception ex)
         {
             message = $"Error when logging attendance: {ex.Message}";
@@ -511,6 +516,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when creating attendance record: {ex.Message}";
@@ -560,6 +566,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when getting attendance record: {ex.Message}.";
@@ -613,12 +620,12 @@ public static class StaffService
 
                 if (request.MinTimeOut is not null)
                     query = query.Where(
-                        a => a.TimeOut != null && a.TimeOut >= request.MinTimeOut
+                        a => a.TimeOut is not null && a.TimeOut >= request.MinTimeOut
                     );
 
                 if (request.MaxTimeOut is not null)
                     query = query.Where(
-                        a => a.TimeOut != null && a.TimeOut <= request.MaxTimeOut
+                        a => a.TimeOut is not null && a.TimeOut <= request.MaxTimeOut
                     );
             }
 
@@ -642,6 +649,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when finding attendance records: {ex.Message}";
@@ -708,6 +716,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when updating attendance: {ex.Message}";
@@ -756,6 +765,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when deleting attendance: {ex.Message}.";
@@ -821,6 +831,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when creating payroll: {ex.Message}";
@@ -870,6 +881,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when getting payroll record: {ex.Message}.";
@@ -963,6 +975,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when finding payroll records: {ex.Message}";
@@ -1011,6 +1024,7 @@ public static class StaffService
 
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when deleting payroll: {ex.Message}.";

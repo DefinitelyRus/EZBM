@@ -25,7 +25,6 @@ public static class SalesService
         {
             using AppDbContext context = new();
 
-            // Verify staff
             Staff? staff = await context.Staff.FindAsync(request.StaffId);
             if (staff is null)
             {
@@ -40,29 +39,29 @@ public static class SalesService
                 return noStaffResult;
             }
 
-            // Validate mixed payment
             if (request.PaymentMethod == Transaction.PayMethod.Mixed)
             {
-                if (request.SplitPayments == null || request.SplitPayments.Count == 0)
+                if (request.SplitPayments is null || request.SplitPayments.Count == 0)
                 {
                     message = "Cannot checkout: Mixed payment selected but no split payment items provided.";
                     Log.Me(message);
-                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    return failResult;
                 }
                 float sum = request.SplitPayments.Sum(s => s.Amount);
                 if (Math.Abs(sum - request.TotalAmount) > 0.01f)
                 {
                     message = $"Cannot checkout: Split payments sum (${sum}) does not match total amount (${request.TotalAmount}).";
                     Log.Me(message);
-                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    return failResult;
                 }
             }
 
-            // Verify promo code
             bool hasFreeWeekPromo = false;
             if (!string.IsNullOrEmpty(request.PromoCode) && request.PromoCode.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
             {
-                var settings = SettingsService.LoadSettings();
+                StoreSettings settings = SettingsService.LoadSettings();
                 if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
                 {
                     hasFreeWeekPromo = true;
@@ -71,16 +70,15 @@ public static class SalesService
                 {
                     message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
                     Log.Me(message);
-                    return new Utils.RequestResult<ulong>(Utils.Result.Failed_InvalidQuery, message, 0);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    return failResult;
                 }
             }
 
-            // Begin db transaction or let EF Core save atomically
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
             float finalAmount = hasFreeWeekPromo ? 0f : request.TotalAmount;
 
-            // Create Sale entity
             Sale sale = new(
                 id: Utils.GenerateEntityId(),
                 invoiceNumber: invoiceNumber,
@@ -93,10 +91,9 @@ public static class SalesService
 
             context.Sale.Add(sale);
 
-            // Save child payment records if mixed payment
-            if (request.PaymentMethod == Transaction.PayMethod.Mixed && request.SplitPayments != null)
+            if (request.PaymentMethod == Transaction.PayMethod.Mixed && request.SplitPayments is not null)
             {
-                foreach (var split in request.SplitPayments)
+                foreach (SplitPaymentRequest split in request.SplitPayments)
                 {
                     Transaction childTx = new(
                         id: Utils.GenerateEntityId(),
@@ -114,7 +111,6 @@ public static class SalesService
                 }
             }
 
-            // Add Sale entries (line items)
             foreach (SaleItemRequest itemReq in request.Items)
             {
                 Item? item = await context.Item.FindAsync(itemReq.ItemId);
@@ -143,10 +139,8 @@ public static class SalesService
 
                 context.SaleEntry.Add(entry);
 
-                // Deduct stock quantity
                 item.Quantity -= itemReq.Quantity;
 
-                // Log stock transaction movement in ItemTransactions
                 ItemTransaction itemTransaction = new(
                     item: item,
                     transactionType: ItemTransaction.Type.Sale,

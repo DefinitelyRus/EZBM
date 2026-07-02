@@ -86,7 +86,6 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // TPH Mapping for User hierarchy
         modelBuilder.Entity<User>()
             .HasDiscriminator<string>("UserType")
             .HasValue<Staff>("Staff")
@@ -96,7 +95,6 @@ public class AppDbContext : DbContext
             .Property(u => u.AccessType)
             .HasConversion<string>();
 
-        // Convert List<string> to/from semi-colon string for SQLite storage
         modelBuilder.Entity<User>()
             .Property(u => u.Permissions)
             .HasConversion(
@@ -111,7 +109,6 @@ public class AppDbContext : DbContext
                 v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
             );
 
-        // Map Enums to strings automatically
         modelBuilder.Entity<Staff>()
             .Property(s => s.PayFrequency)
             .HasConversion<string>();
@@ -128,25 +125,21 @@ public class AppDbContext : DbContext
             .Property(t => t.PaymentMethod)
             .HasConversion<string>();
 
-        // Shadow object-type properties as foreign keys (IDs)
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.Staff)
             .WithMany()
             .HasForeignKey("StaffId");
 
-        // Self-referencing Transaction split relationship
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.ParentTransaction)
             .WithMany(t => t.ChildTransactions)
             .HasForeignKey(t => t.ParentTransactionId);
 
-        // Link Transaction to Customer
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.Customer)
             .WithMany(c => c.TransactionHistory)
             .HasForeignKey("CustomerId");
 
-        // Transaction and ItemTransaction many-to-many junction table configuration
         modelBuilder.Entity<Transaction>()
             .HasMany(t => t.ItemTransactions)
             .WithMany(it => it.Transactions)
@@ -203,25 +196,25 @@ public class AppDbContext : DbContext
 
     private void AuditChanges()
     {
-        var auditEntries = new List<ActionLog>();
-        var entries = ChangeTracker.Entries()
+        List<ActionLog> auditEntries = new();
+        List<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = ChangeTracker.Entries()
             .Where(e => (e.State == EntityState.Modified || e.State == EntityState.Deleted) && !(e.Entity is ActionLog))
             .ToList();
 
-        foreach (var entry in entries)
+        foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry in entries)
         {
-            var entityName = entry.Entity.GetType().Name;
-            var action = entry.State == EntityState.Modified ? "Edit" : "Delete";
-            var entityId = entry.Property("Id").CurrentValue?.ToString() ?? "Unknown";
+            string entityName = entry.Entity.GetType().Name;
+            string action = entry.State == EntityState.Modified ? "Edit" : "Delete";
+            string entityId = entry.Property("Id").CurrentValue?.ToString() ?? "Unknown";
 
-            var details = $"{action} on {entityName} (ID: {entityId}).";
+            string details = $"{action} on {entityName} (ID: {entityId}).";
             if (entry.State == EntityState.Modified)
             {
-                var changes = new List<string>();
-                foreach (var property in entry.OriginalValues.Properties)
+                List<string> changes = new();
+                foreach (Microsoft.EntityFrameworkCore.Metadata.IProperty property in entry.OriginalValues.Properties)
                 {
-                    var original = entry.OriginalValues[property];
-                    var current = entry.CurrentValues[property];
+                    object? original = entry.OriginalValues[property];
+                    object? current = entry.CurrentValues[property];
                     if (!Equals(original, current))
                     {
                         changes.Add($"{property.Name}: '{original}' -> '{current}'");
@@ -233,8 +226,8 @@ public class AppDbContext : DbContext
                 }
             }
 
-            var operatorUsername = CurrentUserContext.Username ?? "System";
-            var log = new ActionLog(
+            string operatorUsername = CurrentUserContext.Username ?? "System";
+            ActionLog log = new(
                 id: Tools.Utils.GenerateEntityId(),
                 actionType: action,
                 operatorUsername: operatorUsername,

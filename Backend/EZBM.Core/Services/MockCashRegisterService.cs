@@ -7,6 +7,8 @@ namespace EZBM.Core.Services;
 /// </summary>
 public class MockCashRegisterService : ICashRegisterService
 {
+    #region Public Methods
+
     /// <summary>
     /// Commands the cash drawer to physically kick or open, logging the event to diagnostic output.
     /// </summary>
@@ -14,4 +16,6 @@ public class MockCashRegisterService : ICashRegisterService
     {
         Log.Me("Cash register drawer kicked/opened (Console Mock).");
     }
+
+    #endregion
 }

@@ -27,25 +27,26 @@ public static class InventoryService
             using AppDbContext context = new();
             Item? item = await context.Item.FindAsync(request.Id);
 
-            // Does not exist
             if (item is null)
             {
                 message = $"Item with ID {request.Id} not found in database.";
                 Log.Me(message);
-                return new Utils.RequestResult<Item>(Utils.Result.Failed_NoResults, message, null);
+                Utils.RequestResult<Item> failResult = new(Utils.Result.Failed_NoResults, message, null);
+                return failResult;
             }
 
-            // Return result
             message = $"Item '{item.Name}' with ID {item.Id} found successfully.";
             Log.Me(message);
-            return new Utils.RequestResult<Item>(Utils.Result.Success, message, item);
+            Utils.RequestResult<Item> successResult = new(Utils.Result.Success, message, item);
+            return successResult;
         }
 
         catch (Exception ex)
         {
             message = $"Error when getting item with ID {request.Id}: {ex.Message}.";
             Log.Me(message);
-            return new Utils.RequestResult<Item>(Utils.Result.Failed_UnhandledException, message, null);
+            Utils.RequestResult<Item> errorResult = new(Utils.Result.Failed_UnhandledException, message, null);
+            return errorResult;
         }
     }
 
@@ -81,7 +82,7 @@ public static class InventoryService
 
                 if (!string.IsNullOrEmpty(request.Description))
                     query = query.Where(
-                        item => item.Description != null &&
+                        item => item.Description is not null &&
                         item.Description.Contains(request.Description)
                     );
 
@@ -138,7 +139,6 @@ public static class InventoryService
 
             List<Item> results = await query.ToListAsync();
 
-            // Perform in-memory filter for Tags if requested
             if (request?.Tags is { Count: > 0 } && results.Count > 0)
             {
                 results = [.. results.Where(
@@ -161,6 +161,7 @@ public static class InventoryService
                 Utils.Result.Success, message, results);
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when finding items: {ex.Message}.";
@@ -186,15 +187,14 @@ public static class InventoryService
             using AppDbContext context = new();
             Item? item = await context.Item.FindAsync(request.Id);
 
-            // Does not exist
             if (item is null)
             {
                 message = $"Item with ID {request.Id} not found in database.";
                 Log.Me(message);
-                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
             }
 
-            // Update item
             item.Name = request.Name ?? item.Name;
             item.Description = request.Description ?? item.Description;
             item.IsForSale = request.IsForSale;
@@ -206,17 +206,18 @@ public static class InventoryService
             item.Tags = request.Tags ?? item.Tags;
             await context.SaveChangesAsync();
 
-            // Return result
             message = $"Item '{item.Name}' with ID {item.Id} updated successfully.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Success, message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
         }
 
         catch (Exception ex)
         {
             message = $"Error when updating item with ID {request.Id}: {ex.Message}.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
         }
     }
 
@@ -230,7 +231,7 @@ public static class InventoryService
     {
         try
         {
-            Item? item = new(
+            Item item = new(
                 Utils.GenerateEntityId(),
                 request.UnitOfMeasurement,
                 request.IsForSale,
@@ -244,12 +245,10 @@ public static class InventoryService
                 request.ImageUrl
             );
 
-            // Add to database
             using AppDbContext context = new();
             context.Item.Add(item);
             await context.SaveChangesAsync();
 
-            // Return result
             string message = $"Item '{item.Name}' with ID {item.Id} created successfully.";
             Log.Me(() => message);
 
@@ -289,29 +288,29 @@ public static class InventoryService
             using AppDbContext context = new();
             Item? item = await context.Item.FindAsync(request.Id);
 
-            // Does not exist
             if (item is null)
             {
                 message = $"Item with ID {request.Id} not found in database.";
                 Log.Me(message);
-                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
             }
 
-            // Remove item
             context.Item.Remove(item);
             await context.SaveChangesAsync();
 
-            // Return result
             message = $"Item '{item.Name}' with ID {item.Id} deleted successfully.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Success, message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
         }
 
         catch (Exception ex)
         {
             message = $"Error when deleting item with ID {request.Id}: {ex.Message}.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
         }
     }
 
@@ -337,7 +336,6 @@ public static class InventoryService
                 .Include(t => t.SaleEntry)
                 .FirstOrDefaultAsync(t => t.Id == request.Id);
 
-            // Does not exist
             if (itemTransaction is null)
             {
                 message = $"Item transaction with ID {request.Id} " +
@@ -348,7 +346,6 @@ public static class InventoryService
                 return failResult;
             }
 
-            // Return result
             message = $"Item transaction with ID {request.Id} " +
                 $"found successfully.";
             Log.Me(message);
@@ -356,6 +353,7 @@ public static class InventoryService
                 Utils.Result.Success, message, itemTransaction);
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when getting item transaction " +
@@ -433,7 +431,7 @@ public static class InventoryService
                 if (!string.IsNullOrEmpty(request.Note))
                 {
                     query = query.Where(
-                        t => t.Note != null && t.Note.Contains(request.Note)
+                        t => t.Note is not null && t.Note.Contains(request.Note)
                     );
                 }
 
@@ -459,7 +457,7 @@ public static class InventoryService
                     if (!string.IsNullOrEmpty(itemQuery.Description))
                     {
                         query = query.Where(
-                            t => t.Item.Description != null &&
+                            t => t.Item.Description is not null &&
                             t.Item.Description.Contains(itemQuery.Description)
                         );
                     }
@@ -538,11 +536,10 @@ public static class InventoryService
 
             List<ItemTransaction> results = await query.ToListAsync();
 
-            // Perform in-memory filter for Tags if requested
             if (request?.ItemQuery?.Tags is { Count: > 0 } && results.Count > 0)
             {
                 results = [.. results.Where(t =>
-                    t.Item != null &&
+                    t.Item is not null &&
                     t.Item.Tags.Any(tag => request.ItemQuery.Tags.Contains(tag)))
                 ];
             }
@@ -562,6 +559,7 @@ public static class InventoryService
                 Utils.Result.Success, message, results);
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when getting item transactions: {ex.Message}.";
@@ -586,7 +584,6 @@ public static class InventoryService
         {
             using AppDbContext context = new();
 
-            // Get item
             Item? item = await context.Item.FindAsync(request.ItemId);
             if (item is null)
             {
@@ -597,7 +594,6 @@ public static class InventoryService
                 return noItemResult;
             }
 
-            // Get staff
             Staff? staff = await context.Staff.FindAsync(request.StaffId);
             if (staff is null)
             {
@@ -608,7 +604,6 @@ public static class InventoryService
                 return noStaffResult;
             }
 
-            // Get sale entry if provided
             SaleEntry? saleEntry = null;
             if (request.SaleEntryId is not null)
             {
@@ -624,7 +619,6 @@ public static class InventoryService
                 }
             }
 
-            // Create item transaction
             ItemTransaction transaction = new(
                 item: item,
                 transactionType: request.Type,
@@ -635,23 +629,19 @@ public static class InventoryService
                 note: request.Note
             );
 
-            // Update item
             switch (request.Type)
             {
-                // Add to item quantity
                 case ItemTransaction.Type.NewStock:
                 case ItemTransaction.Type.Correction_Sum:
                     item.Quantity += request.Quantity;
                     break;
 
-                // Subtract from item quantity
                 case ItemTransaction.Type.Consumed:
                 case ItemTransaction.Type.Sale:
                 case ItemTransaction.Type.Damaged_Lost_Expired:
                     item.Quantity -= request.Quantity;
                     break;
 
-                // Set new item quantity
                 case ItemTransaction.Type.Correction_Set:
                     item.Quantity = request.Quantity;
                     break;
@@ -660,7 +650,6 @@ public static class InventoryService
                     break;
             }
 
-            // Mark for warnings
             bool negativeResultWarning = item.Quantity < 0;
             bool negativeAddendWarning = false;
             if (request.Quantity < 0)
@@ -676,11 +665,9 @@ public static class InventoryService
                 }
             }
 
-            // Add and save
             context.ItemTransaction.Add(transaction);
             await context.SaveChangesAsync();
 
-            // Return with negative addend warning
             if (negativeAddendWarning)
             {
                 message = $"Item transaction with ID {transaction.Id} created " +
@@ -691,7 +678,6 @@ public static class InventoryService
                 return warningResult;
             }
 
-            // Return with negative total warning
             if (negativeResultWarning)
             {
                 message = $"Item transaction with ID {transaction.Id} created " +
@@ -702,13 +688,13 @@ public static class InventoryService
                 return warningResult;
             }
 
-            // Return success
             message = $"Item transaction with ID {transaction.Id} created successfully.";
             Log.Me(message);
             Utils.RequestResult successResult = new(
                 Utils.Result.Success, message);
             return successResult;
         }
+
         catch (Exception ex)
         {
             message = $"Error when creating item transaction: {ex.Message}.";
@@ -733,29 +719,29 @@ public static class InventoryService
             using AppDbContext context = new();
             ItemTransaction? transaction = await context.ItemTransaction.FindAsync(request.Id);
 
-            // Does not exist
             if (transaction is null)
             {
                 message = $"Item transaction with ID {request.Id} not found in database.";
                 Log.Me(message);
-                return new Utils.RequestResult(Utils.Result.Failed_NoResults, message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
             }
 
-            // Remove item transaction
             context.ItemTransaction.Remove(transaction);
             await context.SaveChangesAsync();
 
-            // Return result
             message = $"Item transaction with ID {transaction.Id} deleted successfully.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Success, message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
         }
 
         catch (Exception ex)
         {
             message = $"Error when deleting item transaction with ID {request.Id}: {ex.Message}.";
             Log.Me(message);
-            return new Utils.RequestResult(Utils.Result.Failed_UnhandledException, message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
         }
     }
 

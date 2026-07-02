@@ -85,13 +85,14 @@ public static class SettingsService
             string path = GetSettingsFilePath();
             if (!File.Exists(path))
             {
-                var defaults = new StoreSettings();
+                StoreSettings defaults = new();
                 SaveSettings(defaults);
                 return defaults;
             }
             string json = File.ReadAllText(path);
             return JsonSerializer.Deserialize<StoreSettings>(json) ?? new StoreSettings();
         }
+
         catch
         {
             return new StoreSettings();
@@ -109,6 +110,7 @@ public static class SettingsService
             string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(path, json);
         }
+
         catch (Exception ex)
         {
             Tools.Log.Err($"Failed to save settings: {ex.Message}");
