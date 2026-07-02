@@ -37,7 +37,7 @@ dotnet add <project-path>.csproj reference Backend/EZBM.Core/EZBM.Core.csproj
 
 An ASP.NET Core Web API project hosting endpoints locally for front-end integration.
 
-* **Endpoints**: Defined in `Endpoints/` (e.g., `InventoryController`, `SalesController`, `StaffController`, `AuthController`).
+* **Endpoints**: Defined in `Endpoints/` (e.g., `InventoryController`, `SalesController`, `StaffController`, `AuthController`, `SettingsController`, `LogsController`).
 * **Initialization**: The main entry point `Program.cs` automatically triggers `DbManager.Initialize()` to ensure the database schema exists on startup.
 
 #### How to Run
@@ -54,7 +54,7 @@ dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 
 An ASP.NET Core Razor Pages application serving as the integrated testing platform and desktop prototype interface.
 
-* **Features**: Dynamic attendance clock-in/out, operator registration/login state, product inventory management, Point-of-Sale checkouts, payroll verification, and historical logs tracking.
+* **Features**: Dynamic attendance clock-in/out, operator registration/login state, product inventory management, Point-of-Sale checkouts, payroll verification, dynamic settings configurations, and historical logs/audit tracking.
 * **Initialization**: The application automatically runs `DbManager.Initialize()` and seeds the database with exactly 10 distinct, representative entries for each entity.
 
 #### How to Run
@@ -71,7 +71,7 @@ dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
 
 A console project serving as our integration test suite.
 
-* **Flow**: Resets the database to a clean state, invokes static API endpoint methods directly, and compiles the results in a markdown summary.
+* **Flow**: Resets the database to a clean state, invokes static API endpoint methods directly, verifies core behavior (including new Phase 2-7 features: Split Payments, Promo Codes, Lazy Expiry validation, and automatic DB audit logs), and compiles the results in a markdown summary.
 * **Test Outputs**: Compiles a detailed test summary to `Backend/Results.md`.
 
 #### How to Run Tests
@@ -79,7 +79,6 @@ A console project serving as our integration test suite.
 To run endpoint tests and review output:
 
 ```bash
-cd Backend/EZBM.Tests
-rm results.log # Remove old logs if they exist
-dotnet run --project EZBM.Tests.csproj
+# From the repository root
+dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj
 ```

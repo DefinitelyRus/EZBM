@@ -6,8 +6,8 @@ This is the local ASP.NET Core Web API host project for the EZBM application. It
 
 ## Key Components
 
-* **`Endpoints/`**: Map HTTP REST requests (GET/POST) to backend controller actions (e.g. `InventoryController`, `SalesController`, `StaffController`, `AuthController`).
-* **`Program.cs`**: Registers core API routing tables and triggers `DbManager.Initialize()` to ensure database creation on startup.
+* **`Endpoints/`**: Map HTTP REST requests (GET/POST/PUT/DELETE) to backend controller actions (e.g. `InventoryController`, `SalesController`, `StaffController`, `AuthController`, `SettingsController`, `LogsController`).
+* **`Program.cs`**: Registers core API routing tables, CORS rules, dependency injections, and triggers `DbManager.Initialize()` to ensure database creation on startup.
 
 ---
 

@@ -35,7 +35,19 @@ EZBM/
 
 ---
 
-<!--
+## 🚀 Features & Prototypes
+
+The project is built to test and validate several SME workflows and advanced business rules:
+
+* **Point-of-Sale (POS) System:** Support for real-time checkout, cart management, and receipt configuration validation.
+* **Mixed & Split Payments:** Decoupled transactions logic allowing customers to pay using split channels (e.g., cash, mobile wallet, card) on a single check-out order.
+* **Unified User Profile System:** Single table-per-hierarchy (TPH) SQLite mapping representing both `Staff` and `Customer` details, equipped with automatic card/permissions expiry lazy checking.
+* **Automatic Audit Logs:** Interceptor tracking inside EF Core DbContext to capture all update/delete actions into an `ActionLogs` audit ledger.
+* **Payroll & Commissions Upgrade Engine:** Deducting already-paid lower-tier commissions from newly earned higher-tier payroll distributions.
+* **Hardware Integration Mocking:** HID reader keyboard emulation for RFID/barcode scans and automated console logs for cash drawer triggers.
+
+---
+
 ## 🚀 Getting Started (Local Setup)
 
 Follow these steps to get the prototype running on your machine.
@@ -45,9 +57,9 @@ Follow these steps to get the prototype running on your machine.
 * [.NET SDK (Latest Stable)](https://dotnet.microsoft.com/download)
 * [Node.js (LTS version)](https://nodejs.org/)
 
-### 1. Spin up the Back-end (REST API)
+### 1. Spin up the Back-end
 
-Navigate to the Backend directory and run the API host:
+To run the back-end REST Web API host:
 
 ```bash
 dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
@@ -61,16 +73,15 @@ dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
 
 ### 2. Spin up the Front-end
 
-Navigate to the Frontend directory, install npm packages, and start the development server:
+Navigate to the Frontend directory, install npm packages, and start the local Vite development server:
 
 ```bash
 cd Frontend
 npm install
-npm start
+npm run dev
 ```
 
 ---
--->
 
 ## 💾 Data Strategy & Resetting
 

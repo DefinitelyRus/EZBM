@@ -13,10 +13,11 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
   * `Login.cshtml` / `Login.cshtml.cs`: Active operator selection and login portal, verifying staff shifts and clock-ins.
   * `Index.cshtml` / `Index.cshtml.cs`: Core dashboard showcasing quick summary metrics, active cashier shifts, and registration statuses.
   * `Inventory.cshtml` / `Inventory.cshtml.cs`: Inventory management module supporting product creation, price tracking, and stock adjustments.
-  * `POS.cshtml` / `POS.cshtml.cs`: Point-of-Sale checkout interface allowing barcode/name search, cart management, and receipt/invoice generation.
-  * `Staff.cshtml` / `Staff.cshtml.cs`: Attendance and staff management, providing views of active/historical shifts, payroll calculations, and operator logs.
-  * `Logs.cshtml` / `Logs.cshtml.cs`: System audits and historical logs for inventory stock actions and sales transactions.
-  * `Shared/_Layout.cshtml`: Global application shell featuring direct top-tab navigation and the global attendance clock-in/clock-out controller.
+  * `POS.cshtml` / `POS.cshtml.cs`: Point-of-Sale checkout interface supporting barcode/name search, split payments checkouts, and receipt generation.
+  * `Staff.cshtml` / `Staff.cshtml.cs`: Attendance and staff management, providing views of active/historical shifts, payroll calculations (including net upgrade commissions adjustments), and operator logs.
+  * `Logs.cshtml` / `Logs.cshtml.cs`: System audits and historical logs for inventory stock actions, sales transactions, and automatic DbContext action log tracking.
+  * `Settings.cshtml` / `Settings.cshtml.cs`: Storefront settings editor (e.g. low-stock warning threshold, written receipt blocking threshold, default scanner Vendor IDs / Product IDs).
+  * `Shared/_Layout.cshtml`: Global application shell featuring direct top-tab navigation, employee context cookie parsing, and the global attendance clock-in/clock-out controller.
 
 ---
 

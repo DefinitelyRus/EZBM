@@ -40,10 +40,10 @@ import InventoryAlert from './components/InventoryAlert';
 
 The primary client-side screens providing interactive interfaces for store operations.
 
-* **Dashboard**: Defined in `src/pages/Dashboard.jsx`. Displays high-level daily performance cards (Total Sales, Total Profit), low-stock alert lists for items with quantity below threshold, and shift attendance clock-in/out toggles.
+* **Dashboard**: Defined in `src/pages/Dashboard.jsx`. Displays high-level daily performance cards (Total Sales, Total Profit), low-stock alert lists for items with quantity below threshold, shift attendance clock-in/out toggles, and a recent transactions feed container displaying the last 10 checkout events.
 * **Inventory**: Defined in `src/pages/Inventory.jsx`. Provides real-time filtering across product catalogs, item property customization forms, and restock tracking.
-* **POS Checkout**: Defined in `src/pages/Checkout.jsx`. Connects available inventory items to an interactive shopping cart panel with instant subtotal calculation and payment method selection.
-* **Staff & Audit Logs**: Defined in `src/pages/Staff.jsx` and `src/pages/Attendance_Logs.jsx`. Handles employee profiles, work shift logs, and historical payroll payment ledger tracking.
+* **POS Checkout**: Defined in `src/pages/Checkout.jsx`. Connects available inventory items to an interactive shopping cart panel with instant subtotal calculation, payment method selection, and a Split Payment checkout modal for handling mixed payment splits.
+* **Staff & Audit Logs**: Defined in `src/pages/Staff.jsx` and `src/pages/Attendance_Logs.jsx`. Handles employee profiles, work shift logs, operator logs, and commission payroll distributions (supporting net upgrade commission updates).
 
 #### How to Run
 

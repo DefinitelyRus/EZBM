@@ -8,7 +8,8 @@ This is a console application serving as the integration test suite for the EZBM
 
 * **Database Reset**: Invokes `DbManager.Reset()` before executing test groups to ensure a clean state.
 * **Controller Isolation Tests**: Tests `AuthController`, `StaffController`, `InventoryController`, and `SalesController` endpoints.
-* **Outputs**: Generates a test summary at `Backend/Results.md` documenting succeeding/failing endpoints and diagnostic logs.
+* **New Features Integration Tests**: Tests `Mixed Payments` checkouts, `PromoCode` discount evaluation logic, lazy `User` permissions/expiry validations, and automated DbContext `ActionLog` auditing.
+* **Outputs**: Generates a test summary report at `Backend/Results.md` documenting succeeding/failing endpoints and diagnostic logs.
 
 ---
 

@@ -6,12 +6,21 @@ This is the core business logic library for the EZBM project. It manages the dat
 
 ## Structure
 
-* **`Entities/`**: Database models/entities (e.g. `Item`, `Staff`, `Transaction`, `Attendance`, `Payroll`, `Sale`, `SaleEntry`).
+* **`Entities/`**: Core database models representing domain entities:
+  * **User Hierarchy (TPH):** `User.cs`, `Staff.cs`, and `Customer.cs` are mapped using Table-Per-Hierarchy (TPH) in EF Core. Features lazy permissions and card RFID validation expiry.
+  * **Sales & Ledger:** `Sale.cs` (parent checkouts), `SaleEntry.cs` (line items), `Transaction.cs` (split/mixed payment records referencing the parent sale), and `ItemTransaction.cs` (stock ledger actions).
+  * **Attendance & Operations:** `Attendance.cs` (time-in/out logs), `Payroll.cs` (employee payout calculations), and `ActionLog.cs` (audit interceptor records).
 * **`Data/`**: Contains database configuration.
-  * `AppDbContext.cs`: Configures the Entity Framework Core connection and database context using SQLite.
-  * `DbManager.cs`: Handles database lifecycle (initializing schemas and resetting data).
-* **`Services/`**: Core calculations and backend logic (such as inventory, sales, and employee logging logic).
-* **`Tools/`**: Utility methods like ID generator, logging, invoice formatters, etc.
+  * `AppDbContext.cs`: Configures SQLite EF Core connection, TPH entity conversion filters, and intercepts save operations to automatically log updates/deletes into the audit log.
+  * `DbManager.cs`: Handles database lifecycle (initializing schemas, seeding mock data, and resetting schemas).
+* **`Services/`**: Core business services mapping backend rules:
+  * `InventoryService.cs`: Product and service management, stock ledger tracking, and restock calculations.
+  * `SalesService.cs`: Mixed payments checkout and transaction logic.
+  * `StaffService.cs`: Shift attendance logging and modular upgrade commission adjustments.
+  * `AuthenticationService.cs`: Plain-text employee login validations.
+  * `SettingsService.cs`: JSON configuration reader/writer endpoints adapter.
+  * `ICashRegisterService.cs` / `MockCashRegisterService.cs`: Hardware emulation layer logging cash drawer triggers.
+* **`Tools/`**: Utility methods like ID generator (`IdHelper.cs`), logging (`Log.cs`), and invoice helpers (`Utils.cs`).
 
 ---
 
