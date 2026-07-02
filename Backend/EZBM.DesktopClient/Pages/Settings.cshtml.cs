@@ -30,7 +30,7 @@ public class SettingsModel : PageModel
 
     public void OnGet()
     {
-        var settings = SettingsService.LoadSettings();
+        StoreSettings settings = SettingsService.LoadSettings();
         StoreName = settings.StoreName;
         Currency = settings.Currency;
         LowStockThreshold = settings.LowStockThreshold;
@@ -48,7 +48,7 @@ public class SettingsModel : PageModel
 
         try
         {
-            var settings = SettingsService.LoadSettings();
+            StoreSettings settings = SettingsService.LoadSettings();
             settings.StoreName = StoreName;
             settings.Currency = Currency;
             settings.LowStockThreshold = LowStockThreshold;
@@ -58,6 +58,7 @@ public class SettingsModel : PageModel
             SettingsService.SaveSettings(settings);
             SuccessMessage = "Settings saved successfully.";
         }
+
         catch (Exception ex)
         {
             ErrorMessage = $"Failed to save settings: {ex.Message}";

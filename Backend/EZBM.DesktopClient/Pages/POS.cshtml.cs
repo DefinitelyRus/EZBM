@@ -73,7 +73,6 @@ public class POSModel : PageModel
     {
         ActiveStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
 
-        // Fetch only items that are marked as for sale
         FindItemRequest searchRequest = new(
             Id: null,
             Name: null,
@@ -198,6 +197,7 @@ public class POSModel : PageModel
                 ErrorMessage = $"Checkout failed: {saleResult.Message}";
             }
         }
+
         catch (Exception ex)
         {
             ErrorMessage = $"System checkout exception: {ex.Message}";
@@ -220,18 +220,16 @@ public class POSModel : PageModel
         try
         {
             using AppDbContext db = new();
-            var user = await db.User.FirstOrDefaultAsync(u => u.RfidCardId == rfidCardId);
+            User? user = await db.User.FirstOrDefaultAsync(u => u.RfidCardId == rfidCardId);
             if (user is null || user.AccessType != AccessCardType.Staff)
             {
                 ErrorMessage = "Access Denied: Invalid RFID Card or card is not a registered Staff profile.";
                 return RedirectToPage("/POS");
             }
 
-            // Trigger physical drawer open
             _cashRegisterService.OpenDrawer();
 
-            // Save to audit logs
-            var log = new ActionLog(
+            ActionLog log = new(
                 id: Utils.GenerateEntityId(),
                 actionType: "RegisterOverride",
                 operatorUsername: user.FirstName ?? user.RfidCardId ?? "Unknown Staff",
@@ -243,6 +241,7 @@ public class POSModel : PageModel
 
             SuccessMessage = $"Cash Register override successful. Drawer opened by {user.FirstName}!";
         }
+
         catch (Exception ex)
         {
             ErrorMessage = $"Register override failed: {ex.Message}";

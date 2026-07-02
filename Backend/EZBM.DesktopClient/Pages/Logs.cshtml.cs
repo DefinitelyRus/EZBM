@@ -207,26 +207,27 @@ public class LogsModel : PageModel
     /// <summary>
     /// Calculates stats (hours, gross pay, upgrade commission, net pay) dynamically for payroll form.
     /// </summary>
-    public async Task<IActionResult> OnGetCalculatePayrollStatsAsync(ulong staffId, DateTime periodStart, DateTime periodEnd)
+    public async Task<IActionResult> OnGetCalculatePayrollStatsAsync(
+        ulong staffId,
+        DateTime periodStart,
+        DateTime periodEnd)
     {
         try
         {
             using AppDbContext db = new();
-            var staff = await db.Staff.FindAsync(staffId);
+            Staff? staff = await db.Staff.FindAsync(staffId);
             if (staff is null)
             {
                 return new JsonResult(new { success = false, message = "Staff member not found" });
             }
 
-            // Sum logged attendance hours
-            var attendanceLogs = await db.Attendance
-                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut != null)
+            List<Attendance> attendanceLogs = await db.Attendance
+                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut is not null)
                 .ToListAsync();
 
             double totalHours = attendanceLogs.Sum(a => (a.TimeOut!.Value - a.TimeIn).TotalHours);
             float grossAmount = (float)(totalHours * staff.PayRate);
 
-            // Compute net upgrade commission commissions (subtracting lower tier values already paid/earned)
             float commission = await CalculateUpgradeCommissionsAsync(staffId, periodStart, periodEnd);
             float netAmount = grossAmount + commission;
 
@@ -239,34 +240,37 @@ public class LogsModel : PageModel
                 netAmount = Math.Round(netAmount, 2)
             });
         }
+
         catch (Exception ex)
         {
             return new JsonResult(new { success = false, message = ex.Message });
         }
     }
 
-    private static async Task<float> CalculateUpgradeCommissionsAsync(ulong staffId, DateTime periodStart, DateTime periodEnd)
+    private static async Task<float> CalculateUpgradeCommissionsAsync(
+        ulong staffId,
+        DateTime periodStart,
+        DateTime periodEnd)
     {
-        using var db = new AppDbContext();
-        var settings = SettingsService.LoadSettings();
-        var commissionRates = settings.MembershipCommissions;
+        using AppDbContext db = new();
+        StoreSettings settings = SettingsService.LoadSettings();
+        Dictionary<string, float> commissionRates = settings.MembershipCommissions;
 
-        // Find sales by this staff in period
-        var sales = await db.Sale
+        List<Sale> sales = await db.Sale
             .Include(s => s.Customer)
             .Where(s => s.Staff.Id == staffId && s.Timestamp >= periodStart && s.Timestamp <= periodEnd)
             .ToListAsync();
 
         float totalCommission = 0f;
 
-        foreach (var sale in sales)
+        foreach (Sale sale in sales)
         {
-            var entries = await db.SaleEntry
+            List<SaleEntry> entries = await db.SaleEntry
                 .Include(se => se.Item)
                 .Where(se => se.Sale.Id == sale.Id)
                 .ToListAsync();
 
-            foreach (var entry in entries)
+            foreach (SaleEntry entry in entries)
             {
                 string itemName = entry.Item.Name;
                 if (commissionRates.ContainsKey(itemName))
@@ -274,16 +278,15 @@ public class LogsModel : PageModel
                     float currentRate = commissionRates[itemName];
                     float subtractRate = 0f;
 
-                    if (sale.Customer != null)
+                    if (sale.Customer is not null)
                     {
-                        // Check previous purchases of membership items to subtract lower tier values already paid/earned
-                        var prevEntries = await db.SaleEntry
+                        List<SaleEntry> prevEntries = await db.SaleEntry
                             .Include(se => se.Sale)
                             .Include(se => se.Item)
-                            .Where(se => se.Sale.Customer != null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
+                            .Where(se => se.Sale.Customer is not null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
                             .ToListAsync();
 
-                        foreach (var prevEntry in prevEntries)
+                        foreach (SaleEntry prevEntry in prevEntries)
                         {
                             string prevItemName = prevEntry.Item.Name;
                             if (commissionRates.ContainsKey(prevItemName))

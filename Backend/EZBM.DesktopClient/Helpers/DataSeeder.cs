@@ -17,18 +17,15 @@ public static class DataSeeder
     /// </summary>
     public static void Seed()
     {
-        // Clear active SQLite database connections
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
         using AppDbContext context = new();
 
-        // Clear existing tables
         context.Database.EnsureDeleted();
         context.Database.EnsureCreated();
 
-        // Generate 10 Staff Members
         List<Staff> staffMembers =
         [
             new Staff(
@@ -170,7 +167,6 @@ public static class DataSeeder
         context.Staff.AddRange(staffMembers);
         context.SaveChanges();
 
-        // Generate 10 Items
         List<Item> itemsList =
         [
             new Item(
@@ -217,7 +213,7 @@ public static class DataSeeder
                 name: "Organic Whole Milk",
                 description: "Pasteurized farm fresh milk",
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
-                quantity: 3.0f, // Low Stock!
+                quantity: 3.0f,
                 expirationDate: DateTime.UtcNow.AddDays(5),
                 cost: 0.80f
             ),
@@ -265,7 +261,7 @@ public static class DataSeeder
                 name: "Premium Beef Ribeye",
                 description: "USDA Choice ribeye steak",
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
-                quantity: 2.0f, // Low Stock!
+                quantity: 2.0f,
                 expirationDate: DateTime.UtcNow.AddDays(3),
                 cost: 6.50f
             ),
@@ -277,7 +273,7 @@ public static class DataSeeder
                 name: "Antibacterial Dish Soap",
                 description: "Lemon scent liquid soap, 500ml",
                 tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
-                quantity: 1.0f, // Low Stock!
+                quantity: 1.0f,
                 expirationDate: null,
                 cost: 1.20f
             ),
@@ -303,7 +299,6 @@ public static class DataSeeder
         context.Item.AddRange(itemsList);
         context.SaveChanges();
 
-        // Generate 10 Attendances
         DateTime baseTime = DateTime.UtcNow.Date.AddDays(-5);
         List<Attendance> attendances =
         [
@@ -372,7 +367,6 @@ public static class DataSeeder
         context.Attendance.AddRange(attendances);
         context.SaveChanges();
 
-        // Generate 10 Payroll payments
         List<Payroll> payrolls =
         [
             new Payroll(
@@ -500,7 +494,6 @@ public static class DataSeeder
         context.Payroll.AddRange(payrolls);
         context.SaveChanges();
 
-        // Generate 10 Sales & SaleEntries
         List<Sale> sales = [];
         List<SaleEntry> saleEntries = [];
 
@@ -509,7 +502,6 @@ public static class DataSeeder
             DateTime saleTime = DateTime.UtcNow.AddDays(-i).AddHours(-2);
             int invoiceNum = Utils.GenerateInvoiceNumber(saleTime);
 
-            // Generate total amount dynamically based on item index
             Item selectedItem = itemsList[i];
             float quantity = 2.0f;
             float unitPrice = selectedItem.SalePrice ?? 1.99f;
@@ -545,7 +537,6 @@ public static class DataSeeder
         context.SaleEntry.AddRange(saleEntries);
         context.SaveChanges();
 
-        // Generate 10 ItemTransactions
         List<ItemTransaction> itemTransactions =
         [
             new ItemTransaction(
@@ -644,7 +635,6 @@ public static class DataSeeder
         context.ItemTransaction.AddRange(itemTransactions);
         context.SaveChanges();
 
-        // Seed Customer
         Customer customer = new(Utils.GenerateEntityId(), "John", "Doe", "555-0202", "john.doe@example.com")
         {
             RfidCardId = "john_customer_card",

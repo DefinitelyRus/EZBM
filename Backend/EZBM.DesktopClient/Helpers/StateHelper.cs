@@ -9,7 +9,6 @@ namespace EZBM.DesktopClient.Helpers;
 /// </summary>
 public static class StateHelper
 {
-
     #region State Retrieval Operations
 
     /// <summary>
@@ -42,7 +41,6 @@ public static class StateHelper
         }
     }
 
-
     /// <summary>
     /// Checks if the given staff member is currently clocked in.
     /// </summary>
@@ -56,7 +54,7 @@ public static class StateHelper
         {
             using AppDbContext context = new();
             bool isClockedIn = await context.Attendance.AnyAsync(
-                a => a.Staff.Id == staffId && a.TimeOut == null
+                a => a.Staff.Id == staffId && a.TimeOut is null
             );
 
             return isClockedIn;

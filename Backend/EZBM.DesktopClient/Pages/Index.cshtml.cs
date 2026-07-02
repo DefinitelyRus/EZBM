@@ -14,7 +14,6 @@ namespace EZBM.DesktopClient.Pages;
 /// </summary>
 public class IndexModel : PageModel
 {
-
     #region Properties
 
     /// <summary>
@@ -49,7 +48,6 @@ public class IndexModel : PageModel
         using AppDbContext context = new();
         DateTime todayUtc = DateTime.UtcNow.Date;
 
-        // Fetch sale entries since start of today (UTC)
         List<SaleEntry> todaySaleEntries = await context.SaleEntry
             .Include(e => e.Sale)
             .Include(e => e.Item)
@@ -62,7 +60,7 @@ public class IndexModel : PageModel
             e => e.Quantity * (e.UnitPrice - (e.Item.Cost ?? 0f))
         );
 
-        var settings = SettingsService.LoadSettings();
+        StoreSettings settings = SettingsService.LoadSettings();
         LowStockItems = await context.Item
             .Where(i => i.Quantity < settings.LowStockThreshold)
             .ToListAsync();
@@ -73,7 +71,6 @@ public class IndexModel : PageModel
             .Take(10)
             .ToListAsync();
     }
-
 
     /// <summary>
     /// Handles POST request to toggle employee attendance clock-in/out.
