@@ -3,7 +3,7 @@
   "Currency": "PHP",
   "LowStockThreshold": 5,
   "WrittenReceiptThreshold": 1000,
-  "StoreOpeningDate": "2026-07-01T09:22:47.9928312Z",
+  "StoreOpeningDate": "2026-07-01T09:22:47.992",
   "CardExpirationOffsets": {
     "Staff": 365,
     "OneTime": 1,

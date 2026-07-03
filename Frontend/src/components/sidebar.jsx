@@ -9,6 +9,7 @@ import CheckoutIcon from '../assets/checkout.svg?react';
 import StaffIcon from '../assets/staff.svg?react';
 import LogsIcon from '../assets/logs.svg?react';
 import LogOutIcon from '../assets/log_out.svg?react';
+import SettingsIcon from '../assets/settings.svg?react';
 
 function Sidebar() {
   return (
@@ -51,15 +52,21 @@ function Sidebar() {
           text="Attendance & Payroll Logs"
           icon={<LogsIcon />}
         />
+
+        <Button 
+          to="/"
+          text="Store Settings"
+          icon={<SettingsIcon />}
+        />
       </div>
 
       <div id="log-out">
-          <Button
-            to="/"
-            text="Log out"
-            icon={<LogOutIcon />}
-          />
-        </div>
+        <Button
+          to="/"
+          text="Log out"
+          icon={<LogOutIcon />}
+        />
+      </div>
     </div>
   );
 }

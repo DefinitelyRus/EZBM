@@ -25,8 +25,8 @@
     padding: 25px 0px;
 }
 
-#checkout-content-left .search-bar-container {
-    padding-bottom: 20px;
+#item-inputs .total_amount {
+    justify-content: space-between;
 }
 
 #item-inputs .dropdown {
@@ -37,6 +37,10 @@
     background-color: #F3F4F6;
     border: 1px solid #D1D5DB;
     color: #1C1E21;
+}
+
+#checkout-content-left .search-bar-container {
+    padding-bottom: 20px;
 }
 
 #checkout-content-left .form-control {
@@ -136,6 +140,10 @@
     border: 1px solid #121212;
 }
 
+#cart-container h5 {
+    font-weight: bold;
+}
+
 #cart-container .shopping-cart th {
     padding: 5px;
     background-color: #d7d0e9;
@@ -171,6 +179,14 @@
 
 #checkout-content-left .addCart {
     background-color: transparent;
-    border: none;
-    padding: 0;
+    border: 1px solid #D1D5DB;
+    border-radius: 5px;
+    padding: 2px 5px;
+}
+
+#checkout-content-left .addCart:hover {
+    background-color: #F3F4F6;
+    border: 1px solid #D1D5DB;
+    border-radius: 5px;
+    padding: 2px 5px;
 }

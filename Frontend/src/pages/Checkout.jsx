@@ -142,7 +142,11 @@ function Checkout() {
               </table>
 
             <div id="item-inputs">
+              <div className="d-flex flex-direction col total_amount">
                 <h5>Total Amount:</h5>
+                <h5>₱</h5>
+              </div>
+                
               <div className="dropdown">
                 <Dropdown
                     title="Payment Methods"

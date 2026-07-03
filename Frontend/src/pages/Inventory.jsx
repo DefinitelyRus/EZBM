@@ -96,8 +96,8 @@ function Dashboard() {
             />
           </div>
 
-           <div className="table-responsive table-container">
-            <table className="inventory-table">
+           <div className="table-container">
+              <table className="inventory-table">
               <colgroup>
                 <col style={{ width: "27%" }} /> {/* Name */}
                 <col style={{ width: "6%" }} />  {/* For Sale */}
@@ -107,7 +107,7 @@ function Dashboard() {
                 <col style={{ width: "10%" }} /> {/* Unit */}
                 <col style={{ width: "12%" }} /> {/* Expiration */}
                 <col style={{ width: "12%" }} /> {/* Tags */}
-                <col style={{ width: "7%" }} />  {/* Actions */}
+                <col style={{ width: "10%" }} />  {/* Actions */}
               </colgroup>
 
               <thead>
@@ -120,7 +120,7 @@ function Dashboard() {
                   <th className="col-center">Unit</th>
                   <th className="col-center">Expiration</th>
                   <th className="col-center">Tags</th>
-                  <th className="col-center">Actions</th>
+                  <th className="col-center"></th>
                 </tr>
               </thead>
 
@@ -137,12 +137,12 @@ function Dashboard() {
                         {item.salePrice ? `₱${item.salePrice}` : "-"}
                       </td>
                       <td className="col-center">{item.quantity}</td>
-                      <td className="col-left">{item.unit}</td>
-                      <td className="col-left">{item.expiration}</td>
-                      <td className="col-left">{item.tags}</td>
+                      <td className="col-center">{item.unit}</td>
+                      <td className="col-center">{item.expiration}</td>
+                      <td className="col-center">{item.tags}</td>
 
                       <td className="col-center-btn">
-                        <div className="d-flex flex-direction col gap-2 btn-group">
+                        <div className="d-flex flex-direction col gap-1 btn-group">
                           <button className="edit" title="Edit">
                             <img src={EditIcon} alt="Edit" />
                           </button>
@@ -163,9 +163,9 @@ function Dashboard() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
-      </div>
 
       <div
         id="add-items-container"
