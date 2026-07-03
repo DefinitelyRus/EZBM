@@ -1,10 +1,12 @@
 #inventory-contents {
     /* Layout */
     min-height: 100vh;
+
     max-height: fit-content;
 
     /* Spacing */
     padding: 20px 20px 30px 20px;
+    padding-left: 330px;
 }
 
 #inventory-content-left {
@@ -186,7 +188,7 @@
 
 .inventory-table tbody tr:hover td {
     background-color: #F3F0FA;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 /* Column Text Alignment */
