@@ -73,7 +73,8 @@ public static class StaffService
                 lastName: request.LastName,
                 email: request.Email,
                 phoneNumber: request.PhoneNumber,
-                position: request.Position
+                position: request.Position,
+                commissionRate: request.CommissionRate
             );
 
             context.Staff.Add(staff);
@@ -269,6 +270,7 @@ public static class StaffService
             staff.Position = request.Position ?? staff.Position;
             staff.PayFrequency = request.PayFrequency ?? staff.PayFrequency;
             staff.PayRate = request.PayRate ?? staff.PayRate;
+            staff.CommissionRate = request.CommissionRate ?? staff.CommissionRate;
 
             await context.SaveChangesAsync();
 

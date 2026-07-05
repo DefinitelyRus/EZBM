@@ -144,7 +144,7 @@ public static class SalesService
                     item.Quantity -= itemReq.Quantity;
                 }
 
-                if (item is Service && item.Name.Contains("Upgrade", StringComparison.OrdinalIgnoreCase))
+                if (item is Service && (item.Name.Contains("Upgrade", StringComparison.OrdinalIgnoreCase) || item.Name.Contains("Grooming", StringComparison.OrdinalIgnoreCase)))
                 {
                     StoreSettings storeSettings = SettingsService.LoadSettings();
                     float commissionRate = staff.CommissionRate ?? 1.0f;

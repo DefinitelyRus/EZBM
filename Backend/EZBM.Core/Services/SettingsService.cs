@@ -73,7 +73,11 @@ public class StoreSettings
     {
         { "Silver Upgrade", 10f },
         { "Gold Upgrade", 25f },
-        { "Platinum Upgrade", 50f }
+        { "Platinum Upgrade", 50f },
+        { "Dog Grooming - Small", 20f },
+        { "Dog Grooming - Medium", 30f },
+        { "Dog Grooming - Large", 40f },
+        { "Cat Grooming", 25f }
     };
 }
 

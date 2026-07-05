@@ -206,6 +206,11 @@ public static class InventoryService
             item.UnitOfMeasurement = request.UnitOfMeasurement;
             item.ExpirationDate = request.ExpirationDate ?? item.ExpirationDate;
             item.Tags = request.Tags ?? item.Tags;
+            if (item is Product prod)
+            {
+                prod.TargetStock = request.TargetStock ?? prod.TargetStock;
+                prod.LowStockThresholdPercentage = request.LowStockThresholdPercentage ?? prod.LowStockThresholdPercentage;
+            }
             await context.SaveChangesAsync();
 
             message = $"Item '{item.Name}' with ID {item.Id} updated successfully.";
@@ -266,8 +271,8 @@ public static class InventoryService
                     request.Cost,
                     request.ImageUrl,
                     null,
-                    0f,
-                    0.20f
+                    request.TargetStock ?? 0f,
+                    request.LowStockThresholdPercentage ?? 0.20f
                 );
             }
 
