@@ -49,6 +49,26 @@ public class AppDbContext : DbContext
     public DbSet<Item> Item { get; set; }
 
     /// <summary>
+    /// Gets or sets the database set for physical products.
+    /// </summary>
+    public DbSet<Product> Product { get; set; }
+
+    /// <summary>
+    /// Gets or sets the database set for digital services.
+    /// </summary>
+    public DbSet<Service> Service { get; set; }
+
+    /// <summary>
+    /// Gets or sets the database set for system roles.
+    /// </summary>
+    public DbSet<Role> Role { get; set; }
+
+    /// <summary>
+    /// Gets or sets the database set for staff adjustments (payroll bonuses and advance pay).
+    /// </summary>
+    public DbSet<StaffAdjustment> StaffAdjustment { get; set; }
+
+    /// <summary>
     /// Gets or sets the database set for item transactions.
     /// </summary>
     public DbSet<ItemTransaction> ItemTransaction { get; set; }
@@ -91,6 +111,11 @@ public class AppDbContext : DbContext
             .HasValue<Staff>("Staff")
             .HasValue<Customer>("Customer");
 
+        modelBuilder.Entity<Item>()
+            .HasDiscriminator<string>("ItemType")
+            .HasValue<Product>("Product")
+            .HasValue<Service>("Service");
+
         modelBuilder.Entity<User>()
             .Property(u => u.AccessType)
             .HasConversion<string>();
@@ -108,6 +133,11 @@ public class AppDbContext : DbContext
                 v => string.Join(";", v),
                 v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
             );
+
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.Roles)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("UserRoles"));
 
         modelBuilder.Entity<Staff>()
             .Property(s => s.PayFrequency)
@@ -179,6 +209,7 @@ public class AppDbContext : DbContext
     /// <summary>
     /// Saves all changes made in this context to the database, automatically intercepting and auditing modifications.
     /// </summary>
+    /// <returns>The number of state entries written to the database.</returns>
     public override int SaveChanges()
     {
         AuditChanges();
@@ -188,6 +219,8 @@ public class AppDbContext : DbContext
     /// <summary>
     /// Asynchronously saves all changes made in this context to the database, automatically intercepting and auditing modifications.
     /// </summary>
+    /// <param name="cancellationToken">A token to observe while waiting for the task to complete.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         AuditChanges();

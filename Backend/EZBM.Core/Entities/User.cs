@@ -66,6 +66,11 @@ public abstract class User : Entity
     /// </summary>
     public DateTime? ExpirationDate { get; set; }
 
+    /// <summary>
+    /// The list of custom roles assigned to this user.
+    /// </summary>
+    public List<Role> Roles { get; set; } = new();
+
     #endregion
 
     #region Public Methods
@@ -81,6 +86,44 @@ public abstract class User : Entity
             return PermissionsAfterExpiry;
         }
         return Permissions;
+    }
+
+    /// <summary>
+    /// Checks if a user has a specific permission using the roles matrix and flat overrides.
+    /// Deny (-1) overrides all. Allow (1) overrides Default (0).
+    /// </summary>
+    /// <param name="action">The name of the action/permission to check.</param>
+    /// <returns>True if allowed; otherwise false.</returns>
+    public bool HasPermission(string action)
+    {
+        // 1. Check roles matrix
+        int resolvedState = 0; // Default
+        foreach (var role in Roles)
+        {
+            try
+            {
+                var dict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(role.PermissionsJson);
+                if (dict != null && dict.TryGetValue(action, out int state))
+                {
+                    if (state == -1) // Explicit Deny overrides all
+                    {
+                        return false;
+                    }
+                    if (state == 1)
+                    {
+                        resolvedState = 1;
+                    }
+                }
+            }
+            catch { }
+        }
+
+        if (resolvedState == 1) return true;
+
+        // 2. Fallback to flat overrides
+        var activeFlat = GetActivePermissions();
+        if (activeFlat.Contains($"-{action}")) return false; // deny override
+        return activeFlat.Contains(action);
     }
 
     #endregion

@@ -22,7 +22,7 @@ public class Staff : User
     public string Username { get; set; }
 
     /// <summary>
-    /// The password for the account. Note: Currently stored in plain text.
+    /// The password for the account. Note: Stored as hash/encrypted.
     /// </summary>
     public string? Password { get; set; }
 
@@ -40,6 +40,11 @@ public class Staff : User
     /// The monetary value paid based on the payment type.
     /// </summary>
     public float PayRate { get; set; }
+
+    /// <summary>
+    /// Per-staff commission percentage overrides.
+    /// </summary>
+    public float? CommissionRate { get; set; }
 
     #endregion
 
@@ -65,6 +70,7 @@ public class Staff : User
     /// <param name="email">The staff's email address.</param>
     /// <param name="phoneNumber">The staff's phone number.</param>
     /// <param name="position">The staff's job position.</param>
+    /// <param name="commissionRate">The custom commission percentage rate.</param>
     public Staff(
         ulong id,
         string username,
@@ -75,7 +81,8 @@ public class Staff : User
         string? lastName = null,
         string? email = null,
         string? phoneNumber = null,
-        string? position = null)
+        string? position = null,
+        float? commissionRate = null)
     {
         Id = id;
 
@@ -91,6 +98,7 @@ public class Staff : User
 
         PayFrequency = payFrequency;
         PayRate = payRate;
+        CommissionRate = commissionRate;
         AccessType = AccessCardType.Staff;
     }
 
