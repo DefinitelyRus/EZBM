@@ -177,117 +177,117 @@ public static class DataSeeder
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 0.99f,
-                name: "Fresh Red Apple",
-                description: "Sweet organic gala apple",
+                price: 180.00f,
+                name: "Pedigree Dog Food Dry (1kg)",
+                description: "Nutritious dry food for adult dogs, beef flavor",
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 120.0f,
-                expirationDate: DateTime.UtcNow.AddDays(14),
-                cost: 0.25f,
+                expirationDate: DateTime.UtcNow.AddDays(180),
+                cost: 140.00f,
                 targetStock: 200f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 8.49f,
-                name: "Herbal Essence Shampoo",
-                description: "Moisturizing hair shampoo, 400ml",
-                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
+                price: 35.00f,
+                name: "Whiskas Cat Food Wet (85g)",
+                description: "Wet food pouch for cats, tuna flavor in jelly",
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 35.0f,
-                expirationDate: null,
-                cost: 3.10f,
-                targetStock: 50f
+                expirationDate: DateTime.UtcNow.AddDays(90),
+                cost: 25.00f,
+                targetStock: 100f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Kilograms,
                 isForSale: true,
-                price: 2.80f,
-                name: "Whole Wheat Flour",
-                description: "Stoneground organic wheat flour",
+                price: 280.00f,
+                name: "Purina Friskies Cat Food Dry (1.1kg)",
+                description: "Seafood sensations dry food for active cats",
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 75.0f,
                 expirationDate: DateTime.UtcNow.AddMonths(6),
-                cost: 1.05f,
+                cost: 220.00f,
                 targetStock: 100f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Liters,
                 isForSale: true,
-                price: 1.95f,
-                name: "Organic Whole Milk",
-                description: "Pasteurized farm fresh milk",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                price: 350.00f,
+                name: "Kit Cat Soya Clump Cat Litter (7L)",
+                description: "Eco-friendly, biodegradable soybean cat litter, original scent",
+                tags: [Item.Tag.Consumable],
                 quantity: 3.0f,
-                expirationDate: DateTime.UtcNow.AddDays(5),
-                cost: 0.80f,
+                expirationDate: null,
+                cost: 270.00f,
                 targetStock: 15f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 1.50f,
-                name: "Recycled Paper Towels",
-                description: "Eco-friendly 2-ply kitchen paper towel roll",
-                tags: [Item.Tag.Consumable],
+                price: 160.00f,
+                name: "Sleeky Dog Shampoo (350ml)",
+                description: "Mild formula conditioning shampoo for dogs",
+                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 110.0f,
                 expirationDate: null,
-                cost: 0.45f,
+                cost: 110.00f,
                 targetStock: 150f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 2.00f,
-                name: "Cotton Shopping Bag",
-                description: "Reusable organic cotton tote bag",
-                tags: [Item.Tag.Reusable],
+                price: 390.00f,
+                name: "Saint Roche Dog Shampoo (628ml)",
+                description: "Premium organic dog shampoo, sweet heaven scent",
+                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 250.0f,
                 expirationDate: null,
-                cost: 0.60f,
+                cost: 290.00f,
                 targetStock: 300f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
-                unitOfMeasurement: Item.Unit.Milliliters,
+                unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 0.04f,
-                name: "Extra Virgin Olive Oil",
-                description: "Cold-pressed Greek olive oil, sold per ml",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
-                quantity: 8000.0f,
-                expirationDate: DateTime.UtcNow.AddYears(1),
-                cost: 0.015f,
-                targetStock: 10000f
+                price: 75.00f,
+                name: "Pet Collar Basic",
+                description: "Adjustable nylon collar with safety bell",
+                tags: [Item.Tag.Reusable],
+                quantity: 45.0f,
+                expirationDate: null,
+                cost: 35.00f,
+                targetStock: 100f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
-                unitOfMeasurement: Item.Unit.Pounds,
+                unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 13.99f,
-                name: "Premium Beef Ribeye",
-                description: "USDA Choice ribeye steak",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                price: 120.00f,
+                name: "Pet Bowl Stainless Steel",
+                description: "Non-slip stainless steel feeding bowl, medium size",
+                tags: [Item.Tag.Reusable],
                 quantity: 2.0f,
-                expirationDate: DateTime.UtcNow.AddDays(3),
-                cost: 6.50f,
+                expirationDate: null,
+                cost: 80.00f,
                 targetStock: 10f
             ),
             new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
-                price: 3.50f,
-                name: "Antibacterial Dish Soap",
-                description: "Lemon scent liquid soap, 500ml",
-                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
+                price: 50.00f,
+                name: "Dog treats pack",
+                description: "Crunchy beef flavor dog treats",
+                tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 1.0f,
-                expirationDate: null,
-                cost: 1.20f,
+                expirationDate: DateTime.UtcNow.AddMonths(12),
+                cost: 35.00f,
                 targetStock: 10f
             ),
             new Product(
@@ -300,16 +300,17 @@ public static class DataSeeder
                 tags: [Item.Tag.Consumable],
                 quantity: 25.0f,
                 expirationDate: null,
-                cost: 8.00f,
+                cost: 320.00f,
                 targetStock: 30f
             )
         ];
 
         itemsList[0].Barcode = "1234";
         itemsList[1].Barcode = "5678";
-        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 100f, "Silver Upgrade", "Silver membership upgrade tier", null, 9999f, null, 0f, null, "silver_code"));
-        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 250f, "Gold Upgrade", "Gold membership upgrade tier", null, 9999f, null, 0f, null, "gold_code"));
-        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 500f, "Platinum Upgrade", "Platinum membership upgrade tier", null, 9999f, null, 0f, null, "platinum_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Unlimited, true, 400.00f, "Dog Grooming - Small", "Grooming package for small dog breeds under 10kg", null, 9999f, null, 0f, null, "silver_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Unlimited, true, 550.00f, "Dog Grooming - Medium", "Grooming package for medium dog breeds 10-25kg", null, 9999f, null, 0f, null, "gold_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Unlimited, true, 700.00f, "Dog Grooming - Large", "Grooming package for large dog breeds over 25kg", null, 9999f, null, 0f, null, "platinum_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Unlimited, true, 500.00f, "Cat Grooming", "Standard bath and haircut package for cats", null, 9999f, null, 0f, null, "cat_grooming_code"));
         context.Item.AddRange(itemsList);
         context.SaveChanges();
 
