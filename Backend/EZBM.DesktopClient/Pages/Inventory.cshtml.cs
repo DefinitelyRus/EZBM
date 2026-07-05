@@ -75,7 +75,10 @@ public class InventoryModel : PageModel
         float quantity,
         Item.Unit unitOfMeasurement,
         DateTime? expirationDate,
-        List<Item.Tag>? tags
+        List<Item.Tag>? tags,
+        string itemType,
+        float? targetStock,
+        float? lowStockThresholdPercentage
     )
     {
         if (cost.HasValue && cost.Value < 0f)
@@ -106,7 +109,10 @@ public class InventoryModel : PageModel
             UnitOfMeasurement: unitOfMeasurement,
             ExpirationDate: expirationDate,
             Tags: tags ?? new List<Item.Tag>(),
-            ImageUrl: null
+            ImageUrl: null,
+            ItemType: itemType,
+            TargetStock: targetStock,
+            LowStockThresholdPercentage: lowStockThresholdPercentage
         );
 
         Utils.RequestResult<Item> result = await InventoryService.CreateItemAsync(request);
@@ -133,7 +139,9 @@ public class InventoryModel : PageModel
         float quantity,
         Item.Unit unitOfMeasurement,
         DateTime? expirationDate,
-        List<Item.Tag>? tags
+        List<Item.Tag>? tags,
+        float? targetStock,
+        float? lowStockThresholdPercentage
     )
     {
         if (cost.HasValue && cost.Value < 0f)
@@ -164,7 +172,9 @@ public class InventoryModel : PageModel
             Quantity: quantity,
             UnitOfMeasurement: unitOfMeasurement,
             ExpirationDate: expirationDate,
-            Tags: tags ?? new List<Item.Tag>()
+            Tags: tags ?? new List<Item.Tag>(),
+            TargetStock: targetStock,
+            LowStockThresholdPercentage: lowStockThresholdPercentage
         );
 
         Utils.RequestResult result = await InventoryService.UpdateItemAsync(request);

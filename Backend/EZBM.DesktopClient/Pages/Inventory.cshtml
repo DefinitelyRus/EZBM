@@ -36,16 +36,19 @@
         <table border="1" cellpadding="5" cellspacing="0" id="catalogTable" style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background-color: #eee;">
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>For Sale?</th>
-                    <th>Cost Price</th>
-                    <th>Sale Price</th>
-                    <th>Quantity</th>
-                    <th>Unit</th>
-                    <th>Expiration</th>
-                    <th>Tags</th>
+                    <th onclick="sortTable(0, true)" style="cursor: pointer; text-decoration: underline;">ID ↕</th>
+                    <th onclick="sortTable(1, false)" style="cursor: pointer; text-decoration: underline;">Name ↕</th>
+                    <th onclick="sortTable(2, false)" style="cursor: pointer; text-decoration: underline;">Type ↕</th>
+                    <th onclick="sortTable(3, false)" style="cursor: pointer; text-decoration: underline;">Description ↕</th>
+                    <th onclick="sortTable(4, false)" style="cursor: pointer; text-decoration: underline;">For Sale? ↕</th>
+                    <th onclick="sortTable(5, true)" style="cursor: pointer; text-decoration: underline;">Cost Price ↕</th>
+                    <th onclick="sortTable(6, true)" style="cursor: pointer; text-decoration: underline;">Sale Price ↕</th>
+                    <th onclick="sortTable(7, true)" style="cursor: pointer; text-decoration: underline;">Quantity ↕</th>
+                    <th onclick="sortTable(8, false)" style="cursor: pointer; text-decoration: underline;">Unit ↕</th>
+                    <th onclick="sortTable(9, true)" style="cursor: pointer; text-decoration: underline;">Target Stock ↕</th>
+                    <th onclick="sortTable(10, true)" style="cursor: pointer; text-decoration: underline;">Threshold % ↕</th>
+                    <th onclick="sortTable(11, false)" style="cursor: pointer; text-decoration: underline;">Expiration ↕</th>
+                    <th onclick="sortTable(12, false)" style="cursor: pointer; text-decoration: underline;">Tags ↕</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -55,12 +58,15 @@
                     <tr>
                         <td>@item.Id</td>
                         <td class="search-name"><strong>@item.Name</strong></td>
+                        <td>@(item is Service ? "Service" : "Product")</td>
                         <td>@item.Description</td>
                         <td>@(item.IsForSale ? "Yes" : "No")</td>
                         <td>@(item.Cost?.ToString("C") ?? "N/A")</td>
                         <td>@(item.SalePrice?.ToString("C") ?? "N/A")</td>
                         <td>@item.Quantity</td>
                         <td>@item.UnitOfMeasurement</td>
+                        <td>@(item is Product p ? p.TargetStock.ToString("F1") : "N/A")</td>
+                        <td>@(item is Product prod ? $"{(prod.LowStockThresholdPercentage * 100):F0}%" : "N/A")</td>
                         <td>@(item.ExpirationDate?.ToShortDateString() ?? "N/A")</td>
                         <td>@string.Join(", ", item.Tags)</td>
                         <td>
@@ -75,6 +81,13 @@
                 }
             </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div style="margin-top: 15px; display: flex; align-items: center; gap: 15px;">
+            <button type="button" onclick="prevPage()" style="padding: 5px 10px; cursor: pointer;">Previous</button>
+            <span id="pageIndicator" style="font-weight: bold;">Page 1 of 1</span>
+            <button type="button" onclick="nextPage()" style="padding: 5px 10px; cursor: pointer;">Next</button>
+        </div>
     </div>
 
     <!-- Add / Edit Item Form Workspace -->
@@ -103,6 +116,12 @@
                 </div>
 
                 <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Item Type:</label>
+                    <input type="hidden" name="itemType" value="@(Model.EditingItem is Service ? "Service" : "Product")" />
+                    <strong>@(Model.EditingItem is Service ? "Service" : "Product")</strong>
+                </div>
+
+                <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Cost Price ($):</label>
                     <input type="number" step="0.01" min="0" name="cost" value="@Model.EditingItem.Cost" style="width: 100%;" />
                 </div>
@@ -116,6 +135,20 @@
                     <label style="display: block; font-weight: bold;">Stock Quantity:</label>
                     <input type="number" step="0.01" min="0" name="quantity" value="@Model.EditingItem.Quantity" required style="width: 100%;" />
                 </div>
+
+                @if (Model.EditingItem is Product pEdit)
+                {
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Target Stock:</label>
+                        <input type="number" step="0.01" min="0" name="targetStock" value="@pEdit.TargetStock" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Low Stock Warning Threshold (%):</label>
+                        <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="@pEdit.LowStockThresholdPercentage" style="width: 100%;" />
+                        <small style="color: #666;">Enter fraction (e.g. 0.20 for 20%)</small>
+                    </div>
+                }
 
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Unit of Measurement:</label>
@@ -163,8 +196,16 @@
         else
         {
             <h3>Add New Item</h3>
-            <form method="post" asp-page-handler="Create">
+            <form method="post" asp-page-handler="Create" id="createItemForm">
                 
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Item Type:</label>
+                    <select name="itemType" style="width: 100%;" onchange="toggleItemTypeFields(this.form)">
+                        <option value="Product" selected>Product</option>
+                        <option value="Service">Service</option>
+                    </select>
+                </div>
+
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Name:</label>
                     <input type="text" name="name" required style="width: 100%;" />
@@ -195,6 +236,17 @@
                 <div style="margin-bottom: 10px;">
                     <label style="display: block; font-weight: bold;">Stock Quantity:</label>
                     <input type="number" step="0.01" min="0" name="quantity" value="0" required style="width: 100%;" />
+                </div>
+
+                <div class="product-only-field" style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Target Stock:</label>
+                    <input type="number" step="0.01" min="0" name="targetStock" value="0" style="width: 100%;" />
+                </div>
+
+                <div class="product-only-field" style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Low Stock Warning Threshold (%):</label>
+                    <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="0.20" style="width: 100%;" />
+                    <small style="color: #666;">Enter fraction (e.g. 0.20 for 20%)</small>
                 </div>
 
                 <div style="margin-bottom: 10px;">
@@ -230,23 +282,114 @@
 
 @section Scripts {
     <script>
+        var currentPage = 1;
+        var rowsPerPage = 10;
+
+        function paginateTable() {
+            var table = document.getElementById("catalogTable");
+            var tbody = table.querySelector("tbody");
+            var rows = Array.from(tbody.querySelectorAll("tr"));
+            var activeRows = rows.filter(row => row.getAttribute("data-filtered") !== "true");
+            var totalPages = Math.ceil(activeRows.length / rowsPerPage) || 1;
+
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            rows.forEach(row => row.style.display = "none");
+
+            var startIdx = (currentPage - 1) * rowsPerPage;
+            var endIdx = startIdx + rowsPerPage;
+
+            activeRows.slice(startIdx, endIdx).forEach(row => row.style.display = "");
+
+            document.getElementById("pageIndicator").textContent = "Page " + currentPage + " of " + totalPages;
+        }
+
+        function nextPage() {
+            currentPage++;
+            paginateTable();
+        }
+
+        function prevPage() {
+            currentPage--;
+            paginateTable();
+        }
+
+        var sortDirections = {};
+        function sortTable(columnIndex, isNumeric) {
+            var table = document.getElementById("catalogTable");
+            var tbody = table.querySelector("tbody");
+            var rows = Array.from(tbody.querySelectorAll("tr"));
+
+            var dir = sortDirections[columnIndex] === "asc" ? "desc" : "asc";
+            sortDirections[columnIndex] = dir;
+
+            rows.sort((a, b) => {
+                var cellA = a.cells[columnIndex].textContent.trim();
+                var cellB = b.cells[columnIndex].textContent.trim();
+
+                if (isNumeric) {
+                    var valA = parseFloat(cellA.replace(/[^0-9.-]+/g, "")) || 0;
+                    var valB = parseFloat(cellB.replace(/[^0-9.-]+/g, "")) || 0;
+                    return dir === "asc" ? valA - valB : valB - valA;
+                } else {
+                    return dir === "asc" ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
+            paginateTable();
+        }
+
         function filterTable() {
             var input = document.getElementById("searchInput");
             var filter = input.value.toLowerCase();
             var table = document.getElementById("catalogTable");
-            var rows = table.getElementsByTagName("tr");
+            var tbody = table.querySelector("tbody");
+            var rows = tbody.querySelectorAll("tr");
 
-            for (var i = 1; i < rows.length; i++) {
-                var nameCell = rows[i].getElementsByClassName("search-name")[0];
-                if (nameCell) {
-                    var txtValue = nameCell.textContent || nameCell.innerText;
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                        rows[i].style.display = "";
+            rows.forEach(row => {
+                var cells = row.getElementsByTagName("td");
+                if (cells.length > 12) {
+                    var idText = cells[0].textContent || cells[0].innerText;
+                    var nameText = cells[1].textContent || cells[1].innerText;
+                    var descText = cells[3].textContent || cells[3].innerText;
+                    var tagsText = cells[12].textContent || cells[12].innerText;
+
+                    var combinedText = (idText + " " + nameText + " " + descText + " " + tagsText).toLowerCase();
+                    if (combinedText.indexOf(filter) > -1) {
+                        row.setAttribute("data-filtered", "false");
                     } else {
-                        rows[i].style.display = "none";
+                        row.setAttribute("data-filtered", "true");
                     }
                 }
-            }
+            });
+            currentPage = 1;
+            paginateTable();
         }
+
+        function toggleItemTypeFields(form) {
+            var select = form.querySelector('[name="itemType"]');
+            var itemType = select ? select.value : 'Product';
+            var productOnlyFields = form.querySelectorAll('.product-only-field');
+            productOnlyFields.forEach(function(el) {
+                if (itemType === 'Product') {
+                    el.style.display = 'block';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        // Initialize fields on load
+        document.addEventListener("DOMContentLoaded", function() {
+            var addForm = document.getElementById("createItemForm");
+            if (addForm) {
+                toggleItemTypeFields(addForm);
+            }
+            
+            // Run pagination on startup
+            filterTable();
+        });
     </script>
 }
