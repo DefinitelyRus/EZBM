@@ -204,7 +204,9 @@
                 id: @item.Id,
                 name: '@Html.Raw(item.Name)',
                 saleprice: @(item.SalePrice ?? 0f),
-                barcode: '@(Html.Raw(item.Barcode ?? ""))'
+                barcode: '@(Html.Raw(item.Barcode ?? ""))',
+                description: '@Html.Raw(item.Description ?? "")',
+                tags: '@Html.Raw(string.Join(", ", item.Tags))'
             });
             </text>
         }
@@ -258,10 +260,10 @@
             let rows = table.getElementsByTagName("tr");
 
             for (let i = 1; i < rows.length; i++) {
-                let nameCell = rows[i].getElementsByClassName("pos-item-name")[0];
-                if (nameCell) {
-                    let txtValue = nameCell.textContent || nameCell.innerText;
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                let item = catalog[i - 1];
+                if (item) {
+                    let combinedText = (item.id + " " + item.name + " " + item.barcode + " " + item.description + " " + item.tags).toLowerCase();
+                    if (combinedText.indexOf(filter) > -1) {
                         rows[i].style.display = "";
                     } else {
                         rows[i].style.display = "none";

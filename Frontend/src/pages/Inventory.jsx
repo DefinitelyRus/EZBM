@@ -70,10 +70,11 @@ function Dashboard() {
   const [search, setSearch] = useState("");
 
   const filteredItems = inventoryItems.filter((item) => {
-  const query = search.toLowerCase();
-
-  return (
-    item.name.toLowerCase().includes(query)
+    const query = search.toLowerCase();
+    return (
+      (item.name && item.name.toLowerCase().includes(query)) ||
+      (item.tags && item.tags.toLowerCase().includes(query)) ||
+      (item.description && item.description.toLowerCase().includes(query))
     );
   });
 
