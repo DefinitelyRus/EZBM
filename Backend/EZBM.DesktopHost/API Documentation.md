@@ -887,3 +887,158 @@ Saves updated storefront settings.
     "success": true
   }
   ```
+
+#### `GET /api/settings/user/{id}`
+
+Reads the custom UI layout and dashboard preferences JSON string for a specific user ID.
+
+* **Success Response (200 OK):**
+  * Returns the raw user preference JSON string.
+
+#### `POST /api/settings/user/{id}`
+
+Persists custom UI layouts, card sorting, or dashboard layout preference JSON string for a specific user ID.
+
+* **Request Body:** Raw JSON preferences dictionary payload.
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "success": true
+  }
+  ```
+
+---
+
+### Dashboard Analytics
+
+#### `GET /api/dashboard/analytics`
+
+Computes shop-wide dashboard metrics (sales, gross/net profits, 7-day sales trends, top popular products, cashier performance leaderboards, and low stock warnings).
+
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "totalSales": 1540.50,
+    "grossProfit": 450.20,
+    "netProfit": 250.00,
+    "salesVolumeTrends": [
+      {
+        "date": "2026-07-05",
+        "totalAmount": 150.0,
+        "salesCount": 3
+      }
+    ],
+    "popularProducts": [
+      {
+        "itemId": 1,
+        "name": "Fresh Red Apple",
+        "totalQuantitySold": 12.0,
+        "totalRevenue": 11.88
+      }
+    ],
+    "cashierLeaderboard": [
+      {
+        "cashierId": 1,
+        "username": "cashier_alice",
+        "salesCount": 5,
+        "totalRevenue": 250.0
+      }
+    ],
+    "lowStockAlerts": [
+      {
+        "id": 1,
+        "name": "Fresh Red Apple",
+        "quantity": 10.0,
+        "targetStock": 200.0,
+        "lowStockThresholdPercentage": 0.20
+      }
+    ]
+  }
+  ```
+
+---
+
+### Google Drive Sync
+
+#### `POST /api/sync/backup`
+
+Uploads and syncs a database backup file to the simulated cloud backup directory.
+
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "success": true,
+    "message": "Database backup successfully uploaded to Google Drive.",
+    "fileName": "business_data_drive_sync_20260705_190000.db",
+    "timestamp": "2026-07-05T11:00:00Z"
+  }
+  ```
+
+#### `POST /api/sync/restore`
+
+Restores the active database file using a specified backup file.
+
+* **Query Parameters:**
+  * `backupName` (string): The backup database filename to restore.
+
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "success": true,
+    "message": "Database successfully restored from Google Drive backup."
+  }
+  ```
+
+---
+
+### Extended Calculations & Helpers
+
+#### `GET /api/payroll/calculate`
+
+Computes active payroll metrics (total hours, gross pay, commissions/bonuses, deductions, and net pay) for a staff member over a given window.
+
+* **Query Parameters:**
+  * `staffId` (ulong): The ID of the staff member.
+  * `periodStart` (DateTime): Start of the payroll period.
+  * `periodEnd` (DateTime): End of the payroll period.
+
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "totalHours": 40.5,
+    "grossAmount": 810.0,
+    "commissionsAndBonuses": 50.0,
+    "deductions": 20.0,
+    "netAmount": 840.0,
+    "adjustmentIds": [123, 456]
+  }
+  ```
+
+#### `GET /api/items/barcode/{code}`
+
+Looks up a specific catalog product or service by its barcode.
+
+* **Success Response (200 OK):**
+  * Returns the matching product/service item object.
+
+* **Error Response (404 Not Found):**
+  * Returns `{"error": "Item with barcode '{code}' not found."}` if barcode does not match.
+
+---
+
+### Grid Pagination & Sorting
+
+All `POST /api/.../find` search requests accept optional sorting and pagination fields:
+
+* **Paging fields:**
+  * `limit` (int): Number of records to return.
+  * `offset` (int): Number of records to skip.
+* **Sorting fields:**
+  * `sortBy` (string): The property name to sort by (e.g. `Name`, `Quantity`, `Id`, `CreatedAt`).
+  * `sortOrder` (string): Sort order direction (`Ascending` or `Descending`).
+

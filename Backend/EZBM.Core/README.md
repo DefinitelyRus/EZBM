@@ -58,15 +58,17 @@ Below is the complete list of all classes, records, and their properties in `EZB
   * `Permissions` (`List<string>`): List of active permissions.
   * `PermissionsAfterExpiry` (`List<string>`): Fallback permissions after expiry.
   * `ExpirationDate` (`DateTime?`): Privilege expiration timestamp.
+  * `Roles` (`List<Role>`): Assigned security roles.
 * `Staff` (class in `Entities/Staff.cs`): Staff member details. Inherits from `User`.
   * `Username` (`string`): Username for login.
   * `Password` (`string?`): Account password.
   * `Position` (`string?`): Job title or role.
   * `PayFrequency` (`Frequency`): Frequency of payment.
   * `PayRate` (`float`): Monetary rate of pay.
+  * `CommissionRate` (`float?`): Override commission rate.
 * `Customer` (class in `Entities/Customer.cs`): Customer profile details. Inherits from `User`.
   * `TransactionHistory` (`ICollection<Transaction>`): History of customer transactions.
-* `Item` (class in `Entities/Item.cs`): Product in inventory. Inherits from `Entity`.
+* `Item` (class in `Entities/Item.cs`): Base inventory item class. Inherits from `Entity`.
   * `Name` (`string`): Product display name.
   * `Description` (`string?`): Product description.
   * `ImageUrl` (`string?`): Image URL link.
@@ -78,6 +80,21 @@ Below is the complete list of all classes, records, and their properties in `EZB
   * `ExpirationDate` (`DateTime?`): Expiration date.
   * `Tags` (`List<Tag>`): List of categories.
   * `Barcode` (`string?`): Product barcode.
+* `Product` (class in `Entities/Product.cs`): Physical inventory product. Inherits from `Item`.
+  * `TargetStock` (`float`): Ideal stock count.
+  * `LowStockThresholdPercentage` (`float`): Threshold fraction for low-stock warnings (defaults to 0.20).
+* `Service` (class in `Entities/Service.cs`): Service or digital upgrade. Inherits from `Item`.
+* `Role` (class in `Entities/Role.cs`): System role with permissions. Inherits from `Entity`.
+  * `Name` (`string`): Role display name.
+  * `PermissionsJson` (`string`): Serialized JSON permissions dictionary mapping.
+* `StaffAdjustment` (class in `Entities/StaffAdjustment.cs`): Payroll bonus or advance. Inherits from `Entity`.
+  * `StaffId` (`ulong`): Target employee ID.
+  * `AdjustmentType` (`string`): "Bonus", "Commission" or "AdvancePay".
+  * `Amount` (`float`): Financial amount.
+  * `DeductFromCurrentPayroll` (`bool`): If deducted from net pay.
+  * `IsPaid` (`bool`): Set to true when settled.
+  * `Timestamp` (`DateTime`): Transaction timestamp.
+  * `Notes` (`string?`): Additional comments.
 * `ItemTransaction` (class in `Entities/ItemTransaction.cs`): Record of stock movement. Inherits from `Entity`.
   * `TransactionType` (`Type`): Type of stock movement.
   * `Quantity` (`float`): Quantity moved.
