@@ -1,7 +1,7 @@
 @page
 @model EZBM.DesktopClient.Pages.SettingsModel
 @{
-    ViewData["Title"] = "Store Settings";
+    ViewData["Title"] = "Store & User Settings";
 }
 
 <h2>Page 6: Settings Management</h2>
@@ -20,44 +20,228 @@
     </div>
 }
 
-<div style="max-width: 600px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-    <h3>Edit Storefront Configurations</h3>
-    <form method="post">
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Business / Store Name:</label>
-            <input type="text" asp-for="StoreName" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
-        </div>
+<!-- Tab Headers -->
+<div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+    <button type="button" id="tabUserBtn" onclick="switchTab('user')" style="padding: 10px 15px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background-color: #eee;">
+        User Preferences
+    </button>
+    
+    @if (Model.IsAdmin)
+    {
+        <button type="button" id="tabBusinessBtn" onclick="switchTab('business')" style="padding: 10px 15px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background-color: #fff; border-bottom: 1px solid #fff;">
+            Business & Policies
+        </button>
+    }
+</div>
 
+<!-- 1. User Preferences Tab Pane -->
+<div id="paneUser" style="display: block; max-width: 600px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;">
+    <h3>Personal Preferences & Credentials</h3>
+    
+    <form method="post" asp-page-handler="SaveUserPreferences" style="margin-bottom: 30px;">
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency Code:</label>
-            <select asp-for="Currency" style="width: 100%; padding: 5px; box-sizing: border-box;">
-                <option value="PHP">PHP - Philippine Peso (₱)</option>
-                <option value="USD">USD - US Dollar ($)</option>
-                <option value="EUR">EUR - Euro (€)</option>
-                <option value="SGD">SGD - Singapore Dollar (S$)</option>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">User UI Theme:</label>
+            <select asp-for="UserTheme" style="width: 100%; padding: 5px; box-sizing: border-box;">
+                <option value="Light">Light Mode</option>
+                <option value="Dark">Dark Mode</option>
+                <option value="System">Match System Defaults</option>
             </select>
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Warning Threshold:</label>
-            <input type="number" step="1" min="1" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
-            <small style="color: #666;">Warn on analytics dashboard when items drop below this count.</small>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date & Time Display Format:</label>
+            <select asp-for="DateFormat" style="width: 100%; padding: 5px; box-sizing: border-box;">
+                <option value="yyyy-MM-dd">YYYY-MM-DD (e.g. 2026-07-05)</option>
+                <option value="MM/dd/yyyy">MM/DD/YYYY (e.g. 07/05/2026)</option>
+                <option value="dd/MM/yyyy">DD/MM/YYYY (e.g. 05/07/2026)</option>
+            </select>
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Written Receipt Requirement Threshold ($):</label>
-            <input type="number" step="0.01" min="0" asp-for="WrittenReceiptThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
-            <small style="color: #666;">Forces checkouts above this value to print/fill a receipt form.</small>
+            <label style="font-weight: bold;">
+                <input type="checkbox" asp-for="SoundAlerts" />
+                Enable Sound Alerts (for barcode scans, cart actions, checkout)
+            </label>
         </div>
 
         <div style="margin-bottom: 20px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Grand Opening Date:</label>
-            <input type="datetime-local" asp-for="StoreOpeningDate" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
-            <small style="color: #666;">Used to determine valid promotion durations (e.g. FREEWEEK opening offsets).</small>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Active Barcode Scanner Device:</label>
+            <input type="text" asp-for="BarcodeDevice" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            <small style="color: #666;">Provide local barcode reader HID profile tag.</small>
+        </div>
+
+        <button type="submit" style="background-color: green; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
+            Save Preferences
+        </button>
+    </form>
+
+    <hr />
+
+    <h3 style="margin-top: 20px;">Change Password</h3>
+    <form method="post" asp-page-handler="ChangePassword">
+        <div style="margin-bottom: 10px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Current Password:</label>
+            <input type="password" name="CurrentPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+        </div>
+        <div style="margin-bottom: 10px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">New Password:</label>
+            <input type="password" name="NewPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Confirm New Password:</label>
+            <input type="password" name="ConfirmPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
         </div>
 
         <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-            Save Configurations
+            Change Password
         </button>
     </form>
 </div>
+
+<!-- 2. Business & Policies Tab Pane -->
+@if (Model.IsAdmin)
+{
+    <div id="paneBusiness" style="display: none; max-width: 600px; border: 1px solid #000; padding: 20px; background-color: #fcfcfc; margin-bottom: 20px;">
+        <h3>Business configurations & Rules</h3>
+        
+        <form method="post" asp-page-handler="SaveBusinessSettings" style="margin-bottom: 30px;">
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Name:</label>
+                <input type="text" asp-for="StoreName" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency Code:</label>
+                <select asp-for="Currency" style="width: 100%; padding: 5px; box-sizing: border-box;">
+                    <option value="PHP">PHP - Philippine Peso (₱)</option>
+                    <option value="USD">USD - US Dollar ($)</option>
+                    <option value="EUR">EUR - Euro (€)</option>
+                    <option value="SGD">SGD - Singapore Dollar (S$)</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Threshold (% of target):</label>
+                <input type="number" step="1" min="1" max="100" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+                <small style="color: #666;">Warn on dashboard when items drop below this percent of target stock (e.g. 20%).</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Written Receipt Threshold:</label>
+                <input type="number" step="0.01" min="0" asp-for="WrittenReceiptThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+                <small style="color: #666;">Prompt cashiers to issue written receipts for checkouts above this value.</small>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Grand Opening Date:</label>
+                <input type="datetime-local" asp-for="StoreOpeningDate" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            </div>
+
+            <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Card Expiration Offsets (Days)</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Staff Cards:</label>
+                    <input type="number" asp-for="CardExpiryStaff" required style="width: 100%; padding: 5px;" />
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">OneTime Cards:</label>
+                    <input type="number" asp-for="CardExpiryOneTime" required style="width: 100%; padding: 5px;" />
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Member Cards:</label>
+                    <input type="number" asp-for="CardExpiryMember" required style="width: 100%; padding: 5px;" />
+                </div>
+            </div>
+
+            <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Backup Settings</h4>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Backup Target Path:</label>
+                <input type="text" asp-for="BackupTargetPath" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+            </div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Autosave Interval:</label>
+                    <select asp-for="BackupAutosaveInterval" style="width: 100%; padding: 5px;">
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="None">None</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Retention Count:</label>
+                    <input type="number" asp-for="BackupRetentionCount" required style="width: 100%; padding: 5px;" />
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="font-weight: bold;">
+                    <input type="checkbox" asp-for="BackupRotationEnabled" />
+                    Enable Historical Rotation (Grandfather-Father-Son)
+                </label>
+            </div>
+
+            <button type="submit" style="background-color: blue; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
+                Save Business Settings
+            </button>
+        </form>
+
+        <hr />
+
+        <h3 style="margin-top: 20px;">Database Backup & Sync</h3>
+        
+        <form method="post" asp-page-handler="TriggerBackup" style="display: inline-block; margin-right: 10px;">
+            <button type="submit" style="background-color: purple; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
+                Trigger DB Backup
+            </button>
+        </form>
+
+        <form method="post" asp-page-handler="TriggerRestore" style="display: inline-block; margin-top: 15px;">
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Available Backup Files:</label>
+                <select name="BackupFileToRestore" style="width: 100%; padding: 5px;">
+                    <option value="">-- Select a Backup File to Restore --</option>
+                    @foreach (var file in Model.AvailableBackups)
+                    {
+                        <option value="@file">@System.IO.Path.GetFileName(file)</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" onclick="return confirm('WARNING: This will overwrite the current database. Proceed?');" style="background-color: darkred; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
+                Restore Database
+            </button>
+        </form>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function switchTab(tab) {
+            var paneUser = document.getElementById("paneUser");
+            var paneBusiness = document.getElementById("paneBusiness");
+            var tabUserBtn = document.getElementById("tabUserBtn");
+            var tabBusinessBtn = document.getElementById("tabBusinessBtn");
+
+            if (tab === 'user') {
+                paneUser.style.display = 'block';
+                if (paneBusiness) paneBusiness.style.display = 'none';
+                tabUserBtn.style.backgroundColor = '#eee';
+                tabUserBtn.style.borderBottom = '1px solid #ccc';
+                if (tabBusinessBtn) {
+                    tabBusinessBtn.style.backgroundColor = '#fff';
+                    tabBusinessBtn.style.borderBottom = '1px solid #fff';
+                }
+            } else {
+                paneUser.style.display = 'none';
+                if (paneBusiness) paneBusiness.style.display = 'block';
+                tabUserBtn.style.backgroundColor = '#fff';
+                tabUserBtn.style.borderBottom = '1px solid #fff';
+                if (tabBusinessBtn) {
+                    tabBusinessBtn.style.backgroundColor = '#eee';
+                    tabBusinessBtn.style.borderBottom = '1px solid #ccc';
+                }
+            }
+        }
+        
+        // Default to user tab active
+        switchTab('user');
+    </script>
+}
