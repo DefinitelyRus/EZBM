@@ -1,8 +1,24 @@
 using EZBM.DesktopHost.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
+
+// Enable CORS for port 5173
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 WebApplication app = builder.Build();
 
 EZBM.Core.Data.DbManager.Initialize();
@@ -10,6 +26,7 @@ EZBM.Core.Data.DbManager.Initialize();
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
 app.Use(async (context, next) =>
 {
@@ -24,7 +41,9 @@ app.Use(async (context, next) =>
     await next();
 });
 
+// Authentication Endpoints
 app.MapPost("/api/auth/login", AuthController.Login);
+app.MapPost("/api/auth/setup", AuthController.Setup);
 
 // Inventory Endpoints
 app.MapGet("/api/items", InventoryController.GetAllItems);
@@ -32,6 +51,7 @@ app.MapPost("/api/items/get", InventoryController.GetItem);
 app.MapPost("/api/items/find", InventoryController.FindItems);
 app.MapPost("/api/items/create", InventoryController.CreateItem);
 app.MapPost("/api/items/delete", InventoryController.DeleteItem);
+app.MapGet("/api/items/barcode/{code}", InventoryController.LookupBarcode);
 
 // Inventory Transaction Endpoints
 app.MapPost("/api/items/transactions/create", InventoryController.CreateItemTransaction);
@@ -72,6 +92,7 @@ app.MapPost("/api/payroll/create", StaffController.CreatePayroll);
 app.MapPost("/api/payroll/get", StaffController.GetPayroll);
 app.MapPost("/api/payroll/find", StaffController.FindPayroll);
 app.MapPost("/api/payroll/delete", StaffController.DeletePayroll);
+app.MapGet("/api/payroll/calculate", StaffController.CalculatePayroll);
 
 // Action Audit Logs Endpoint
 app.MapGet("/api/logs", LogsController.GetActionLogs);
@@ -79,6 +100,14 @@ app.MapGet("/api/logs", LogsController.GetActionLogs);
 // Settings Endpoints
 app.MapGet("/api/settings", SettingsController.GetSettings);
 app.MapPost("/api/settings", SettingsController.SaveSettings);
+app.MapGet("/api/settings/user/{id}", SettingsController.GetUserSettings);
+app.MapPost("/api/settings/user/{id}", SettingsController.SaveUserSettings);
+
+// Dashboard Endpoints
+app.MapGet("/api/dashboard/analytics", AnalyticsController.GetAnalytics);
+
+// Backup Sync Endpoints
+app.MapPost("/api/sync/backup", SyncController.SyncBackup);
+app.MapPost("/api/sync/restore", SyncController.SyncRestore);
 
 app.Run();
-

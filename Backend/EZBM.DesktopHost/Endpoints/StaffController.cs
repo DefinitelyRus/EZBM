@@ -211,5 +211,15 @@ public static class StaffController
         return EndpointHelpers.ToIResult(result);
     }
 
+    /// <summary>
+    /// Computes payroll hours and salaries for a staff member during a specified window.
+    /// </summary>
+    public static async Task<IResult> CalculatePayroll(
+        [FromQuery] ulong staffId, [FromQuery] DateTime periodStart, [FromQuery] DateTime periodEnd)
+    {
+        var result = await StaffService.CalculatePayrollDetailsAsync(staffId, periodStart, periodEnd);
+        return EndpointHelpers.ToIResult(result);
+    }
+
     #endregion
 }

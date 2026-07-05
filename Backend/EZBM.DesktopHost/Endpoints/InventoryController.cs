@@ -1,8 +1,10 @@
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
-using EZBM.DesktopHost.Tools;
+using EZBM.Core.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using EZBM.DesktopHost.Tools;
 
 namespace EZBM.DesktopHost.Endpoints;
 
@@ -122,6 +124,20 @@ public static class InventoryController
     {
         Utils.RequestResult result = await InventoryService.DeleteItemTransactionAsync(request);
         return EndpointHelpers.ToIResult(result);
+    }
+
+    /// <summary>
+    /// Looks up an item by its barcode.
+    /// </summary>
+    public static async Task<IResult> LookupBarcode(string code)
+    {
+        using AppDbContext context = new();
+        Item? item = await context.Item.FirstOrDefaultAsync(i => i.Barcode == code);
+        if (item == null)
+        {
+            return Results.Json(new { error = $"Item with barcode '{code}' not found." }, statusCode: StatusCodes.Status404NotFound);
+        }
+        return Results.Ok(item);
     }
 
     #endregion
