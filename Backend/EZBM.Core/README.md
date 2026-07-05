@@ -389,4 +389,3 @@ Below is the complete list of all classes, records, and their properties in `EZB
 * `LoginRequest` (record in `Tools/ServiceRequests.cs`): Parameters to log in.
   * `Username` (`string`): Input username.
   * `Password` (`string`): Input password.
-

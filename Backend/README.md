@@ -2,8 +2,6 @@
 
 This directory contains the backend services, business logic, test suites, and diagnostic tools for the EZBM application. The backend is built on **.NET** using **C#** and **EF Core / SQLite** for local data persistence.
 
----
-
 ## Projects Overview
 
 | Project | Type | Description |
@@ -12,8 +10,6 @@ This directory contains the backend services, business logic, test suites, and d
 | [`EZBM.DesktopHost`](EZBM.DesktopHost/API%20Documentation.md) | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
 | [`EZBM.DesktopClient`](EZBM.DesktopClient/README.md) | Web App (Razor Pages) | The integrated testing platform and local desktop client prototype providing an interactive user interface to run and verify business workflows. |
 | [`EZBM.Tests`](EZBM.Tests/README.md) | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
-
----
 
 ### `EZBM.Core`
 
@@ -31,8 +27,6 @@ Add a project reference to this project in any runner project:
 dotnet add <project-path>.csproj reference Backend/EZBM.Core/EZBM.Core.csproj
 ```
 
----
-
 ### `EZBM.DesktopHost`
 
 An ASP.NET Core Web API project hosting endpoints locally for front-end integration.
@@ -46,11 +40,8 @@ An ASP.NET Core Web API project hosting endpoints locally for front-end integrat
 To spin up the local REST server:
 
 ```bash
-
 dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 ```
-
----
 
 ### `EZBM.DesktopClient`
 
@@ -66,8 +57,6 @@ To run the local desktop client and serve the pages locally:
 ```bash
 dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
 ```
-
----
 
 ### `EZBM.Tests`
 

@@ -2,8 +2,6 @@
 
 This is an ASP.NET Core Razor Pages web application serving as an integrated testing platform and local desktop client prototype for the EZBM system. It integrates directly with `EZBM.Core` and provides a user-friendly UI for developers and operators to test workflows, log attendance, manage inventory, and process point-of-sale checkouts.
 
----
-
 ## Structure
 
 * The `Helpers/` folder provides core helper tools:
@@ -19,8 +17,6 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
   * `Settings.cshtml` lets you adjust business configurations like stock alerts.
   * `Shared/_Layout.cshtml` defines the global sidebar and navigation theme.
 
----
-
 ## Data Initialization & Seeding
 
 On application startup, the entry point performs the following operations:
@@ -34,8 +30,6 @@ For testing and verification purposes, the database is seeded with a default tes
 
 * **Username:** `teto`
 * **Password:** `teto41`
-
----
 
 ## How to Run
 

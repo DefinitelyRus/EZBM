@@ -148,8 +148,6 @@ Checks credentials to log a user in.
   }
   ```
 
----
-
 ### Inventory Management
 
 #### `GET /api/items`
@@ -273,8 +271,6 @@ Deletes an item from the inventory database.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
----
-
 ### Inventory Transactions
 
 #### `POST /api/items/transactions/create`
@@ -358,8 +354,6 @@ Deletes a stock transaction record.
 
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
-
----
 
 ### Sales & Checkouts
 
@@ -455,8 +449,6 @@ Deletes a sale record.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
----
-
 ### Sale Item Entries
 
 #### `POST /api/sales/entries/create`
@@ -526,8 +518,6 @@ Deletes a sale item entry.
 
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
-
----
 
 ### Staff Profiles
 
@@ -619,8 +609,6 @@ Deletes an employee profile.
 
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
-
----
 
 ### Shift Attendance
 
@@ -727,8 +715,6 @@ Deletes an attendance record.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
----
-
 ### Payroll Records
 
 #### `POST /api/payroll/create`
@@ -802,8 +788,6 @@ Deletes a payroll record.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
----
-
 ### Action Audit Logs
 
 #### `GET /api/logs`
@@ -824,8 +808,6 @@ Retrieves all system operational logs and audit traces sorted by most recent.
     }
   ]
   ```
-
----
 
 ### System Settings
 
@@ -908,8 +890,6 @@ Persists custom UI layouts, card sorting, or dashboard layout preference JSON st
   }
   ```
 
----
-
 ### Dashboard Analytics
 
 #### `GET /api/dashboard/analytics`
@@ -958,8 +938,6 @@ Computes shop-wide dashboard metrics (sales, gross/net profits, 7-day sales tren
   }
   ```
 
----
-
 ### Google Drive Sync
 
 #### `POST /api/sync/backup`
@@ -992,8 +970,6 @@ Restores the active database file using a specified backup file.
     "message": "Database successfully restored from Google Drive backup."
   }
   ```
-
----
 
 ### Extended Calculations & Helpers
 
@@ -1029,8 +1005,6 @@ Looks up a specific catalog product or service by its barcode.
 * **Error Response (404 Not Found):**
   * Returns `{"error": "Item with barcode '{code}' not found."}` if barcode does not match.
 
----
-
 ### Grid Pagination & Sorting
 
 All `POST /api/.../find` search requests accept optional sorting and pagination fields:
@@ -1041,4 +1015,3 @@ All `POST /api/.../find` search requests accept optional sorting and pagination 
 * **Sorting fields:**
   * `sortBy` (string): The property name to sort by (e.g. `Name`, `Quantity`, `Id`, `CreatedAt`).
   * `sortOrder` (string): Sort order direction (`Ascending` or `Descending`).
-
