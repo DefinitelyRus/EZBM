@@ -49,6 +49,14 @@ Changes:
 - Implemented many-to-many security role matrix resolution in `User.HasPermission` where explicit `Deny` overrides all `Allow` actions.
 - Re-routed settings configurations to directory-based paths under `<documents>/ezbm/` and implemented Google Drive simulated database backup and restore endpoints.
 - Added server-side pagination (`limit`/`offset`) and sorting (`sortBy`/`sortOrder`) support in all core find requests.
+- Modified the inventory catalog table and add/edit forms in `Inventory.cshtml` and `Inventory.cshtml.cs` to distinguish products and services, capture target stock/low stock threshold percentage inputs, and persist them via request services.
+- Added client-side real-time catalog search filtering by ID, name, description, and tags on the POS checkout catalog and inventory screens.
+- Updated user profile forms and database controllers to support custom employee commission rates and logged staff adjustments.
+- Designed a modern, fully-featured home screen analytics dashboard in `Index.cshtml` and `Index.cshtml.cs` loading gross profit, net profit, recent transactions, popular products, weekly trends, and employee sales leaderboards.
+- Created a first-time system onboarding configuration page `Setup.cshtml` redirecting fresh instances when no active staff members exist in the database.
+- Split settings views in `Settings.cshtml` and `Settings.cshtml.cs` into individual User Preferences and Business & Policies tabs, supporting theme choices, date formats, password resets, and manual database backup/restore sync triggers.
+- Integrated a generic client-side table sorting and pagination mechanism in vanilla JavaScript across Razor Page data lists.
+- Added an adjustments ledger tab in `Logs.cshtml` and `Logs.cshtml.cs` showing advance pay and custom bonuses, and wired them to automatic net pay calculation modifiers.
 
 ### 07/03/2026
 
