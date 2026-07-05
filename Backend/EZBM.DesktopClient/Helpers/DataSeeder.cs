@@ -164,12 +164,16 @@ public static class DataSeeder
 
         staffMembers[0].RfidCardId = "alice_card";
         staffMembers[10].RfidCardId = "teto_card";
+        foreach (var s in staffMembers)
+        {
+            s.Password = EZBM.Core.Services.AuthenticationService.HashPassword(s.Password ?? "password");
+        }
         context.Staff.AddRange(staffMembers);
         context.SaveChanges();
 
         List<Item> itemsList =
         [
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
@@ -179,9 +183,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 120.0f,
                 expirationDate: DateTime.UtcNow.AddDays(14),
-                cost: 0.25f
+                cost: 0.25f,
+                targetStock: 200f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
@@ -191,9 +196,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 35.0f,
                 expirationDate: null,
-                cost: 3.10f
+                cost: 3.10f,
+                targetStock: 50f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Kilograms,
                 isForSale: true,
@@ -203,9 +209,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 75.0f,
                 expirationDate: DateTime.UtcNow.AddMonths(6),
-                cost: 1.05f
+                cost: 1.05f,
+                targetStock: 100f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Liters,
                 isForSale: true,
@@ -215,9 +222,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 3.0f,
                 expirationDate: DateTime.UtcNow.AddDays(5),
-                cost: 0.80f
+                cost: 0.80f,
+                targetStock: 15f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
@@ -227,9 +235,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Consumable],
                 quantity: 110.0f,
                 expirationDate: null,
-                cost: 0.45f
+                cost: 0.45f,
+                targetStock: 150f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
@@ -239,9 +248,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Reusable],
                 quantity: 250.0f,
                 expirationDate: null,
-                cost: 0.60f
+                cost: 0.60f,
+                targetStock: 300f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Milliliters,
                 isForSale: true,
@@ -251,9 +261,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 8000.0f,
                 expirationDate: DateTime.UtcNow.AddYears(1),
-                cost: 0.015f
+                cost: 0.015f,
+                targetStock: 10000f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Pounds,
                 isForSale: true,
@@ -263,9 +274,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Food, Item.Tag.Consumable],
                 quantity: 2.0f,
                 expirationDate: DateTime.UtcNow.AddDays(3),
-                cost: 6.50f
+                cost: 6.50f,
+                targetStock: 10f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Count,
                 isForSale: true,
@@ -275,9 +287,10 @@ public static class DataSeeder
                 tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
                 quantity: 1.0f,
                 expirationDate: null,
-                cost: 1.20f
+                cost: 1.20f,
+                targetStock: 10f
             ),
-            new Item(
+            new Product(
                 id: Utils.GenerateEntityId(),
                 unitOfMeasurement: Item.Unit.Gallons,
                 isForSale: false,
@@ -287,15 +300,16 @@ public static class DataSeeder
                 tags: [Item.Tag.Consumable],
                 quantity: 25.0f,
                 expirationDate: null,
-                cost: 8.00f
+                cost: 8.00f,
+                targetStock: 30f
             )
         ];
 
         itemsList[0].Barcode = "1234";
         itemsList[1].Barcode = "5678";
-        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 100f, "Silver Upgrade", "Silver membership upgrade tier", null, 9999f, null, 0f, null, "silver_code"));
-        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 250f, "Gold Upgrade", "Gold membership upgrade tier", null, 9999f, null, 0f, null, "gold_code"));
-        itemsList.Add(new Item(Utils.GenerateEntityId(), Item.Unit.Count, true, 500f, "Platinum Upgrade", "Platinum membership upgrade tier", null, 9999f, null, 0f, null, "platinum_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 100f, "Silver Upgrade", "Silver membership upgrade tier", null, 9999f, null, 0f, null, "silver_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 250f, "Gold Upgrade", "Gold membership upgrade tier", null, 9999f, null, 0f, null, "gold_code"));
+        itemsList.Add(new Service(Utils.GenerateEntityId(), Item.Unit.Count, true, 500f, "Platinum Upgrade", "Platinum membership upgrade tier", null, 9999f, null, 0f, null, "platinum_code"));
         context.Item.AddRange(itemsList);
         context.SaveChanges();
 
