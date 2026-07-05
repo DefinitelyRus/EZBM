@@ -27,6 +27,39 @@ Changes:
 
 ## Logs
 
+### 07/05/2026
+
+Updated documentation formatting, ignored generated test files, and created API reference guide.
+
+Changes:
+
+- Cleaned up all project markdown documentation files, removing section numbering, stripping formatting prefixes, and simplifying technical jargon.
+- Removed emojis from headings and replaced box-drawing characters in the folder layout diagram with standard ASCII equivalents in `README.md`.
+- Updated `.gitignore` to exclude local test results and logs from version tracking.
+- Created `API Documentation.md` detailing all REST endpoints, hosting commands, API usage instructions, and plain JavaScript consumption examples.
+- Updated `README.md` and `Backend/README.md` to link to the new API documentation.
+
+### 07/03/2026
+
+Implemented design and layout upgrades for the frontend React prototype.
+
+Changes:
+
+- Reorganized layout and styles for attendance logs, staff directory, checkout, and inventory screens.
+- Added a collapsible sidebar navigation component for easier screen toggling.
+- Added settings icon assets (`settings.svg`) and configured sidebar routing for settings parameters.
+
+### 07/02/2026
+
+Refactored the entire backend codebase for code style compliance and updated documentation.
+
+Changes:
+
+- Cleaned up C# models, database context, services, helpers, API controllers, and test console configurations to adhere to style guidelines.
+- Added real-time search functionality and improved screen styling on the React frontend.
+- Updated project and directory `README.md` documents.
+- Deleted obsolete checklist files (`Results.md`, `Actionable Tasks.md`, `Feature Checklist.md`) and action logs from repository storage.
+
 ### 07/01/2026
 
 Enacted major backend and frontend feature enhancements including user TPH database reparenting, ambient operator context tracking, automatic change tracking audit logs, POS mixed payment split transactions, cash drawer hardware overrides, modular upgrade commissions calculation, and dynamic storefront settings management.

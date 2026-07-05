@@ -12,7 +12,7 @@ This repository contains both the .NET back-end solutions/services and the React
 
 * We use `React` for the front-end user interface, designed specifically for desktop screens.
 * The back-end offers two options:
-  * A local Web API using `ASP.NET Core` that serves endpoints for the front-end.
+  * A local Web API using `ASP.NET Core` that serves endpoints for the front-end (see the [API Documentation](Backend/EZBM.DesktopHost/API%20Documentation.md) for details on all available endpoints and how to consume them).
   * A `Razor Pages` desktop client that serves as a local testing platform.
 * Core business logic and database access are handled by a .NET library using `EF Core` and a local `SQLite` database.
 * Communication happens over a local `REST API` or direct library integration.
@@ -59,7 +59,7 @@ Follow these steps to get the prototype running on your machine.
 
 ### 1. Spin up the Back-end
 
-To run the back-end REST Web API host:
+To run the back-end REST Web API host (see the [API Documentation](Backend/EZBM.DesktopHost/API%20Documentation.md) for details on all endpoints and how to consume them):
 
 ```bash
 dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj

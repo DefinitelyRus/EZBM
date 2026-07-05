@@ -9,7 +9,7 @@ This directory contains the backend services, business logic, test suites, and d
 | Project | Type | Description |
 | :--- | :--- | :--- |
 | [`EZBM.Core`](EZBM.Core/README.md) | Class Library | The core engine containing data entities, database context, services, and core utilities. |
-| [`EZBM.DesktopHost`](EZBM.DesktopHost/README.md) | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
+| [`EZBM.DesktopHost`](EZBM.DesktopHost/API%20Documentation.md) | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
 | [`EZBM.DesktopClient`](EZBM.DesktopClient/README.md) | Web App (Razor Pages) | The integrated testing platform and local desktop client prototype providing an interactive user interface to run and verify business workflows. |
 | [`EZBM.Tests`](EZBM.Tests/README.md) | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
 
@@ -39,6 +39,7 @@ An ASP.NET Core Web API project hosting endpoints locally for front-end integrat
 
 * Controllers in the `Endpoints/` folder map HTTP requests to backend actions.
 * The `Program.cs` entry point sets up the database schema when the app starts.
+* See the [API Documentation](EZBM.DesktopHost/API%20Documentation.md) for details on all available endpoints and how to consume them.
 
 #### How to Run
 
