@@ -6,18 +6,18 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
 
 ## Structure
 
-* **`Helpers/`**:
-  * `DataSeeder.cs`: Seeds exactly 10 distinct, representative records for all database entities on startup if the database is newly created or empty.
-  * `StateHelper.cs`: Manages operator authentication and active shift tracking via cookie-based state helpers.
-* **`Pages/`**:
-  * `Login.cshtml` / `Login.cshtml.cs`: Active operator selection and login portal, verifying staff shifts and clock-ins.
-  * `Index.cshtml` / `Index.cshtml.cs`: Core dashboard showcasing quick summary metrics, active cashier shifts, and registration statuses.
-  * `Inventory.cshtml` / `Inventory.cshtml.cs`: Inventory management module supporting product creation, price tracking, and stock adjustments.
-  * `POS.cshtml` / `POS.cshtml.cs`: Point-of-Sale checkout interface supporting barcode/name search, split payments checkouts, and receipt generation.
-  * `Staff.cshtml` / `Staff.cshtml.cs`: Attendance and staff management, providing views of active/historical shifts, payroll calculations (including net upgrade commissions adjustments), and operator logs.
-  * `Logs.cshtml` / `Logs.cshtml.cs`: System audits and historical logs for inventory stock actions, sales transactions, and automatic DbContext action log tracking.
-  * `Settings.cshtml` / `Settings.cshtml.cs`: Storefront settings editor (e.g. low-stock warning threshold, written receipt blocking threshold, default scanner Vendor IDs / Product IDs).
-  * `Shared/_Layout.cshtml`: Global application shell featuring direct top-tab navigation, employee context cookie parsing, and the global attendance clock-in/clock-out controller.
+* The `Helpers/` folder provides core helper tools:
+  * `DataSeeder.cs` seeds exactly 10 mock records for all entities if the database is empty on startup.
+  * `StateHelper.cs` handles operator authentication sessions.
+* The `Pages/` folder holds the Razor Pages views for each module:
+  * `Login.cshtml` checks credentials to manage user login sessions.
+  * `Index.cshtml` displays the main dashboard with business summary cards.
+  * `Inventory.cshtml` handles product catalog edits and stock updates.
+  * `POS.cshtml` handles cart management, payment options, and receipts.
+  * `Staff.cshtml` tracks shift clocks, commissions, and staff profiles.
+  * `Logs.cshtml` displays database audit history and recent events.
+  * `Settings.cshtml` lets you adjust business configurations like stock alerts.
+  * `Shared/_Layout.cshtml` defines the global sidebar and navigation theme.
 
 ---
 

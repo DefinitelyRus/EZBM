@@ -8,22 +8,22 @@ This directory contains the user interface, client-side routing, interactive wor
 
 | Module / Page | Type | Description |
 | :--- | :--- | :--- |
-| **[App Shell & Routing](src/App.tsx)** | Core Layout | Main application layout incorporating client-side routing, sidebar navigation, and page state management. |
-| **[Analytics Dashboard](src/pages/Dashboard.jsx)** | Page View | Home screen displaying daily business metrics (sales/profit summaries), shift attendance controls, and low-stock alerts. |
-| **[Inventory Management](src/pages/Inventory.jsx)** | Page View | Product and service catalog interface with real-time search filtering, stock tracking, and item add/edit forms. |
-| **[POS Checkout](src/pages/Checkout.jsx)** | Page View | Point-of-Sale checkout workspace featuring a searchable product grid, interactive shopping cart, and transaction finalization. |
-| **[Staff Management](src/pages/Staff.jsx)** | Page View | Directory interface for managing employee profiles, positions, and compensation configuration. |
-| **[Attendance & Payroll Logs](src/pages/Attendance_Logs.jsx)** | Page View | Historical audit ledger presenting employee shift time logs and past payroll distributions. |
+| [App Shell & Routing](src/App.tsx) | Core Layout | Main application layout incorporating client-side routing, sidebar navigation, and page state management. |
+| [Analytics Dashboard](src/pages/Dashboard.jsx) | Page View | Home screen displaying daily business metrics (sales/profit summaries), shift attendance controls, and low-stock alerts. |
+| [Inventory Management](src/pages/Inventory.jsx) | Page View | Product and service catalog interface with real-time search filtering, stock tracking, and item add/edit forms. |
+| [POS Checkout](src/pages/Checkout.jsx) | Page View | Point-of-Sale checkout workspace featuring a searchable product grid, interactive shopping cart, and transaction finalization. |
+| [Staff Management](src/pages/Staff.jsx) | Page View | Directory interface for managing employee profiles, positions, and compensation configuration. |
+| [Attendance & Payroll Logs](src/pages/Attendance_Logs.jsx) | Page View | Historical audit ledger presenting employee shift time logs and past payroll distributions. |
 
 ---
 
-### 1. App Shell & Reusable Components
+### App Shell & Reusable Components
 
 The foundational layout and UI library for the application.
 
-* **Layout & Routing**: Managed in `src/App.tsx` and `src/main.tsx`. Routes map paths (`/dashboard`, `/inventory`, `/pos`, `/staff`, `/logs`) to their respective page views within a responsive Bootstrap grid frame.
-* **Navigation**: Provided by `src/components/sidebar.jsx`, enabling quick navigation between core business modules.
-* **UI Components**: Reusable elements located in `src/components/` (e.g., `button.tsx`, `Dropdown.jsx`, `InventoryAlert.jsx`) providing modular UI controls and restock warning banners.
+* Routes in `src/App.tsx` and `src/main.tsx` map paths (like `/dashboard` or `/pos`) to their page views.
+* Sidebar navigation from `src/components/sidebar.jsx` helps users jump between sections quickly.
+* Reusable UI components like buttons, dropdowns, and alert banners are stored in the `src/components/` folder.
 
 #### How to Reference
 
@@ -36,14 +36,14 @@ import InventoryAlert from './components/InventoryAlert';
 
 ---
 
-### 2. Page Views & Business Workflows
+### Page Views & Business Workflows
 
 The primary client-side screens providing interactive interfaces for store operations.
 
-* **Dashboard**: Defined in `src/pages/Dashboard.jsx`. Displays high-level daily performance cards (Total Sales, Total Profit), low-stock alert lists for items with quantity below threshold, shift attendance clock-in/out toggles, and a recent transactions feed container displaying the last 10 checkout events.
-* **Inventory**: Defined in `src/pages/Inventory.jsx`. Provides real-time filtering across product catalogs, item property customization forms, and restock tracking.
-* **POS Checkout**: Defined in `src/pages/Checkout.jsx`. Connects available inventory items to an interactive shopping cart panel with instant subtotal calculation, payment method selection, and a Split Payment checkout modal for handling mixed payment splits.
-* **Staff & Audit Logs**: Defined in `src/pages/Staff.jsx` and `src/pages/Attendance_Logs.jsx`. Handles employee profiles, work shift logs, operator logs, and commission payroll distributions (supporting net upgrade commission updates).
+* The Dashboard displays daily sales cards, low-stock warnings, cashier clocks, and recent transactions.
+* The Inventory page lets users filter items in real time, configure product values, and track stocks.
+* The POS Checkout links items to a cart, calculates totals, selects payments, and handles split payment options.
+* The Staff & Audit logs track employee profiles, shift entries, system audits, and payroll/commissions.
 
 #### How to Run
 
@@ -56,13 +56,13 @@ npm run dev
 
 ---
 
-### 3. Build & Code Quality
+### Build & Code Quality
 
 Configuration tools for compiling production assets and enforcing code consistency.
 
-* **Vite Configuration**: Managed via `vite.config.ts` utilizing `@vitejs/plugin-react` and `vite-plugin-svgr`.
-* **TypeScript Setup**: Configured across `tsconfig.json`, `tsconfig.app.json`, and `tsconfig.node.json` for type checking.
-* **Linting Rules**: Enforced via ESLint configuration in `eslint.config.js`.
+* Vite build configurations are set up in `vite.config.ts`.
+* TypeScript types are configured in the `tsconfig.json` files.
+* Formatting and code quality checks are managed by ESLint in `eslint.config.js`.
 
 #### How to Build & Test
 

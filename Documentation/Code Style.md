@@ -2,35 +2,30 @@
 
 This document outlines the coding standards, conventions, and style guidelines for the EZBM project. These styles should be strictly adhered to when modifying or adding code to the codebase.
 
----
+## Core General Rules
 
-## 1. Core General Rules
+* Always use strict and clear types where you can.
+* Make sure your code handles nulls safely, but don't overdo it with unnecessary checks.
+* Follow the style of the file or code you are editing. If there is no style yet, just use standard C# coding styles.
+* If a line of code is getting too long (over 80 characters), break it up by assigning parts of the expression to simple local variables first.
+* Only do this if the line would have otherwise been **over 80 characters long** (including whitespace).
+* You don't need to do this for logging or print statements.
+* *Example:*
 
-* **Strict Types:** Always use strict and explicit types where applicable.
-* **Null Safety:** Ensure the code is null-safe (with nullable reference types enabled `?`), but avoid doing so excessively.
-* **Follow Existing Style:** Follow the existing style of the file or component you are editing. If none exists, default to standard C# patterns.
-* **Expression Splitting (80-Char Rule):**
-  * When assigning values or passing arguments, split long expressions into smaller, easy-to-read assignments to dedicated local variables.
-  * Only do this if the line would have otherwise been **over 80 characters long** (including whitespace).
-  * **Exception:** Do not apply this rule to logging or printing statements.
-  * *Example:*
+  ```csharp
+  // Avoid
+  var average = (num1 + num2 + num3) / 3;
 
-    ```csharp
-    // Avoid
-    var average = (num1 + num2 + num3) / 3;
+  // Prefer
+  float sum = num1 + num2 + num3;
+  float average = sum / 3;
+  ```
 
-    // Prefer
-    float sum = num1 + num2 + num3;
-    float average = sum / 3;
-    ```
+## Language & Syntax Style (C#)
 
----
+### Type Declarations
 
-## 2. Language & Syntax Style (C#)
-
-### 2.1. Type Declarations
-
-* **Prefer Explicit Types:** Avoid using `var`. Explicitly declare type names for all variables.
+Avoid using `var`. Always write out the type names for variables.
 
   ```csharp
   // Avoid
@@ -42,33 +37,33 @@ This document outlines the coding standards, conventions, and style guidelines f
   string message = "Hello";
   ```
 
-* **Target-Typed New Expressions:** Use target-typed `new()` when the type is explicitly specified on the left-hand side.
+Use `new()` instead of repeating the type name when the type is already clearly declared on the left.
 
   ```csharp
   using AppDbContext context = new();
   Utils.RequestResult successResult = new(Utils.Result.Success, message);
   ```
 
-### 2.2. Namespaces
+### Namespaces
 
-* **File-Scoped Namespaces:** Always use file-scoped namespace declarations (without curly braces) at the top of the file.
+Always declare namespaces at the top of the file without using curly braces.
 
   ```csharp
   namespace EZBM.Core.Services;
   ```
 
-### 2.3. Null & Pattern Matching
+### Null & Pattern Matching
 
-* **Pattern Matching Null Checks:** Prefer `is null` and `is not null` operators over `== null` and `!= null`.
+Use `is null` and `is not null` instead of `== null` and `!= null` when checking for null.
 
   ```csharp
   if (staff is null) { ... }
   if (request is not null) { ... }
   ```
 
-### 2.4. Switch Expressions
+### Switch Expressions
 
-* Use pattern-matching switch expressions for concise mappings and conversions.
+Use switch expressions to keep your mapping and conversion logic short and clean.
 
   ```csharp
   return result.Type switch
@@ -79,13 +74,11 @@ This document outlines the coding standards, conventions, and style guidelines f
   };
   ```
 
----
+## Formatting & Layout
 
-## 3. Formatting & Layout
+### Brace Style (Allman)
 
-### 3.1. Brace Style (Allman)
-
-* Use the **Allman** brace style where opening curly braces are placed on a new line, aligned with the statement.
+Place opening curly braces on a new line, aligned with the statement (Allman style).
 
   ```csharp
   public static async Task<Staff?> GetStaffAsync(GetStaffRequest request)
@@ -101,10 +94,10 @@ This document outlines the coding standards, conventions, and style guidelines f
   }
   ```
 
-### 3.2. Blank Line Spacing
+### Blank Line Spacing
 
-* **Namespace & Imports:** Place one blank line after using statements, and one blank line after the namespace declaration.
-* **Try-Catch Blocks:** Place a blank line between the closing brace of a `try` block and the beginning of the `catch` statement.
+* Put a blank line after your `using` statements, and another one after the namespace.
+* Put a blank line between the end of a `try` block and the start of a `catch` block.
 
   ```csharp
   try
@@ -118,12 +111,11 @@ This document outlines the coding standards, conventions, and style guidelines f
   }
   ```
 
-* **Logical Spacing:** Use single empty lines to separate logically distinct blocks of code inside a method (e.g., separating database context creation, validations, mapping, database changes, and returns).
+* Use empty lines to separate different parts of your code inside a method (like separating validation checks from database changes).
 
-### 3.3. Wrapping & Line Breaks
+### Wrapping & Line Breaks
 
-* **Method Parameters & Arguments:**
-  * When a method declaration or record contains multiple parameters, place each parameter on its own line.
+* If a class, method, or record has a long list of parameters that goes over 80 characters, put each parameter on a new line.
 
     ```csharp
     public record UpdateStaffRequest(
@@ -133,7 +125,7 @@ This document outlines the coding standards, conventions, and style guidelines f
     );
     ```
 
-  * Even for single-parameter methods, if the signature is long (approaching 80 characters), wrap the parameter to its own line.
+* If a method has only one parameter but the line is still close to 80 characters, wrap that parameter to its own line.
 
     ```csharp
     public static async Task<Utils.RequestResult> CreateSaleAsync(
@@ -141,7 +133,7 @@ This document outlines the coding standards, conventions, and style guidelines f
     )
     ```
 
-* **Constructor Arguments:** When instantiating classes or records with many properties, place each argument on its own line and use **named arguments**.
+* When creating new objects with many parameters that go over 80 characters, put each parameter on its own line and name them.
 
   ```csharp
   Staff staff = new(
@@ -151,7 +143,7 @@ This document outlines the coding standards, conventions, and style guidelines f
   );
   ```
 
-* **Method Chaining:** Wrap before the dot (`.`) and indent for chained calls (like EF Core LINQ operators).
+* Put a line break before the dot (`.`) and indent when chaining multiple method calls (like LINQ queries).
 
   ```csharp
   Sale? sale = await context.Sale
@@ -159,28 +151,25 @@ This document outlines the coding standards, conventions, and style guidelines f
       .FirstOrDefaultAsync(s => s.Id == request.Id);
   ```
 
-### 3.4. Single-Line If Statements
+### Single-Line If Statements
 
-* For simple guard clauses or single assignments, curly braces may be omitted if the statement fits on a single line.
+* For simple checks or assignments, you can leave out curly braces if the statement fits on one line.
 
   ```csharp
   if (!enabled) return;
   if (id == 0) continue;
   ```
 
-* Even if formatted on multiple lines (e.g. LINQ query chains), braces can be omitted if there is only a single logical statement under the condition.
+* You can also omit braces if there is only one logical statement under a condition, even if it wraps across multiple lines.
 
   ```csharp
-  if (request.StaffId is not null)
-      query = query.Where(a => a.Staff.Id == request.StaffId);
+  if (request.StaffId is not null) query = query.Where(a => a.Staff.Id == request.StaffId);
   ```
 
----
+## Member Organization & Regions
 
-## 4. Member Organization & Regions
-
-* Group class members logically (e.g., request type, entity type, action type) using `#region` and `#endregion` tags.
-* Keep one blank line inside the region immediately after it starts and one immediately before it ends.
+* Group related code in your classes using `#region` and `#endregion` tags.
+* Leave a blank line right after a `#region` starts, and another blank line right before it ends.
 
   ```csharp
   #region Staff Requests
@@ -190,24 +179,18 @@ This document outlines the coding standards, conventions, and style guidelines f
   #endregion
   ```
 
----
+## Naming Conventions
 
-## 5. Naming Conventions
+* Use PascalCase for class names, interface names, properties, and methods.
+* Use camelCase for parameters and local variables.
+* Add `async` to the end of any method name that runs asynchronously and returns a `Task`.
+* Always end request record names with `Request`.
 
-* **PascalCase:**
-  * Class names, Interface names, Structs, Enums, Properties, Methods, and Public Fields (e.g., `StaffService`, `LoginAsync`, `AppDbContext`, `PayFrequency`).
-* **camelCase:**
-  * Method parameters and local variables (e.g., `request`, `message`, `successResult`).
-* **Asynchronous Methods:** Always end asynchronous methods returning `Task` with the `Async` suffix (e.g., `GetStaffByUsernameAsync`).
-* **Data Transfer Objects (DTOs):** Suffix request records with `Request` (e.g., `FindItemRequest`, `LoginRequest`).
-
----
-
-## 6. Documentation Style (XML Comments)
+## Documentation Style (XML Comments)
 
 All public classes, methods, and fields must have XML comments.
 
-* Include `<summary>`, `<param>`, and `<returns>` tags where appropriate.
+* Include summary, parameter, and return descriptions where needed.
 
   ```xml
   /// <summary>
@@ -215,17 +198,14 @@ All public classes, methods, and fields must have XML comments.
   /// </summary>
   ```
 
----
+## Logging & Error Handling
 
-## 7. Logging & Error Handling
-
-* **Logging Tool:** Use the custom `Log` utility classes:
-  * `Log.Me(message)`: Standard informational trace logging.
-  * `Log.Warn(message)`: Warnings that do not halt execution.
-  * `Log.Err(message)`: Operational or unhandled errors.
-* **Return Value Optimization:**
-  * When preparing API responses via `RequestResult`, assign the result object to a local variable (e.g., `successResult`, `failResult`, `errorResult`) before returning it, rather than returning the constructor directly. This keeps constructor invocations clear and separate from the return statement.
-  * Avoid duplicate string construction by storing messages in a local `string message;` variable, logging it, and then passing it directly to the response object.
+* Use our custom logging classes:
+  * `Log.Me(message)` for regular info logs.
+  * `Log.Warn(message)` for warning logs.
+  * `Log.Err(message)` for error logs.
+* When creating API responses, save the result to a variable (like `successResult` or `failResult`) first instead of returning the new object directly. This keeps the return statement simple and readable.
+* Avoid writing the same message string multiple times. Store it in a `message` variable, log it, and then use that variable in the response.
 
   ```csharp
   string message = "Staff member clocked in successfully.";

@@ -8,20 +8,20 @@ This directory contains the backend services, business logic, test suites, and d
 
 | Project | Type | Description |
 | :--- | :--- | :--- |
-| **[EZBM.Core](EZBM.Core/README.md)** | Class Library | The core engine containing data entities, database context, services, and core utilities. |
-| **[EZBM.DesktopHost](EZBM.DesktopHost/README.md)** | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
-| **[EZBM.DesktopClient](EZBM.DesktopClient/README.md)** | Web App (Razor Pages) | The integrated testing platform and local desktop client prototype providing an interactive user interface to run and verify business workflows. |
-| **[EZBM.Tests](EZBM.Tests/README.md)** | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
+| [`EZBM.Core`](EZBM.Core/README.md) | Class Library | The core engine containing data entities, database context, services, and core utilities. |
+| [`EZBM.DesktopHost`](EZBM.DesktopHost/README.md) | Web API | The local REST API host mapping HTTP endpoints to controller methods, allowing the frontend to communicate with `EZBM.Core`. |
+| [`EZBM.DesktopClient`](EZBM.DesktopClient/README.md) | Web App (Razor Pages) | The integrated testing platform and local desktop client prototype providing an interactive user interface to run and verify business workflows. |
+| [`EZBM.Tests`](EZBM.Tests/README.md) | Console App | Integration test suite that resets the database and tests API endpoints directly, outputting reports to `Results.md`. |
 
 ---
 
-### 1. EZBM.Core
+### `EZBM.Core`
 
 The foundational business logic layer.
 
-* **Entities**: Defined in `Entities/` (e.g., `Staff`, `Item`, `Transaction`, `Attendance`, `Payroll`, `Sale`, `SaleEntry`).
-* **Database Management**: Managed by `Data/DbManager` and `Data/AppDbContext` targeting SQLite. The database file `business_data.db` is stored under the user's `My Documents` folder (or OneDrive-backed equivalent).
-* **Services**: Defined in `Services/` (e.g., `InventoryService`) containing core logic rules.
+* Core entities like `Staff`, `Item`, and `Sale` are defined in the `Entities/` folder.
+* The `SQLite` database is managed by the DB context in the `Data/` folder. The database file is saved in your `Documents` folder.
+* Core business rules and logic are handled by services in the `Services/` folder.
 
 #### How to Reference
 
@@ -33,29 +33,30 @@ dotnet add <project-path>.csproj reference Backend/EZBM.Core/EZBM.Core.csproj
 
 ---
 
-### 2. EZBM.DesktopHost
+### `EZBM.DesktopHost`
 
 An ASP.NET Core Web API project hosting endpoints locally for front-end integration.
 
-* **Endpoints**: Defined in `Endpoints/` (e.g., `InventoryController`, `SalesController`, `StaffController`, `AuthController`, `SettingsController`, `LogsController`).
-* **Initialization**: The main entry point `Program.cs` automatically triggers `DbManager.Initialize()` to ensure the database schema exists on startup.
+* Controllers in the `Endpoints/` folder map HTTP requests to backend actions.
+* The `Program.cs` entry point sets up the database schema when the app starts.
 
 #### How to Run
 
 To spin up the local REST server:
 
 ```bash
+
 dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 ```
 
 ---
 
-### 3. EZBM.DesktopClient
+### `EZBM.DesktopClient`
 
 An ASP.NET Core Razor Pages application serving as the integrated testing platform and desktop prototype interface.
 
-* **Features**: Dynamic attendance clock-in/out, operator registration/login state, product inventory management, Point-of-Sale checkouts, payroll verification, dynamic settings configurations, and historical logs/audit tracking.
-* **Initialization**: The application automatically runs `DbManager.Initialize()` and seeds the database with exactly 10 distinct, representative entries for each entity.
+* Includes features like shift logs, profile updates, product management, checkout, payroll, settings, and audit trails.
+* The app seeds the database with 10 sample entries for each table on startup.
 
 #### How to Run
 
@@ -67,12 +68,12 @@ dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
 
 ---
 
-### 4. EZBM.Tests
+### `EZBM.Tests`
 
 A console project serving as our integration test suite.
 
-* **Flow**: Resets the database to a clean state, invokes static API endpoint methods directly, verifies core behavior (including new Phase 2-7 features: Split Payments, Promo Codes, Lazy Expiry validation, and automatic DB audit logs), and compiles the results in a markdown summary.
-* **Test Outputs**: Compiles a detailed test summary to `Backend/Results.md`.
+* Resets the database, tests API endpoints with mock data, checks business rules (like split payments and audit logging), and writes a test summary.
+* Generates a detailed test summary report.
 
 #### How to Run Tests
 

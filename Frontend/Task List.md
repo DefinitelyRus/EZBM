@@ -10,12 +10,12 @@ Lastly, make sure to update your Notion task list to reflect what you're *actual
 
 ---
 
-## Step 1: Initial App Structure
+## Step Initial App Structure
 
 ### App Shell Framework
 
-* **Description:** A main dashboard layout that features a navigation section (like a sidebar or top menu) and a main workspace area. It also needs a header that displays who is currently logged in.
-* **Purpose:** Cashiers and store owners need to jump between their daily tasks quickly (like pausing a sale to check stock) without losing their active screen.
+* A main dashboard layout that features a navigation section (like a sidebar or top menu) and a main workspace area. It also needs a header that displays who is currently logged in.
+* Cashiers and store owners need to jump between their daily tasks quickly (like pausing a sale to check stock) without losing their active screen.
 
 ### Tasks
 
@@ -24,12 +24,12 @@ Lastly, make sure to update your Notion task list to reflect what you're *actual
 
 ---
 
-## Page 1: Login Screen
+## Page Login Screen
 
 ### Credential Entry Form
 
-* **Description:** A clean login box with fields for Username and Password, a submit button, and a space to display validation errors.
-* **Purpose:** We need to know exactly who is operating the register so that shift times and sales records are attributed to the right employee.
+* A clean login box with fields for Username and Password, a submit button, and a space to display validation errors.
+* We need to know exactly who is operating the register so that shift times and sales records are attributed to the right employee.
 
 ### Tasks
 
@@ -44,17 +44,17 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 2: Analytics Dashboard (Home Screen)
+## Page Analytics Dashboard (Home Screen)
 
 ### Performance Summaries & Restock Warnings
 
-* **Description:** A simple home dashboard displaying daily summary metrics (Total Sales and Total Profit) and a low-stock alert area.
-* **Purpose:** Store owners need a quick way to check if they had a good business day and see which products are running out so they can restock them.
+* A simple home dashboard displaying daily summary metrics (Total Sales and Total Profit) and a low-stock alert area.
+* Store owners need a quick way to check if they had a good business day and see which products are running out so they can restock them.
 
 ### Shift Attendance Toggle
 
-* **Description:** A prominent toggle button in the header or sidebar that allows cashiers to clock in or clock out.
-* **Purpose:** Employees need to log their shift times without opening a separate, complicated attendance app.
+* A prominent toggle button in the header or sidebar that allows cashiers to clock in or clock out.
+* Employees need to log their shift times without opening a separate, complicated attendance app.
 
 ### Tasks
 
@@ -65,17 +65,17 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 3: Inventory Management
+## Page Inventory Management
 
 ### Product & Service Catalog View
 
-* **Description:** A list or table showing all items the store sells (including both physical products and digital services). It needs a search bar at the top so users can filter items in real time.
-* **Purpose:** Users need to quickly see what items are in stock, check their retail prices, and find a product instantly.
+* A list or table showing all items the store sells (including both physical products and digital services). It needs a search bar at the top so users can filter items in real time.
+* Users need to quickly see what items are in stock, check their retail prices, and find a product instantly.
 
 ### Add & Edit Item Workspace
 
-* **Description:** Popups or form sheets where users can enter details to create or update an item (its name, cost, retail price, stock quantity, measurement unit, and tags).
-* **Purpose:** Restocking items or adding new products shouldn't require technical database knowledge. The merchant just needs a simple form.
+* Popups or form sheets where users can enter details to create or update an item (its name, cost, retail price, stock quantity, measurement unit, and tags).
+* Restocking items or adding new products shouldn't require technical database knowledge. The merchant just needs a simple form.
 
 ### Tasks
 
@@ -86,12 +86,12 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 4: Point-of-Sale (POS) Checkout
+## Page Point-of-Sale (POS) Checkout
 
 ### Active Item Grid & Cart Panel
 
-* **Description:** A side-by-side layout. On one side, a grid of items available for sale that users can click to add to a cart. On the other side, an interactive shopping cart listing the selected items, quantities, and payment details.
-* **Purpose:** Cashiers need to process customers quickly. They need to see the items, click to add them, adjust quantities easily, choose a payment method, and complete the checkout in a single screen.
+* A side-by-side layout. On one side, a grid of items available for sale that users can click to add to a cart. On the other side, an interactive shopping cart listing the selected items, quantities, and payment details.
+* Cashiers need to process customers quickly. They need to see the items, click to add them, adjust quantities easily, choose a payment method, and complete the checkout in a single screen.
 
 ### Tasks
 
@@ -105,12 +105,12 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 5: Staff Management
+## Page Staff Management
 
 ### Staff Profile Directory
 
-* **Description:** A dashboard listing employee profiles, positions, and pay details, alongside forms to manage them.
-* **Purpose:** The business owner needs to add new employees, update active cashiers, and configure hourly or daily pay rates.
+* A dashboard listing employee profiles, positions, and pay details, alongside forms to manage them.
+* The business owner needs to add new employees, update active cashiers, and configure hourly or daily pay rates.
 
 ### Tasks
 
@@ -119,12 +119,12 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 6: Shift Attendance & Payroll Logs
+## Page Shift Attendance & Payroll Logs
 
 ### Historical Audit Trails
 
-* **Description:** A simple history panel showing employee clock-in/out logs and past payroll payments.
-* **Purpose:** The store manager needs a clear ledger to review cashier hours and verify that payroll was calculated and paid out correctly.
+* A simple history panel showing employee clock-in/out logs and past payroll payments.
+* The store manager needs a clear ledger to review cashier hours and verify that payroll was calculated and paid out correctly.
 
 ### Tasks
 
@@ -133,12 +133,12 @@ This won't be used for the time being, but it'll be good to have it built anyway
 
 ---
 
-## Page 7: Settings Menu
+## Page Settings Menu
 
 ### App Settings & User Preferences
 
-* **Description:** Configuration options for individual staff settings (UI preferences, passwords) and business configurations (currency, limits).
-* **Purpose:** Allows administrators to modify application thresholds (business name, low stock levels, written receipt limits, card expiration days) and users to manage their profiles.
+* Configuration options for individual staff settings (UI preferences, passwords) and business configurations (currency, limits).
+* Allows administrators to modify application thresholds (business name, low stock levels, written receipt limits, card expiration days) and users to manage their profiles.
 
 ### Tasks
 
@@ -179,4 +179,4 @@ Since there is no live backend database connected yet, you should test the user 
 
 If anything related to React goes wrong, you're gonna have to look it up on your own; that's no longer my domain. But if it's within the confines of the project itself, you can ask me any time. Good luck!
 
-\- DefinitelyRus
+\\- DefinitelyRus

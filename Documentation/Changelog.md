@@ -1,7 +1,5 @@
 # EZBM Changelog
 
-> *Author(s): DefinitelyRus*
-
 A chronological record of all changes, updates, and additions made to the Easy Business Manager (EZBM) project.
 
 ## Guidelines
@@ -149,12 +147,8 @@ Changes:
 - Populated `README.md` with the main project overview.
 - Initialized the repository with standard git configuration files (`.gitignore` and `.gitattributes`).
 
----
-
 &nbsp;
 
 **You have reached the end of the changelog.**
 
 &nbsp;
-
----

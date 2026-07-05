@@ -6,21 +6,21 @@ This is the core business logic library for the EZBM project. It manages the dat
 
 ## Structure
 
-* **`Entities/`**: Core database models representing domain entities:
-  * **User Hierarchy (TPH):** `User.cs`, `Staff.cs`, and `Customer.cs` are mapped using Table-Per-Hierarchy (TPH) in EF Core. Features lazy permissions and card RFID validation expiry.
-  * **Sales & Ledger:** `Sale.cs` (parent checkouts), `SaleEntry.cs` (line items), `Transaction.cs` (split/mixed payment records referencing the parent sale), and `ItemTransaction.cs` (stock ledger actions).
-  * **Attendance & Operations:** `Attendance.cs` (time-in/out logs), `Payroll.cs` (employee payout calculations), and `ActionLog.cs` (audit interceptor records).
-* **`Data/`**: Contains database configuration.
-  * `AppDbContext.cs`: Configures SQLite EF Core connection, TPH entity conversion filters, and intercepts save operations to automatically log updates/deletes into the audit log.
-  * `DbManager.cs`: Handles database lifecycle (initializing schemas, seeding mock data, and resetting schemas).
-* **`Services/`**: Core business services mapping backend rules:
-  * `InventoryService.cs`: Product and service management, stock ledger tracking, and restock calculations.
-  * `SalesService.cs`: Mixed payments checkout and transaction logic.
-  * `StaffService.cs`: Shift attendance logging and modular upgrade commission adjustments.
-  * `AuthenticationService.cs`: Plain-text employee login validations.
-  * `SettingsService.cs`: JSON configuration reader/writer endpoints adapter.
-  * `ICashRegisterService.cs` / `MockCashRegisterService.cs`: Hardware emulation layer logging cash drawer triggers.
-* **`Tools/`**: Utility methods like ID generator (`IdHelper.cs`), logging (`Log.cs`), and invoice helpers (`Utils.cs`).
+* The `Entities/` folder holds the database models for our project:
+  * `User.cs`, `Staff.cs`, and `Customer.cs` handle profiles using single-table inheritance (`TPH`), with automated card expiry checks.
+  * `Sale.cs`, `SaleEntry.cs`, `Transaction.cs`, and `ItemTransaction.cs` track cart checkouts, payments, and stock changes.
+  * `Attendance.cs`, `Payroll.cs`, and `ActionLog.cs` manage hours worked, payouts, and database audit logs.
+* The `Data/` folder configures the database connection and behavior:
+  * `AppDbContext.cs` links our models to the SQLite database and logs modifications automatically.
+  * `DbManager.cs` takes care of setting up, seeding sample data, and resetting the database.
+* The `Services/` folder contains files that map core business logic:
+  * `InventoryService.cs` manages item stocks and reorders.
+  * `SalesService.cs` handles transactions and checkout splits.
+  * `StaffService.cs` processes work logs and commission payouts.
+  * `AuthenticationService.cs` checks user login credentials.
+  * `SettingsService.cs` reads and writes app configurations.
+  * `MockCashRegisterService.cs` emulates hardware connections like opening a cash drawer.
+* The `Tools/` folder contains utilities like ID generators, logging functions, and invoice helpers.
 
 ---
 

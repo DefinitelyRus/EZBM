@@ -8,47 +8,47 @@ This repository contains both the .NET back-end solutions/services and the React
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## Tech Stack & Architecture
 
-* **Front-end UI:** React (Desktop-first UI)
-* **Back-end Options:**
-  * **Desktop Host (REST API):** ASP.NET Core Web API serving endpoints for front-end integration.
-  * **Desktop Client (Razor Pages):** Integrated Razor Pages web app serving as a local desktop client and testing platform.
-* **Core Logic & DB:** .NET Class Library using EF Core & SQLite (`business_data.db` stored locally).
-* **Communication:** Local REST API (`localhost`) or Direct Library Integration (for Razor Pages client).
+* We use `React` for the front-end user interface, designed specifically for desktop screens.
+* The back-end offers two options:
+  * A local Web API using `ASP.NET Core` that serves endpoints for the front-end.
+  * A `Razor Pages` desktop client that serves as a local testing platform.
+* Core business logic and database access are handled by a .NET library using `EF Core` and a local `SQLite` database.
+* Communication happens over a local `REST API` or direct library integration.
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```text
 EZBM/
-├── Backend/                     # .NET Solution and Projects
-│   ├── EZBM.Core/               # Database Models, Services, and EF Core Context
-│   ├── EZBM.DesktopHost/        # Web API Controllers (REST Endpoints)
-│   ├── EZBM.DesktopClient/      # Razor Pages Local Desktop Client & Testing Platform
-│   ├── EZBM.Tests/              # Integration Tests Console App
-│   └── EZBM.slnx                # .NET Solution file
-├── Frontend/                    # React Application (Desktop-first UI)
-└── README.md                    # Root project documentation
+|-- Backend/                     # .NET Solution and Projects
+|   |-- EZBM.Core/               # Database Models, Services, and EF Core Context
+|   |-- EZBM.DesktopHost/        # Web API Controllers (REST Endpoints)
+|   |-- EZBM.DesktopClient/      # Razor Pages Local Desktop Client & Testing Platform
+|   |-- EZBM.Tests/              # Integration Tests Console App
+|   \-- EZBM.slnx                # .NET Solution file
+|-- Frontend/                    # React Application (Desktop-first UI)
+\-- README.md                    # Root project documentation
 ```
 
 ---
 
-## 🚀 Features & Prototypes
+## Features & Prototypes
 
 The project is built to test and validate several SME workflows and advanced business rules:
 
-* **Point-of-Sale (POS) System:** Support for real-time checkout, cart management, and receipt configuration validation.
-* **Mixed & Split Payments:** Decoupled transactions logic allowing customers to pay using split channels (e.g., cash, mobile wallet, card) on a single check-out order.
-* **Unified User Profile System:** Single table-per-hierarchy (TPH) SQLite mapping representing both `Staff` and `Customer` details, equipped with automatic card/permissions expiry lazy checking.
-* **Automatic Audit Logs:** Interceptor tracking inside EF Core DbContext to capture all update/delete actions into an `ActionLogs` audit ledger.
-* **Payroll & Commissions Upgrade Engine:** Deducting already-paid lower-tier commissions from newly earned higher-tier payroll distributions.
-* **Hardware Integration Mocking:** HID reader keyboard emulation for RFID/barcode scans and automated console logs for cash drawer triggers.
+* The Point-of-Sale (`POS`) screen lets you manage your cart and checkout.
+* Customers can split payments between multiple methods (like cash and mobile wallet) on a single order.
+* Staff and customer profiles are stored in a single table, with checks for card expiration dates.
+* Every time database entries are updated or deleted, the action is automatically saved in an audit log.
+* The payroll logic automatically deducts commissions that were already paid out when calculating new earnings.
+* We mock physical hardware interactions, such as simulating `RFID` scans and triggering cash drawer alerts.
 
 ---
 
-## 🚀 Getting Started (Local Setup)
+## Getting Started (Local Setup)
 
 Follow these steps to get the prototype running on your machine.
 
@@ -83,8 +83,8 @@ npm run dev
 
 ---
 
-## 💾 Data Strategy & Resetting
+## Data Strategy & Resetting
 
-* **Database (`business_data.db`):** The prototype uses a completely local SQLite file saved inside the user's `My Documents` folder (or OneDrive-backed equivalent).
-* **The "Wipe" Rule:** Because we are avoiding complex database migrations during early prototyping, if you change the database schema, simply delete the `business_data.db` file and rerun the back-end application to let it regenerate a fresh schema.
-* **Authentication:** User passwords are stored in **plain text** for this prototype phase. Do not use real-world passwords.
+* The database is stored locally as a `SQLite` file inside your `Documents` folder.
+* If you make changes to the database structure, just delete the `business_data.db` file and restart the backend to recreate it.
+* Passwords are saved in plain text for this prototype. Please do not use real passwords.
