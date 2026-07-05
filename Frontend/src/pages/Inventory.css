@@ -1,10 +1,12 @@
 #inventory-contents {
     /* Layout */
     min-height: 100vh;
+
     max-height: fit-content;
 
     /* Spacing */
     padding: 20px 20px 30px 20px;
+    padding-left: 330px;
 }
 
 #inventory-content-left {
@@ -102,7 +104,6 @@
     box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.15);
 }
 
-/* Placeholder (if you keep any) */
 #item-inputs .usr-input::placeholder {
     color: #9CA3AF;
 }
@@ -137,51 +138,66 @@
 }
 
 /* Table */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    background: none;
-
-    border-color: #121212;
-}
-
 .inventory-table {
-    padding-top: 10px;
     width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
+    border-collapse: separate;
+    border-radius: 25px;
+    border-spacing: 0;
 }
 
 .inventory-table th {
-    background-color: #d7d0e9;
-    color: #1D1D1F;
-    border: 1px solid #83909e;
+    background-color: #e5e0f1;
+    color: #3a373f;
+    font-weight: 600;
+    font-size: 1rem;
+
+    border: none;
+    border-bottom: 1px solid #E7E0EC;
+}
+
+.inventory-table thead th:first-child {
+    border-top-left-radius: 20px !important;
+    overflow: hidden;
+}
+
+.inventory-table thead th:last-child {
+    border-top-right-radius: 20px !important;
 }
 
 .inventory-table td{
-    border: 1px solid #83909e;
-}
-
-.inventory-table tbody tr:nth-child(even) {
-    background-color: #F3F0FA;
-    border: 1px solid #D8E2EC;
-}
-
-.inventory-table tbody tr:nth-child(odd) {
     background: #FFFFFF;
-    border: 1px solid #D8E2EC;
+    border-left: 1px solid #faf5f5;
 }
 
-.inventory-table tbody tr:hover {
-    font-weight: 600;
+.inventory-table tbody tr {
+    background-color: transparent;
 }
 
+.inventory-table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 20px;
+}
+
+.inventory-table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 20px;
+}
+
+.inventory-table tbody td:last-child,
+.inventory-table thead th:last-child {
+    border-left: none;
+}
+
+.inventory-table tbody tr:hover td {
+    background-color: #F3F0FA;
+    font-weight: 500;
+}
+
+/* Column Text Alignment */
 #inventory-content-left .col-center {
     text-align: center;
 }
 
 #inventory-content-left .col-left{
-    padding-left: 10px;
+    padding-left: 15px;
 }
 
 /* Action Buttons*/
@@ -196,22 +212,20 @@
 #inventory-content-left .edit {
     background-color: transparent;
     border: none;
-    padding: 0;
 }
 
 #inventory-content-left .delete {
     background-color: transparent;
     border: none;
-    padding: 0;
 }
 
-/* Search Icon */
-.search-wrapper {
-    position: relative;
-    width: 60%; /* or 100% */
+.inventory-table tbody .edit,
+.inventory-table tbody .delete {
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
-.search-wrapper .form-control {
-    width: 100%;
-    padding-left: 42px;
+.inventory-table tbody tr:hover .edit,
+.inventory-table tbody tr:hover .delete {
+    opacity: 1;
 }
