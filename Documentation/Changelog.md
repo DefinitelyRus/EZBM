@@ -29,7 +29,7 @@ Changes:
 
 ### 07/05/2026
 
-Updated documentation formatting, ignored generated test files, and created API reference guide.
+Updated documentation formatting, ignored generated test files, created API reference guide, and implemented backend refactoring updates including item inheritance, password hashing, setup onboarding, dashboard analytics, payroll calculation helpers, roles permissions matrix, and backup sync.
 
 Changes:
 
@@ -40,6 +40,15 @@ Changes:
 - Updated `README.md` and `Backend/README.md` to link to the new API documentation.
 - Fixed C# compiler errors caused by pattern matching (`is null` / `is not null`) inside EF Core expression trees in `StaffService.cs`, `InventoryService.cs`, `Logs.cshtml.cs`, and `StateHelper.cs`.
 - Fixed missing `using EZBM.Core.Entities;` directive in `Program.cs` of the desktop client and incorrect `Id` property reference in `StaffService.cs`.
+- Refactored `Item` class with Table-Per-Hierarchy (TPH) inheritance mapping for `Product` and `Service` subclasses in `AppDbContext`.
+- Implemented secure PBKDF2 with SHA-256 password hashing and validation in `AuthenticationService` and `AuthController`.
+- Added `POST /api/auth/setup` onboarding setup API setting up storefront config, seeding default roles (`Admin`, `Cashier`), and registering the administrator profile.
+- Created `GET /api/dashboard/analytics` exposing daily sales/profits metrics, weekly volume charts, top popular products, cashier performance leaderboards, and low-stock item warnings.
+- Added custom staff commissions logging when cashiers checkout membership upgrades.
+- Created `GET /api/payroll/calculate` payroll endpoint computing working hours, gross/net earnings, and auto-deducting advances.
+- Implemented many-to-many security role matrix resolution in `User.HasPermission` where explicit `Deny` overrides all `Allow` actions.
+- Re-routed settings configurations to directory-based paths under `<documents>/ezbm/` and implemented Google Drive simulated database backup and restore endpoints.
+- Added server-side pagination (`limit`/`offset`) and sorting (`sortBy`/`sortOrder`) support in all core find requests.
 
 ### 07/03/2026
 
