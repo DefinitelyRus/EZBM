@@ -1,5 +1,6 @@
 using System.Text.Json;
 using EZBM.Core.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace EZBM.Core.Tools;
 
@@ -279,6 +280,58 @@ public static class Utils
             Log.Warn($"Failed to read file '{filename}':\n{e.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Applies sorting and pagination dynamically to an IQueryable source.
+    /// </summary>
+    public static IQueryable<T> ApplySortingAndPagination<T>(
+        IQueryable<T> query,
+        int? limit,
+        int? offset,
+        string? sortBy,
+        string? sortOrder) where T : class
+    {
+        // 1. Apply Sorting
+        if (!string.IsNullOrEmpty(sortBy))
+        {
+            bool isDesc = !string.IsNullOrEmpty(sortOrder) && sortOrder.Equals("Descending", StringComparison.OrdinalIgnoreCase);
+            
+            try
+            {
+                if (isDesc)
+                    query = query.OrderByDescending(x => EF.Property<object>(x, sortBy));
+                else
+                    query = query.OrderBy(x => EF.Property<object>(x, sortBy));
+            }
+            catch
+            {
+                query = query.OrderBy(x => EF.Property<DateTime>(x, "CreatedAt"));
+            }
+        }
+        else
+        {
+            if (typeof(Entity).IsAssignableFrom(typeof(T)))
+            {
+                query = query.OrderBy(x => EF.Property<DateTime>(x, "CreatedAt"));
+            }
+            else
+            {
+                query = query.OrderBy(x => EF.Property<object>(x, "Id"));
+            }
+        }
+
+        // 2. Apply Pagination
+        if (offset.HasValue)
+        {
+            query = query.Skip(offset.Value);
+        }
+        if (limit.HasValue)
+        {
+            query = query.Take(limit.Value);
+        }
+
+        return query;
     }
 
     #endregion
