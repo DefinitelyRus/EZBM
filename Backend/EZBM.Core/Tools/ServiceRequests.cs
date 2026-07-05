@@ -25,7 +25,11 @@ public record FindItemRequest(
     Unit? UnitOfMeasurement,
     DateTime? MinExpirationDate,
     DateTime? MaxExpirationDate,
-    List<Tag>? Tags
+    List<Tag>? Tags,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record UpdateItemRequest(
@@ -51,7 +55,8 @@ public record CreateItemRequest(
     [Required] Unit UnitOfMeasurement,
     DateTime? ExpirationDate,
     List<Tag>? Tags,
-    string? ImageUrl
+    string? ImageUrl,
+    string? ItemType = "Product"
 );
 
 public record DeleteItemRequest(
@@ -84,7 +89,11 @@ public record FindItemTransactionRequest(
     ItemTransaction.Type? Type,
     DateTime? MinTimestamp,
     DateTime? MaxTimestamp,
-    string? Note
+    string? Note,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 [Obsolete("ItemTransactions are immutable and must not be updated.")]
@@ -134,7 +143,11 @@ public record FindSaleRequest(
     DateTime? MaxTimestamp,
     Transaction.PayMethod? PaymentMethod,
     float? MinAmount,
-    float? MaxAmount
+    float? MaxAmount,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record GetSaleRequest(
@@ -164,7 +177,11 @@ public record FindSaleEntryRequest(
     float? MinQuantity,
     float? MaxQuantity,
     float? MinUnitPrice,
-    float? MaxUnitPrice
+    float? MaxUnitPrice,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record DeleteSaleEntryRequest(
@@ -197,7 +214,11 @@ public record FindStaffRequest(
     string? FirstName,
     string? LastName,
     string? Position,
-    Staff.Frequency? PayFrequency
+    Staff.Frequency? PayFrequency,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record UpdateStaffRequest(
@@ -245,7 +266,11 @@ public record FindPayrollRequest(
     DateTime? MinPeriodEnd,
     DateTime? MaxPeriodEnd,
     float? MinNetAmount,
-    float? MaxNetAmount
+    float? MaxNetAmount,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record DeletePayrollRequest(
@@ -272,7 +297,11 @@ public record FindAttendanceRequest(
     DateTime? MinTimeIn,
     DateTime? MaxTimeIn,
     DateTime? MinTimeOut,
-    DateTime? MaxTimeOut
+    DateTime? MaxTimeOut,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
 );
 
 public record UpdateAttendanceRequest(
