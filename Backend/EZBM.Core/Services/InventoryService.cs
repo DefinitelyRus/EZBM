@@ -82,7 +82,7 @@ public static class InventoryService
 
                 if (!string.IsNullOrEmpty(request.Description))
                     query = query.Where(
-                        item => item.Description is not null &&
+                        item => item.Description != null &&
                         item.Description.Contains(request.Description)
                     );
 
@@ -431,7 +431,7 @@ public static class InventoryService
                 if (!string.IsNullOrEmpty(request.Note))
                 {
                     query = query.Where(
-                        t => t.Note is not null && t.Note.Contains(request.Note)
+                        t => t.Note != null && t.Note.Contains(request.Note)
                     );
                 }
 
@@ -457,7 +457,7 @@ public static class InventoryService
                     if (!string.IsNullOrEmpty(itemQuery.Description))
                     {
                         query = query.Where(
-                            t => t.Item.Description is not null &&
+                            t => t.Item.Description != null &&
                             t.Item.Description.Contains(itemQuery.Description)
                         );
                     }

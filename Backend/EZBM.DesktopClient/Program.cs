@@ -1,4 +1,5 @@
 using EZBM.Core.Data;
+using EZBM.Core.Entities;
 using EZBM.DesktopClient.Helpers;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

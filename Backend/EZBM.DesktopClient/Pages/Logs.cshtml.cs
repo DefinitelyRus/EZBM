@@ -222,7 +222,7 @@ public class LogsModel : PageModel
             }
 
             List<Attendance> attendanceLogs = await db.Attendance
-                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut is not null)
+                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut != null)
                 .ToListAsync();
 
             double totalHours = attendanceLogs.Sum(a => (a.TimeOut!.Value - a.TimeIn).TotalHours);
@@ -283,7 +283,7 @@ public class LogsModel : PageModel
                         List<SaleEntry> prevEntries = await db.SaleEntry
                             .Include(se => se.Sale)
                             .Include(se => se.Item)
-                            .Where(se => se.Sale.Customer is not null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
+                            .Where(se => se.Sale.Customer != null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
                             .ToListAsync();
 
                         foreach (SaleEntry prevEntry in prevEntries)

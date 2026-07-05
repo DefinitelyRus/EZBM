@@ -38,6 +38,8 @@ Changes:
 - Updated `.gitignore` to exclude local test results and logs from version tracking.
 - Created `API Documentation.md` detailing all REST endpoints, hosting commands, API usage instructions, and plain JavaScript consumption examples.
 - Updated `README.md` and `Backend/README.md` to link to the new API documentation.
+- Fixed C# compiler errors caused by pattern matching (`is null` / `is not null`) inside EF Core expression trees in `StaffService.cs`, `InventoryService.cs`, `Logs.cshtml.cs`, and `StateHelper.cs`.
+- Fixed missing `using EZBM.Core.Entities;` directive in `Program.cs` of the desktop client and incorrect `Id` property reference in `StaffService.cs`.
 
 ### 07/03/2026
 

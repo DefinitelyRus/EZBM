@@ -54,7 +54,7 @@ public static class StateHelper
         {
             using AppDbContext context = new();
             bool isClockedIn = await context.Attendance.AnyAsync(
-                a => a.Staff.Id == staffId && a.TimeOut is null
+                a => a.Staff.Id == staffId && a.TimeOut == null
             );
 
             return isClockedIn;

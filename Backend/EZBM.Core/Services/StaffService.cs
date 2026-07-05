@@ -57,14 +57,14 @@ public static class StaffService
                 message = $"Staff username '{request.Username}' already exists.";
                 Log.Me(message);
                 Utils.RequestResult conflictResult = new(
-                    Utils.Result.Failed_Conflict, message
+                    Utils.Result.Failed_InvalidQuery, message
                 );
 
                 return conflictResult;
             }
 
             Staff staff = new(
-                id: request.Id ?? Utils.GenerateEntityId(),
+                id: Utils.GenerateEntityId(),
                 username: request.Username,
                 payFrequency: request.PayFrequency,
                 payRate: request.PayRate,
@@ -177,19 +177,19 @@ public static class StaffService
 
                 if (!string.IsNullOrEmpty(request.FirstName))
                     query = query.Where(
-                        s => s.FirstName is not null &&
+                        s => s.FirstName != null &&
                         s.FirstName.Contains(request.FirstName)
                     );
 
                 if (!string.IsNullOrEmpty(request.LastName))
                     query = query.Where(
-                        s => s.LastName is not null &&
+                        s => s.LastName != null &&
                         s.LastName.Contains(request.LastName)
                     );
 
                 if (!string.IsNullOrEmpty(request.Position))
                     query = query.Where(
-                        s => s.Position is not null &&
+                        s => s.Position != null &&
                         s.Position.Contains(request.Position)
                     );
 
@@ -374,7 +374,7 @@ public static class StaffService
             {
                 Attendance? activeAttendance = await context.Attendance
                     .FirstOrDefaultAsync(
-                        a => a.Staff.Id == request.StaffId && a.TimeOut is null
+                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
                     );
 
                 if (activeAttendance is not null)
@@ -410,7 +410,7 @@ public static class StaffService
             {
                 Attendance? activeAttendance = await context.Attendance
                     .Where(
-                        a => a.Staff.Id == request.StaffId && a.TimeOut is null
+                        a => a.Staff.Id == request.StaffId && a.TimeOut == null
                     )
                     .OrderByDescending(
                         a => a.TimeIn
@@ -620,12 +620,12 @@ public static class StaffService
 
                 if (request.MinTimeOut is not null)
                     query = query.Where(
-                        a => a.TimeOut is not null && a.TimeOut >= request.MinTimeOut
+                        a => a.TimeOut != null && a.TimeOut >= request.MinTimeOut
                     );
 
                 if (request.MaxTimeOut is not null)
                     query = query.Where(
-                        a => a.TimeOut is not null && a.TimeOut <= request.MaxTimeOut
+                        a => a.TimeOut != null && a.TimeOut <= request.MaxTimeOut
                     );
             }
 
