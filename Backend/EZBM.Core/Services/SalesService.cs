@@ -139,7 +139,31 @@ public static class SalesService
 
                 context.SaleEntry.Add(entry);
 
-                item.Quantity -= itemReq.Quantity;
+                if (item is Product)
+                {
+                    item.Quantity -= itemReq.Quantity;
+                }
+
+                if (item is Service && item.Name.Contains("Upgrade", StringComparison.OrdinalIgnoreCase))
+                {
+                    StoreSettings storeSettings = SettingsService.LoadSettings();
+                    float commissionRate = staff.CommissionRate ?? 1.0f;
+                    if (storeSettings.MembershipCommissions.TryGetValue(item.Name, out float baseCommission))
+                    {
+                        float finalCommission = baseCommission * commissionRate;
+                        StaffAdjustment adjustment = new(
+                            id: Utils.GenerateEntityId(),
+                            staffId: staff.Id,
+                            adjustmentType: "Commission",
+                            amount: finalCommission,
+                            deductFromCurrentPayroll: false,
+                            isPaid: false,
+                            timestamp: serverTime,
+                            notes: $"Commission earned from {item.Name} sold in Invoice {sale.InvoiceId}"
+                        );
+                        context.StaffAdjustment.Add(adjustment);
+                    }
+                }
 
                 ItemTransaction itemTransaction = new(
                     item: item,
@@ -292,6 +316,8 @@ public static class SalesService
                         s => s.Amount <= request.MaxAmount
                     );
             }
+
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
 
             List<Sale> results = await query.ToListAsync();
 
@@ -553,6 +579,8 @@ public static class SalesService
                         se => se.UnitPrice <= request.MaxUnitPrice
                     );
             }
+
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
 
             List<SaleEntry> results = await query.ToListAsync();
 

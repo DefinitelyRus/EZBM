@@ -137,6 +137,8 @@ public static class InventoryService
                     );
             }
 
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
+
             List<Item> results = await query.ToListAsync();
 
             if (request?.Tags is { Count: > 0 } && results.Count > 0)
@@ -231,19 +233,43 @@ public static class InventoryService
     {
         try
         {
-            Item item = new(
-                Utils.GenerateEntityId(),
-                request.UnitOfMeasurement,
-                request.IsForSale,
-                request.SalePrice,
-                request.Name,
-                request.Description,
-                request.Tags,
-                request.Quantity,
-                request.ExpirationDate,
-                request.Cost,
-                request.ImageUrl
-            );
+            Item item;
+            ulong id = Utils.GenerateEntityId();
+            if (request.ItemType != null && request.ItemType.Equals("Service", StringComparison.OrdinalIgnoreCase))
+            {
+                item = new Service(
+                    id,
+                    request.UnitOfMeasurement,
+                    request.IsForSale,
+                    request.SalePrice,
+                    request.Name,
+                    request.Description,
+                    request.Tags,
+                    request.Quantity,
+                    request.ExpirationDate,
+                    request.Cost,
+                    request.ImageUrl
+                );
+            }
+            else
+            {
+                item = new Product(
+                    id,
+                    request.UnitOfMeasurement,
+                    request.IsForSale,
+                    request.SalePrice,
+                    request.Name,
+                    request.Description,
+                    request.Tags,
+                    request.Quantity,
+                    request.ExpirationDate,
+                    request.Cost,
+                    request.ImageUrl,
+                    null,
+                    0f,
+                    0.20f
+                );
+            }
 
             using AppDbContext context = new();
             context.Item.Add(item);
@@ -533,6 +559,8 @@ public static class InventoryService
                     }
                 }
             }
+
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
 
             List<ItemTransaction> results = await query.ToListAsync();
 

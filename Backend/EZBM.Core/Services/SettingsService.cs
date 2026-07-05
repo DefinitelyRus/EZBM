@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using EZBM.Core.Tools;
 
 namespace EZBM.Core.Services;
 
@@ -21,9 +22,9 @@ public class StoreSettings
     public string Currency { get; set; } = "PHP";
 
     /// <summary>
-    /// The threshold below which item stock quantity flags a warning.
+    /// The default global low-stock threshold percentage (e.g. 0.20 for 20%).
     /// </summary>
-    public float LowStockThreshold { get; set; } = 5f;
+    public float LowStockThreshold { get; set; } = 0.20f;
 
     /// <summary>
     /// The amount above which checkout requires a physical written receipt.
@@ -34,6 +35,26 @@ public class StoreSettings
     /// The official grand opening date of the storefront.
     /// </summary>
     public DateTime StoreOpeningDate { get; set; } = DateTime.UtcNow;
+
+    /// <summary>
+    /// The destination path where SQLite database backups will be saved.
+    /// </summary>
+    public string BackupTargetPath { get; set; } = Path.Combine(Utils.UserSavePath, "ezbm-backups");
+
+    /// <summary>
+    /// The backup autosave interval (e.g. Daily, Weekly, None).
+    /// </summary>
+    public string BackupAutosaveInterval { get; set; } = "Daily";
+
+    /// <summary>
+    /// The number of recent backups to keep.
+    /// </summary>
+    public int BackupRetentionCount { get; set; } = 10;
+
+    /// <summary>
+    /// Whether historical grandfather-father-son backup rotation is enabled.
+    /// </summary>
+    public bool BackupRotationEnabled { get; set; } = true;
 
     /// <summary>
     /// The default validity period in days for access card profiles.
@@ -61,18 +82,27 @@ public class StoreSettings
 /// </summary>
 public static class SettingsService
 {
-    private static string GetSettingsFilePath()
+    private static string GetAdminSettingsFilePath()
     {
-        string? currentDir = AppDomain.CurrentDomain.BaseDirectory;
-        while (currentDir is not null)
+        string dir = Path.Combine(Utils.UserSavePath, "ezbm");
+        if (!Directory.Exists(dir))
         {
-            if (File.Exists(Path.Combine(currentDir, "EZBM.slnx")))
-            {
-                return Path.Combine(currentDir, "settings.json");
-            }
-            currentDir = Directory.GetParent(currentDir)?.FullName;
+            Directory.CreateDirectory(dir);
         }
-        return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+        return Path.Combine(dir, "admin-settings");
+    }
+
+    /// <summary>
+    /// Resolves the storage path for individual user configurations.
+    /// </summary>
+    public static string GetUserSettingsFilePath(ulong userId)
+    {
+        string dir = Path.Combine(Utils.UserSavePath, "ezbm", "user-settings");
+        if (!Directory.Exists(dir))
+        {
+            Directory.CreateDirectory(dir);
+        }
+        return Path.Combine(dir, $"{userId}-settings.json");
     }
 
     /// <summary>
@@ -82,7 +112,7 @@ public static class SettingsService
     {
         try
         {
-            string path = GetSettingsFilePath();
+            string path = GetAdminSettingsFilePath();
             if (!File.Exists(path))
             {
                 StoreSettings defaults = new();
@@ -106,7 +136,7 @@ public static class SettingsService
     {
         try
         {
-            string path = GetSettingsFilePath();
+            string path = GetAdminSettingsFilePath();
             string json = JsonSerializer.Serialize(settings, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(path, json);
         }
@@ -114,6 +144,39 @@ public static class SettingsService
         catch (Exception ex)
         {
             Tools.Log.Err($"Failed to save settings: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Loads individual user preference JSON string.
+    /// </summary>
+    public static string LoadUserSettings(ulong userId)
+    {
+        try
+        {
+            string path = GetUserSettingsFilePath(userId);
+            if (!File.Exists(path)) return "{}";
+            return File.ReadAllText(path);
+        }
+        catch
+        {
+            return "{}";
+        }
+    }
+
+    /// <summary>
+    /// Saves individual user preference JSON string.
+    /// </summary>
+    public static void SaveUserSettings(ulong userId, string jsonContent)
+    {
+        try
+        {
+            string path = GetUserSettingsFilePath(userId);
+            File.WriteAllText(path, jsonContent);
+        }
+        catch (Exception ex)
+        {
+            Tools.Log.Err($"Failed to save user settings: {ex.Message}");
         }
     }
 }

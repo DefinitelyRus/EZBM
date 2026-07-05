@@ -68,7 +68,7 @@ public static class StaffService
                 username: request.Username,
                 payFrequency: request.PayFrequency,
                 payRate: request.PayRate,
-                password: request.Password,
+                password: request.Password != null ? AuthenticationService.HashPassword(request.Password) : null,
                 firstName: request.FirstName,
                 lastName: request.LastName,
                 email: request.Email,
@@ -199,6 +199,8 @@ public static class StaffService
                     );
             }
 
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
+
             List<Staff> results = await query.ToListAsync();
 
             if (results.Count == 0)
@@ -259,7 +261,7 @@ public static class StaffService
             }
 
             staff.Username = request.Username ?? staff.Username;
-            staff.Password = request.Password ?? staff.Password;
+            staff.Password = request.Password != null ? AuthenticationService.HashPassword(request.Password) : staff.Password;
             staff.FirstName = request.FirstName ?? staff.FirstName;
             staff.LastName = request.LastName ?? staff.LastName;
             staff.Email = request.Email ?? staff.Email;
@@ -629,6 +631,8 @@ public static class StaffService
                     );
             }
 
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
+
             List<Attendance> results = await query.ToListAsync();
 
             if (results.Count == 0)
@@ -820,6 +824,15 @@ public static class StaffService
                 notes: request.Notes
             );
 
+            // Mark unpaid adjustments as paid
+            var unpaidAdjustments = await context.StaffAdjustment
+                .Where(sa => sa.StaffId == request.StaffId && sa.IsPaid == false && sa.Timestamp <= request.PeriodEnd)
+                .ToListAsync();
+            foreach (var sa in unpaidAdjustments)
+            {
+                sa.IsPaid = true;
+            }
+
             context.Payroll.Add(payroll);
             await context.SaveChangesAsync();
 
@@ -954,6 +967,8 @@ public static class StaffService
                     );
             }
 
+            query = Utils.ApplySortingAndPagination(query, request?.Limit, request?.Offset, request?.SortBy, request?.SortOrder);
+
             List<Payroll> results = await query.ToListAsync();
 
             if (results.Count == 0)
@@ -1034,6 +1049,99 @@ public static class StaffService
             );
 
             return errorResult;
+        }
+    }
+
+    #endregion
+
+    #region Calculate Payroll
+
+    public record CalculatedPayrollDetails(
+        float TotalHours,
+        float GrossAmount,
+        float CommissionsAndBonuses,
+        float Deductions,
+        float NetAmount,
+        List<ulong> AdjustmentIds
+    );
+
+    /// <summary>
+    /// Calculates payroll metrics for a staff member over a given period, including auto-deductions.
+    /// </summary>
+    public static async Task<Utils.RequestResult<CalculatedPayrollDetails>> CalculatePayrollDetailsAsync(
+        ulong staffId, DateTime periodStart, DateTime periodEnd)
+    {
+        string message;
+        try
+        {
+            using AppDbContext context = new();
+            Staff? staff = await context.Staff.FindAsync(staffId);
+            if (staff is null)
+            {
+                message = $"Staff with ID {staffId} not found.";
+                return new Utils.RequestResult<CalculatedPayrollDetails>(Utils.Result.Failed_NoResults, message, null);
+            }
+
+            // Fetch attendances
+            var attendances = await context.Attendance
+                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut != null)
+                .ToListAsync();
+
+            float totalHours = 0;
+            foreach (var a in attendances)
+            {
+                totalHours += (float)(a.TimeOut!.Value - a.TimeIn).TotalHours;
+            }
+
+            float gross = 0;
+            if (staff.PayFrequency == Staff.Frequency.Hourly)
+            {
+                gross = totalHours * staff.PayRate;
+            }
+            else if (staff.PayFrequency == Staff.Frequency.Daily)
+            {
+                int daysWorked = attendances.Select(a => a.TimeIn.Date).Distinct().Count();
+                gross = daysWorked * staff.PayRate;
+            }
+            else
+            {
+                gross = staff.PayRate;
+            }
+
+            // Fetch unpaid adjustments
+            var adjustments = await context.StaffAdjustment
+                .Where(sa => sa.StaffId == staffId && sa.IsPaid == false && sa.Timestamp <= periodEnd)
+                .ToListAsync();
+
+            float commissionsAndBonuses = 0;
+            float deductions = 0;
+            List<ulong> adjIds = [];
+
+            foreach (var sa in adjustments)
+            {
+                adjIds.Add(sa.Id);
+                if (sa.AdjustmentType.Equals("Commission", StringComparison.OrdinalIgnoreCase) ||
+                    sa.AdjustmentType.Equals("Bonus", StringComparison.OrdinalIgnoreCase))
+                {
+                    commissionsAndBonuses += sa.Amount;
+                }
+                else if (sa.DeductFromCurrentPayroll)
+                {
+                    deductions += sa.Amount;
+                }
+            }
+
+            float net = gross + commissionsAndBonuses - deductions;
+            if (net < 0) net = 0;
+
+            CalculatedPayrollDetails details = new(totalHours, gross, commissionsAndBonuses, deductions, net, adjIds);
+            message = $"Calculated payroll details for staff {staff.Username}.";
+            return new Utils.RequestResult<CalculatedPayrollDetails>(Utils.Result.Success, message, details);
+        }
+        catch (Exception ex)
+        {
+            message = $"Error calculating payroll details: {ex.Message}";
+            return new Utils.RequestResult<CalculatedPayrollDetails>(Utils.Result.Failed_UnhandledException, message, null);
         }
     }
 
