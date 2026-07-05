@@ -10,7 +10,7 @@ public class Item : Entity
     /// <summary>
     /// Defines the units used to measure the quantity of the item.
     /// </summary>
-    public enum Unit { Count, Milligrams, Grams, Kilograms, Ounces, Pounds, Milliliters, Liters, Gallons }
+    public enum Unit { Count, Milligrams, Grams, Kilograms, Ounces, Pounds, Milliliters, Liters, Gallons, Unlimited }
 
     /// <summary>
     /// Categories used to classify the item for filtering or reporting.

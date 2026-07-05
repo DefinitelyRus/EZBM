@@ -42,7 +42,9 @@ public record UpdateItemRequest(
     [Required] float Quantity,
     [Required] Unit UnitOfMeasurement,
     DateTime? ExpirationDate,
-    List<Tag>? Tags
+    List<Tag>? Tags,
+    float? TargetStock = null,
+    float? LowStockThresholdPercentage = null
 );
 
 public record CreateItemRequest(
@@ -56,7 +58,9 @@ public record CreateItemRequest(
     DateTime? ExpirationDate,
     List<Tag>? Tags,
     string? ImageUrl,
-    string? ItemType = "Product"
+    string? ItemType = "Product",
+    float? TargetStock = null,
+    float? LowStockThresholdPercentage = null
 );
 
 public record DeleteItemRequest(
@@ -201,7 +205,8 @@ public record CreateStaffRequest(
     string? PhoneNumber,
     string? Position,
     [Required] Staff.Frequency PayFrequency,
-    [Required] float PayRate
+    [Required] float PayRate,
+    float? CommissionRate = null
 );
 
 public record GetStaffRequest(
@@ -231,7 +236,8 @@ public record UpdateStaffRequest(
     string? PhoneNumber,
     string? Position,
     Staff.Frequency? PayFrequency,
-    float? PayRate
+    float? PayRate,
+    float? CommissionRate = null
 );
 
 public record DeleteStaffRequest(
