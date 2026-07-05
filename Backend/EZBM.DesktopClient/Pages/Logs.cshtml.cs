@@ -40,6 +40,11 @@ public class LogsModel : PageModel
     public List<ActionLog> ActionLogs { get; set; } = new();
 
     /// <summary>
+    /// List of staff adjustments (bonuses, commissions, deductions).
+    /// </summary>
+    public List<StaffAdjustment> StaffAdjustments { get; set; } = new();
+
+    /// <summary>
     /// List of all staff members (used in payroll/attendance creation forms).
     /// </summary>
     public List<Staff> StaffList { get; set; } = new();
@@ -79,6 +84,9 @@ public class LogsModel : PageModel
         // Load payroll
         Utils.RequestResult<List<Payroll>> payrollResult = await StaffService.FindPayrollAsync(null!);
         PayrollLogs = payrollResult.Data ?? new List<Payroll>();
+
+        // Load adjustments
+        StaffAdjustments = await context.StaffAdjustment.OrderByDescending(a => a.Timestamp).ToListAsync();
 
         // Load staff for dropdowns
         Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
@@ -212,100 +220,91 @@ public class LogsModel : PageModel
         DateTime periodStart,
         DateTime periodEnd)
     {
-        try
+        var result = await StaffService.CalculatePayrollDetailsAsync(staffId, periodStart, periodEnd);
+        if (result.Type == Utils.Result.Success && result.Data != null)
         {
-            using AppDbContext db = new();
-            Staff? staff = await db.Staff.FindAsync(staffId);
-            if (staff is null)
-            {
-                return new JsonResult(new { success = false, message = "Staff member not found" });
-            }
-
-            List<Attendance> attendanceLogs = await db.Attendance
-                .Where(a => a.Staff.Id == staffId && a.TimeIn >= periodStart && a.TimeIn <= periodEnd && a.TimeOut != null)
-                .ToListAsync();
-
-            double totalHours = attendanceLogs.Sum(a => (a.TimeOut!.Value - a.TimeIn).TotalHours);
-            float grossAmount = (float)(totalHours * staff.PayRate);
-
-            float commission = await CalculateUpgradeCommissionsAsync(staffId, periodStart, periodEnd);
-            float netAmount = grossAmount + commission;
-
+            var data = result.Data;
             return new JsonResult(new
             {
                 success = true,
-                totalHours = Math.Round(totalHours, 2),
-                grossAmount = Math.Round(grossAmount, 2),
-                commission = Math.Round(commission, 2),
-                netAmount = Math.Round(netAmount, 2)
+                totalHours = Math.Round(data.TotalHours, 2),
+                grossAmount = Math.Round(data.GrossAmount, 2),
+                commission = Math.Round(data.CommissionsAndBonuses, 2),
+                deductions = Math.Round(data.Deductions, 2),
+                netAmount = Math.Round(data.NetAmount, 2)
             });
         }
-
-        catch (Exception ex)
+        else
         {
-            return new JsonResult(new { success = false, message = ex.Message });
+            return new JsonResult(new { success = false, message = result.Message });
         }
     }
 
-    private static async Task<float> CalculateUpgradeCommissionsAsync(
+    public async Task<IActionResult> OnPostCreateAdjustmentAsync(
         ulong staffId,
-        DateTime periodStart,
-        DateTime periodEnd)
+        string adjustmentType,
+        float amount,
+        bool deductFromCurrentPayroll,
+        string? notes
+    )
     {
-        using AppDbContext db = new();
-        StoreSettings settings = SettingsService.LoadSettings();
-        Dictionary<string, float> commissionRates = settings.MembershipCommissions;
-
-        List<Sale> sales = await db.Sale
-            .Include(s => s.Customer)
-            .Where(s => s.Staff.Id == staffId && s.Timestamp >= periodStart && s.Timestamp <= periodEnd)
-            .ToListAsync();
-
-        float totalCommission = 0f;
-
-        foreach (Sale sale in sales)
+        if (amount < 0f)
         {
-            List<SaleEntry> entries = await db.SaleEntry
-                .Include(se => se.Item)
-                .Where(se => se.Sale.Id == sale.Id)
-                .ToListAsync();
-
-            foreach (SaleEntry entry in entries)
-            {
-                string itemName = entry.Item.Name;
-                if (commissionRates.ContainsKey(itemName))
-                {
-                    float currentRate = commissionRates[itemName];
-                    float subtractRate = 0f;
-
-                    if (sale.Customer is not null)
-                    {
-                        List<SaleEntry> prevEntries = await db.SaleEntry
-                            .Include(se => se.Sale)
-                            .Include(se => se.Item)
-                            .Where(se => se.Sale.Customer != null && se.Sale.Customer.Id == sale.Customer.Id && se.Sale.Timestamp < sale.Timestamp)
-                            .ToListAsync();
-
-                        foreach (SaleEntry prevEntry in prevEntries)
-                        {
-                            string prevItemName = prevEntry.Item.Name;
-                            if (commissionRates.ContainsKey(prevItemName))
-                            {
-                                float prevRate = commissionRates[prevItemName];
-                                if (prevRate > subtractRate && prevRate < currentRate)
-                                {
-                                    subtractRate = prevRate;
-                                }
-                            }
-                        }
-                    }
-
-                    totalCommission += (currentRate - subtractRate);
-                }
-            }
+            ErrorMessage = "Adjustment amount cannot be negative.";
+            return RedirectToPage("/Logs", new { tab = "adjustments" });
         }
 
-        return totalCommission;
+        try
+        {
+            using AppDbContext context = new();
+            StaffAdjustment adj = new(
+                id: Utils.GenerateEntityId(),
+                staffId: staffId,
+                adjustmentType: adjustmentType,
+                amount: amount,
+                deductFromCurrentPayroll: deductFromCurrentPayroll,
+                isPaid: false,
+                timestamp: DateTime.UtcNow,
+                notes: notes
+            );
+
+            context.StaffAdjustment.Add(adj);
+            await context.SaveChangesAsync();
+            SuccessMessage = "Staff adjustment logged successfully.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to log adjustment: {ex.Message}";
+        }
+
+        return RedirectToPage("/Logs", new { tab = "adjustments" });
+    }
+
+    public async Task<IActionResult> OnPostDeleteAdjustmentAsync(
+        ulong id
+    )
+    {
+        try
+        {
+            using AppDbContext context = new();
+            var adj = await context.StaffAdjustment.FindAsync(id);
+            if (adj != null)
+            {
+                context.StaffAdjustment.Remove(adj);
+                await context.SaveChangesAsync();
+                SuccessMessage = "Staff adjustment deleted successfully.";
+            }
+            else
+            {
+                ErrorMessage = "Adjustment not found.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Failed to delete adjustment: {ex.Message}";
+        }
+
+        return RedirectToPage("/Logs", new { tab = "adjustments" });
     }
 
     #endregion

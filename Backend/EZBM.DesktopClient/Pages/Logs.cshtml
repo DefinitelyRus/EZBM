@@ -4,6 +4,7 @@
     ViewData["Title"] = "System Logs & Records";
     bool isAttendance = Model.ActiveTab == "attendance";
     bool isPayroll = Model.ActiveTab == "payroll";
+    bool isAdjustments = Model.ActiveTab == "adjustments";
     bool isActions = Model.ActiveTab == "actions";
 }
 
@@ -30,6 +31,9 @@
     </a>
     <a href="/Logs?tab=payroll" style="padding: 10px; font-weight: @(isPayroll ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isPayroll ? "#eee" : "#fff"); text-decoration: none;">
         Payroll Records
+    </a>
+    <a href="/Logs?tab=adjustments" style="padding: 10px; font-weight: @(isAdjustments ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isAdjustments ? "#eee" : "#fff"); text-decoration: none;">
+        Staff Adjustments
     </a>
     <a href="/Logs?tab=actions" style="padding: 10px; font-weight: @(isActions ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isActions ? "#eee" : "#fff"); text-decoration: none;">
         Action Audit Logs
@@ -59,7 +63,7 @@
                         var totalHours = log.TimeOut.HasValue ? (log.TimeOut.Value - log.TimeIn).TotalHours : (double?)null;
                         <tr>
                             <td>@log.Id</td>
-                            <td><strong>@log.Staff.Username</strong></td>
+                            <td><strong>@log.Staff.FirstName @log.Staff.LastName</strong></td>
                             <td>@log.TimeIn.ToString("yyyy-MM-dd HH:mm:ss")</td>
                             <td>@(log.TimeOut?.ToString("yyyy-MM-dd HH:mm:ss") ?? "STILL CLOCKED IN")</td>
                             <td>@(totalHours.HasValue ? totalHours.Value.ToString("F2") : "N/A")</td>
@@ -84,7 +88,7 @@
                     <select name="staffId" style="width: 100%;" required>
                         @foreach (var staff in Model.StaffList)
                         {
-                            <option value="@staff.Id">@staff.Username</option>
+                            <option value="@staff.Id">@staff.FirstName @staff.LastName (@staff.Username)</option>
                         }
                     </select>
                 </div>
@@ -117,7 +121,7 @@
                         <th>Period End</th>
                         <th>Hours</th>
                         <th>Gross Pay</th>
-                        <th>Upgrade Comm.</th>
+                        <th>Modifiers</th>
                         <th>Net Paid</th>
                         <th>Pay Date</th>
                         <th>Notes</th>
@@ -129,7 +133,7 @@
                     {
                         <tr>
                             <td>@pay.InvoiceId</td>
-                            <td><strong>@pay.Staff.Username</strong></td>
+                            <td><strong>@pay.Staff.FirstName @pay.Staff.LastName</strong></td>
                             <td>@pay.PeriodStart.ToShortDateString()</td>
                             <td>@pay.PeriodEnd.ToShortDateString()</td>
                             <td>@pay.TotalHours.ToString("F1")</td>
@@ -159,7 +163,7 @@
                     <select name="staffId" id="payStaffId" style="width: 100%;" required>
                         @foreach (var staff in Model.StaffList)
                         {
-                            <option value="@staff.Id">@staff.Username</option>
+                            <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
                         }
                     </select>
                 </div>
@@ -191,9 +195,9 @@
                 </div>
 
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Upgrade Commissions ($):</label>
+                    <label style="display: block; font-weight: bold;">Net Modifiers ($):</label>
                     <input type="number" step="0.01" name="modifiers" id="payModifiers" value="0.00" required style="width: 100%;" />
-                    <small style="color: #666;">Automatically subtracts lower tier values already paid.</small>
+                    <small style="color: #666;">(Commissions & Bonuses - Deductions)</small>
                 </div>
 
                 <div style="margin-bottom: 10px;">
@@ -208,10 +212,114 @@
 
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; font-weight: bold;">Notes:</label>
-                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Regular monthly pay" style="width: 100%;" />
+                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Regular pay" style="width: 100%;" />
                 </div>
 
                 <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer; width: 100%;">Log Payment</button>
+            </form>
+        </div>
+    }
+    else if (isAdjustments)
+    {
+        <!-- Staff Adjustments Tab Content -->
+        <div style="flex-grow: 1;">
+            <h3>Staff Adjustments Ledger</h3>
+            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th>ID</th>
+                        <th>Employee</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Deduct Payroll</th>
+                        <th>Status</th>
+                        <th>Timestamp (UTC)</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var adj in Model.StaffAdjustments)
+                    {
+                        var staffObj = Model.StaffList.FirstOrDefault(s => s.Id == adj.StaffId);
+                        var staffName = staffObj != null ? $"{staffObj.FirstName} {staffObj.LastName}" : $"ID #{adj.StaffId}";
+                        <tr>
+                            <td>@adj.Id</td>
+                            <td><strong>@staffName</strong></td>
+                            <td>@adj.AdjustmentType</td>
+                            <td>@adj.Amount.ToString("C")</td>
+                            <td>@(adj.DeductFromCurrentPayroll ? "Yes" : "No")</td>
+                            <td>
+                                <span style="color: @(adj.IsPaid ? "green" : "orange"); font-weight: bold;">
+                                    @(adj.IsPaid ? "Paid/Settled" : "Unpaid")
+                                </span>
+                            </td>
+                            <td>@adj.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@adj.Notes</td>
+                            <td>
+                                @if (!adj.IsPaid)
+                                {
+                                    <form method="post" asp-page-handler="DeleteAdjustment" style="display: inline;" onsubmit="return confirm('Delete this adjustment entry?');">
+                                        <input type="hidden" name="id" value="@adj.Id" />
+                                        <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <span style="color: #666; font-size: 0.9em;">Locked</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Adjustment Entry -->
+        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
+            <h3>Log Staff Adjustment</h3>
+            <form method="post" asp-page-handler="CreateAdjustment">
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Employee:</label>
+                    <select name="staffId" style="width: 100%;" required>
+                        @foreach (var staff in Model.StaffList)
+                        {
+                            <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
+                        }
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Adjustment Type:</label>
+                    <select name="adjustmentType" style="width: 100%;">
+                        <option value="Bonus">Bonus</option>
+                        <option value="Commission">Commission</option>
+                        <option value="AdvancePay">Advance Pay (Cash Advance)</option>
+                        <option value="Deduction">Deduction (Other)</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-weight: bold;">Amount ($):</label>
+                    <input type="number" step="0.01" min="0.01" name="amount" required style="width: 100%;" />
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="font-weight: bold;">
+                        <input type="checkbox" name="deductFromCurrentPayroll" value="true" checked />
+                        Deduct from payroll?
+                    </label>
+                    <small style="display: block; color: #666; margin-top: 3px;">
+                        Check this for Cash Advance or Deductions to automatically reduce their net paycheck.
+                    </small>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold;">Notes:</label>
+                    <input type="text" name="notes" placeholder="e.g. Cash advance for tuition" required style="width: 100%;" />
+                </div>
+
+                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer; width: 100%;">Log Adjustment</button>
             </form>
         </div>
     }
@@ -267,9 +375,12 @@
                     if (result.success) {
                         document.getElementById("payTotalHours").value = result.totalHours;
                         document.getElementById("payGrossAmount").value = result.grossAmount;
-                        document.getElementById("payModifiers").value = result.commission;
+                        
+                        let modifierVal = result.commission - result.deductions;
+                        document.getElementById("payModifiers").value = modifierVal.toFixed(2);
                         document.getElementById("payNetAmount").value = result.netAmount;
-                        document.getElementById("payNotes").value = `Includes $${result.commission.toFixed(2)} Net Upgrade Commission modifiers`;
+                        
+                        document.getElementById("payNotes").value = `Includes ₱${result.commission.toFixed(2)} commissions & -₱${result.deductions.toFixed(2)} deductions`;
                         alert("Calculations computed! Form populated.");
                     } else {
                         alert("Failed to compute payroll stats: " + result.message);
