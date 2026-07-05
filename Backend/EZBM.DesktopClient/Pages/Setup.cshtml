@@ -1,0 +1,154 @@
+@page
+@model EZBM.DesktopClient.Pages.SetupModel
+@{
+    Layout = null; // No layout for setup
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EZBM Onboarding & Initial Setup</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .setup-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 450px;
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 10px;
+        }
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #ddd;
+            padding-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #444;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-submit {
+            background-color: #0056b3;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        .btn-submit:hover {
+            background-color: #004094;
+        }
+        .error-banner {
+            background-color: #fce8e6;
+            color: #c5221f;
+            border: 1px solid #fad2cf;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="setup-container">
+    <h2>EZBM System Onboarding</h2>
+    <p style="text-align: center; color: #666; font-size: 0.9em;">
+        Welcome! It looks like this is the first time running EZBM. Let's configure your initial administrator account and business settings.
+    </p>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="error-banner">
+            <strong>Error:</strong> @Model.ErrorMessage
+        </div>
+    }
+
+    <form method="post">
+        
+        <h3>1. Create Administrator</h3>
+        
+        <div class="form-group">
+            <label>Admin Username:</label>
+            <input type="text" asp-for="AdminUsername" required placeholder="e.g. admin" />
+        </div>
+
+        <div class="form-group">
+            <label>Admin Password:</label>
+            <input type="password" asp-for="AdminPassword" required placeholder="••••••••" />
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>First Name:</label>
+                <input type="text" asp-for="AdminFirstName" required placeholder="Juan" />
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Last Name:</label>
+                <input type="text" asp-for="AdminLastName" required placeholder="Dela Cruz" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Email Address:</label>
+            <input type="email" asp-for="AdminEmail" required placeholder="admin@mybusiness.com" />
+        </div>
+
+        <h3>2. Business Configurations</h3>
+
+        <div class="form-group">
+            <label>Store Name:</label>
+            <input type="text" asp-for="StoreName" required placeholder="e.g. PH Pet Grooming & Supplies" />
+        </div>
+
+        <div class="form-group">
+            <label>Local Currency:</label>
+            <select asp-for="Currency" style="width: 100%;">
+                <option value="PHP">PHP - Philippine Peso (₱)</option>
+                <option value="USD">USD - United States Dollar ($)</option>
+                <option value="SGD">SGD - Singapore Dollar (S$)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit">Complete Setup & Onboard</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -41,10 +41,22 @@ public class LoginModel : PageModel
     #region Handlers
 
     /// <summary>
-    /// Handles GET requests for the Login page.
+    /// Handles GET requests for the Login page and redirects to onboarding if database is empty.
     /// </summary>
-    public void OnGet()
+    public async Task<IActionResult> OnGetAsync()
     {
+        using EZBM.Core.Data.AppDbContext context = new();
+        if (!await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(context.Staff))
+        {
+            return RedirectToPage("/Setup");
+        }
+
+        if (TempData.TryGetValue("SuccessMessage", out var val) && val is string msg)
+        {
+            SuccessMessage = msg;
+        }
+
+        return Page();
     }
 
 
