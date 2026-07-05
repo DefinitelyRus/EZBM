@@ -105,6 +105,6 @@ Backend/EZBM.Tests/git_version.txt
 Backend/EZBM.Tests/git_status_unsandboxed.txt
 Backend/EZBM.Tests/git_status.txt
 Backend/EZBM.Tests/git_log.txt
-Backend/EZBM.Tests/Results.md
-Backend/EZBM.Tests/results.log
+Backend/Results.md
+Backend/results.log
 /.dotnet_home
