@@ -1,12 +1,12 @@
 @page
 @model EZBM.DesktopClient.Pages.StaffModel
-@using EZBM.Core.Entities
 @{
-    ViewData["Title"] = "Staff Management";
-    bool isEditing = Model.EditingStaff is not null;
+    ViewData["Title"] = "Staff Directory & Roles Matrix";
+    bool isDirectory = Model.ActiveTab == "directory" || string.IsNullOrEmpty(Model.ActiveTab);
+    bool isRoles = Model.ActiveTab == "roles";
 }
 
-<h2>Page 5: Staff Management</h2>
+<h2>Page 5: Staff Management & Roles Matrix</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
@@ -22,177 +22,324 @@
     </div>
 }
 
+<!-- Tab Headers -->
+<div style="margin-bottom: 20px; display: flex; gap: 0;">
+    <a href="/Staff?tab=directory" style="padding: 10px; font-weight: @(isDirectory ? "bold" : "normal"); border: 1px solid #000; background-color: @(isDirectory ? "#eee" : "#fff"); text-decoration: none;">
+        Staff Directory
+    </a>
+    <a href="/Staff?tab=roles" style="padding: 10px; font-weight: @(isRoles ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isRoles ? "#eee" : "#fff"); text-decoration: none;">
+        Security Roles Matrix
+    </a>
+</div>
+
 <div style="display: flex; gap: 40px; align-items: flex-start;">
-    <!-- Directory Table Section -->
-    <div style="flex-grow: 1;">
-        <h3>Staff Profile Directory</h3>
-        
-        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background-color: #eee;">
-                    <th>ID</th>
-                    <th>Username</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Position</th>
-                    <th>Pay Frequency</th>
-                    <th>Pay Rate</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var staff in Model.StaffList)
-                {
-                    <tr>
-                        <td>@staff.Id</td>
-                        <td><strong>@staff.Username</strong></td>
-                        <td>@staff.FirstName @staff.LastName</td>
-                        <td>@staff.Email</td>
-                        <td>@staff.PhoneNumber</td>
-                        <td>@(staff.Position ?? "Staff")</td>
-                        <td>@staff.PayFrequency</td>
-                        <td>@staff.PayRate.ToString("C")</td>
-                        <td>
-                            <a href="/Staff?action=edit&id=@staff.Id">Edit</a>
-                            |
-                            <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
-                                <input type="hidden" name="id" value="@staff.Id" />
-                                <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                            </form>
-                        </td>
+    @if (isDirectory)
+    {
+        <!-- Tab 1: Staff Directory -->
+        <div style="flex-grow: 1;">
+            <h3>Active Staff Profiles</h3>
+            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Position</th>
+                        <th>Assigned Roles</th>
+                        <th>Pay Rate</th>
+                        <th>Comm. Rate</th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var staff in Model.StaffList)
+                    {
+                        <tr>
+                            <td>@staff.Id</td>
+                            <td><strong>@staff.FirstName @staff.LastName</strong></td>
+                            <td>@staff.Username</td>
+                            <td>@staff.Email</td>
+                            <td>@staff.PhoneNumber</td>
+                            <td>@(staff.Position ?? "Staff")</td>
+                            <td>
+                                @if (staff.Roles.Count == 0)
+                                {
+                                    <span style="color: #888; font-style: italic;">None</span>
+                                }
+                                else
+                                {
+                                    @string.Join(", ", staff.Roles.Select(r => r.Name))
+                                }
+                            </td>
+                            <td>@staff.PayRate.ToString("C") (@staff.PayFrequency)</td>
+                            <td>@(staff.CommissionRate.HasValue ? staff.CommissionRate.Value.ToString("F2") : "1.00 (Default)")</td>
+                            <td>
+                                <a href="/Staff?action=edit&id=@staff.Id&tab=directory">Edit</a>
+                                |
+                                <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                    <input type="hidden" name="id" value="@staff.Id" />
+                                    <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Add / Edit Profile Workspace -->
-    <div style="width: 320px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-        @if (isEditing)
-        {
-            <h3>Edit Staff Profile (ID: @Model.EditingStaff!.Id)</h3>
-            <form method="post" asp-page-handler="Update">
-                <input type="hidden" name="id" value="@Model.EditingStaff.Id" />
-                
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Username:</label>
-                    <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%;" />
-                </div>
+        <!-- Add or Edit Side Panel -->
+        <div style="width: 350px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9; box-sizing: border-box;">
+            @if (Model.EditingStaff is not null)
+            {
+                <h3>Edit Employee Details</h3>
+                <form method="post" asp-page-handler="Update">
+                    <input type="hidden" name="id" value="@Model.EditingStaff.Id" />
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Username:</label>
+                        <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%;" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Password:</label>
-                    <input type="text" name="password" value="@Model.EditingStaff.Password" style="width: 100%;" />
-                </div>
-                
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">First Name:</label>
-                    <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%;" />
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Password (blank to keep same):</label>
+                        <input type="text" name="password" style="width: 100%;" placeholder="••••••••" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Last Name:</label>
-                    <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%;" />
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">First Name:</label>
+                        <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%;" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Email:</label>
-                    <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%;" />
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Last Name:</label>
+                        <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%;" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Phone Number:</label>
-                    <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%;" />
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Email:</label>
+                        <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%;" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Position/Role:</label>
-                    <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%;" />
-                </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Phone:</label>
+                        <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%;" />
+                    </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Pay Frequency:</label>
-                    <select name="payFrequency" style="width: 100%;">
-                        @foreach (Staff.Frequency freq in Enum.GetValues<Staff.Frequency>())
-                        {
-                            @if (Model.EditingStaff.PayFrequency == freq)
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Position/Role:</label>
+                        <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Pay Frequency:</label>
+                        <select name="payFrequency" style="width: 100%;">
+                            @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
-                                <option value="@freq" selected>@freq</option>
+                                @if (Model.EditingStaff.PayFrequency == freq)
+                                {
+                                    <option value="@freq" selected>@freq</option>
+                                }
+                                else
+                                {
+                                    <option value="@freq">@freq</option>
+                                }
                             }
-                            else
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Commission Rate Override:</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" value="@Model.EditingStaff.CommissionRate" style="width: 100%;" />
+                        <small style="color: #666;">Leave blank for default multiplier (1.0)</small>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold;">Security Roles (Multi-select):</label>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px;">
+                            @foreach (var role in Model.RolesList)
+                            {
+                                bool isAssigned = Model.EditingStaff.Roles.Any(r => r.Id == role.Id);
+                                @if (isAssigned)
+                                {
+                                    <option value="@role.Id" selected>@role.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@role.Id">@role.Name</option>
+                                }
+                            }
+                        </select>
+                        <small style="color:#666;">Hold Ctrl key to select multiple roles.</small>
+                    </div>
+
+                    <button type="submit" style="background-color: blue; color: white; padding: 5px 10px; font-weight: bold; cursor: pointer;">Update Profile</button>
+                    <a href="/Staff?tab=directory" style="margin-left: 10px;">Cancel</a>
+                </form>
+            }
+            else
+            {
+                <h3>Add New Employee</h3>
+                <form method="post" asp-page-handler="Create">
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Username:</label>
+                        <input type="text" name="username" required style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Password:</label>
+                        <input type="text" name="password" style="width: 100%;" />
+                    </div>
+                    
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">First Name:</label>
+                        <input type="text" name="firstName" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Last Name:</label>
+                        <input type="text" name="lastName" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Email:</label>
+                        <input type="email" name="email" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Phone Number:</label>
+                        <input type="text" name="phoneNumber" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Position/Role:</label>
+                        <input type="text" name="position" style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Pay Frequency:</label>
+                        <select name="payFrequency" style="width: 100%;">
+                            @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
                                 <option value="@freq">@freq</option>
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%;" />
+                    </div>
+
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-weight: bold;">Commission Rate Override:</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" style="width: 100%;" />
+                        <small style="color: #666;">Leave blank for default multiplier (1.0)</small>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold;">Security Roles (Multi-select):</label>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px;">
+                            @foreach (var role in Model.RolesList)
+                            {
+                                <option value="@role.Id">@role.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; cursor: pointer;">Register Employee</button>
+                </form>
+            }
+        </div>
+    }
+    else if (isRoles)
+    {
+        <!-- Tab 2: Security Roles Matrix -->
+        <div style="flex-grow: 1;">
+            <h3>Granular Role Permissions Matrix</h3>
+            
+            @if (Model.RolesList.Count == 0)
+            {
+                <div style="background-color: #ffffcc; padding: 15px; border: 1px solid #aaaa00; margin-bottom: 20px;">
+                    <strong>Notice:</strong> No security roles have been created yet. Add your first role using the form on the right.
+                </div>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="SaveRolePermissions">
+                    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #eee;">
+                                <th>System Action / Permission</th>
+                                @foreach (var role in Model.RolesList)
+                                {
+                                    <th style="text-align: center;">
+                                        @role.Name
+                                        <div style="margin-top: 5px; font-size: 0.8em; font-weight: normal;">
+                                            <button type="submit" asp-page-handler="DeleteRole" asp-route-id="@role.Id" onclick="return confirm('Are you sure you want to delete role @role.Name?');" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer;">Delete Role</button>
+                                        </div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var permissions = new List<string> { "Checkout", "DeleteLogs", "ModifyInventory", "ManagePayroll", "ManageSettings" };
+                            }
+                            @foreach (var perm in permissions)
+                            {
+                                <tr>
+                                    <td><strong>@perm</strong></td>
+                                    @foreach (var role in Model.RolesList)
+                                    {
+                                        var permMap = new Dictionary<string, int>();
+                                        try
+                                        {
+                                            permMap = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(role.PermissionsJson) ?? new Dictionary<string, int>();
+                                        }
+                                        catch { }
+                                        int curVal = permMap.GetValueOrDefault(perm, 0);
+                                        
+                                        <td style="text-align: center;">
+                                            <select name="perm_@(role.Id)_@(perm)" style="padding: 4px;">
+                                                <option value="1" selected="@(curVal == 1)">Allow</option>
+                                                <option value="0" selected="@(curVal == 0)">Default</option>
+                                                <option value="-1" selected="@(curVal == -1)">Deny</option>
+                                            </select>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <button type="submit" style="margin-top: 20px; background-color: blue; color: white; padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 3px;">
+                        Save Permissions Matrix
+                    </button>
+                </form>
+            }
+        </div>
+
+        <!-- Add Custom Role Panel -->
+        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
+            <h3>Create Security Role</h3>
+            <form method="post" asp-page-handler="CreateRole">
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
-                    <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%;" />
-                </div>
-
-                <button type="submit" style="background-color: blue; color: white; padding: 5px 10px; font-weight: bold;">Update Profile</button>
-                <a href="/Staff" style="margin-left: 10px;">Cancel</a>
-            </form>
-        }
-        else
-        {
-            <h3>Add New Employee</h3>
-            <form method="post" asp-page-handler="Create">
-                
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Username:</label>
-                    <input type="text" name="username" required style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Password:</label>
-                    <input type="text" name="password" style="width: 100%;" />
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Role Name:</label>
+                    <input type="text" name="roleName" required placeholder="e.g. Cashier, Auditor" style="width: 100%; padding: 5px;" />
                 </div>
                 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">First Name:</label>
-                    <input type="text" name="firstName" style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Last Name:</label>
-                    <input type="text" name="lastName" style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Email:</label>
-                    <input type="email" name="email" style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Phone Number:</label>
-                    <input type="text" name="phoneNumber" style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Position/Role:</label>
-                    <input type="text" name="position" style="width: 100%;" />
-                </div>
-
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Pay Frequency:</label>
-                    <select name="payFrequency" style="width: 100%;">
-                        @foreach (Staff.Frequency freq in Enum.GetValues<Staff.Frequency>())
-                        {
-                            <option value="@freq">@freq</option>
-                        }
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
-                    <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%;" />
-                </div>
-
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold;">Register Employee</button>
+                <button type="submit" style="background-color: green; color: white; padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 3px; width: 100%;">
+                    Create Role
+                </button>
             </form>
-        }
-    </div>
+        </div>
+    }
 </div>
