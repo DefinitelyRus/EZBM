@@ -27,6 +27,23 @@ Changes:
 
 ## Logs
 
+### 07/06/2026
+
+Implemented comprehensive Razor Pages UI updates including responsive design, shared button/link styling, universal currency/date formatting, interactive pagination/sorting, inventory columns consolidation, inline subtabs navigation, staff permissions radio matrix, and POS checkout term updates.
+
+Changes:
+
+- Added responsive design CSS rules to support sidebar collapsing and overlap mode on narrow screens in `_Layout.cshtml`.
+- Unified all page navigation actions and inputs as styled buttons and inputs.
+- Integrated dynamic store currency symbols and active user date formatting configurations across all dashboard pages.
+- Built a reusable vanilla JavaScript client-side pagination, sorting, and column visibility toggle helper in `_Layout.cshtml` and initialized it on all main data tables.
+- Consolidated catalog columns in `Inventory.cshtml` to combine current and target quantities, and highlighted low stock items in red.
+- Converted page-wide navigation headers in `Logs.cshtml` into inline document subtabs for attendance, payroll, and adjustments.
+- Added a supervisor clock-out button for active shifts, cash drawer reconciliation dialog details, and a drop-down entity filter in the logs page.
+- Rewrote the audit logs details processor in `Logs.cshtml.cs` to translate C# serialized type names into friendly text logs.
+- Merged employee name and position columns, hid detailed columns by default, and replaced the security roles text input with an Allow/Inherit/Deny permissions radio matrix in `Staff.cshtml`.
+- Updated `POS.cshtml` to auto-focus the search bar, sound off Web Audio API synthesizer tones, add quick cart quantity +/- buttons, and accept manual barcode text inputs.
+
 ### 07/05/2026
 
 Updated documentation formatting, ignored generated test files, created API reference guide, and implemented backend refactoring updates including item inheritance, password hashing, setup onboarding, dashboard analytics, payroll calculation helpers, roles permissions matrix, and backup sync.
