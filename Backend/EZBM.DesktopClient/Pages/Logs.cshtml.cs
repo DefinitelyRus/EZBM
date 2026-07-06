@@ -336,7 +336,7 @@ public class LogsModel : PageModel
             Password: supervisorPassword
         );
         var authResult = await AuthenticationService.LoginAsync(loginRequest);
-        if (authResult.Type != Utils.Result.Success)
+        if (authResult.Type != Utils.Result.Success || authResult.Data is null)
         {
             ErrorMessage = "Authentication failed: " + authResult.Message;
             return RedirectToPage("/Logs", new { tab = "attendance" });
@@ -354,7 +354,7 @@ public class LogsModel : PageModel
         var attendance = await context.Attendance
             .Include(a => a.Staff)
             .FirstOrDefaultAsync(a => a.Id == attendanceId);
-        
+
         if (attendance == null || attendance.TimeOut != null)
         {
             ErrorMessage = "Attendance record not found or already clocked out.";
