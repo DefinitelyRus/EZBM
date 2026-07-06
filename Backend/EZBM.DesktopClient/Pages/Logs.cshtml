@@ -1,60 +1,55 @@
 @page
 @model EZBM.DesktopClient.Pages.LogsModel
+@using EZBM.DesktopClient.Helpers
 @{
     ViewData["Title"] = "System Logs & Records";
     bool isAttendance = Model.ActiveTab == "attendance";
+    bool isLedger = Model.ActiveTab == "ledger";
     bool isPayroll = Model.ActiveTab == "payroll";
     bool isAdjustments = Model.ActiveTab == "adjustments";
     bool isActions = Model.ActiveTab == "actions";
 }
 
-<h2>Page 6: Shift Attendance, Payroll & Action Audit Logs</h2>
+<h2>System Logs & Audit Records</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Error:</strong> @Model.ErrorMessage
     </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Success:</strong> @Model.SuccessMessage
     </div>
 }
 
-<!-- Tab Headers -->
-<div style="margin-bottom: 20px; display: flex; gap: 0;">
-    <a href="/Logs?tab=attendance" style="padding: 10px; font-weight: @(isAttendance ? "bold" : "normal"); border: 1px solid #000; background-color: @(isAttendance ? "#eee" : "#fff"); text-decoration: none;">
-        Attendance Ledger
-    </a>
-    <a href="/Logs?tab=payroll" style="padding: 10px; font-weight: @(isPayroll ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isPayroll ? "#eee" : "#fff"); text-decoration: none;">
-        Payroll Records
-    </a>
-    <a href="/Logs?tab=adjustments" style="padding: 10px; font-weight: @(isAdjustments ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isAdjustments ? "#eee" : "#fff"); text-decoration: none;">
-        Staff Adjustments
-    </a>
-    <a href="/Logs?tab=actions" style="padding: 10px; font-weight: @(isActions ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isActions ? "#eee" : "#fff"); text-decoration: none;">
-        Action Audit Logs
-    </a>
+<!-- Google Docs Style Subtabs -->
+<div class="subtabs-container">
+    <a href="/Logs?tab=attendance" class="subtab-item @(isAttendance ? "active" : "")">Attendance Ledger</a>
+    <a href="/Logs?tab=ledger" class="subtab-item @(isLedger ? "active" : "")">Transaction Ledger</a>
+    <a href="/Logs?tab=payroll" class="subtab-item @(isPayroll ? "active" : "")">Payroll Records</a>
+    <a href="/Logs?tab=adjustments" class="subtab-item @(isAdjustments ? "active" : "")">Staff Adjustments</a>
+    <a href="/Logs?tab=actions" class="subtab-item @(isActions ? "active" : "")">Action Audit Logs</a>
 </div>
 
-<div style="display: flex; gap: 40px; align-items: flex-start;">
+<div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
     @if (isAttendance)
     {
         <!-- Attendance Tab Content -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>Attendance Ledger</h3>
-            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <table border="1" cellpadding="5" cellspacing="0" id="attendanceTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
-                        <th>Log ID</th>
+                        <th data-hide-default="true">Log ID</th>
                         <th>Employee</th>
-                        <th>Clock In (UTC)</th>
-                        <th>Clock Out (UTC)</th>
-                        <th>Total Hours</th>
-                        <th>Actions</th>
+                        <th data-date="true">Clock In</th>
+                        <th data-date="true">Clock Out</th>
+                        <th data-numeric="true">Total Hours</th>
+                        <th data-no-sort="true">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -63,15 +58,30 @@
                         var totalHours = log.TimeOut.HasValue ? (log.TimeOut.Value - log.TimeIn).TotalHours : (double?)null;
                         <tr>
                             <td>@log.Id</td>
-                            <td><strong>@log.Staff.FirstName @log.Staff.LastName</strong></td>
-                            <td>@log.TimeIn.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                            <td>@(log.TimeOut?.ToString("yyyy-MM-dd HH:mm:ss") ?? "STILL CLOCKED IN")</td>
+                            <td><strong>@log.Staff.FirstName @log.Staff.LastName</strong> (@log.Staff.Username)</td>
+                            <td>@StateHelper.FormatDate(log.TimeIn, HttpContext, true)</td>
+                            <td>
+                                @if (log.TimeOut.HasValue)
+                                {
+                                    @StateHelper.FormatDate(log.TimeOut.Value, HttpContext, true)
+                                }
+                                else
+                                {
+                                    <span style="color: #38a169; font-weight: bold;">STILL CLOCKED IN</span>
+                                }
+                            </td>
                             <td>@(totalHours.HasValue ? totalHours.Value.ToString("F2") : "N/A")</td>
                             <td>
-                                <form method="post" asp-page-handler="DeleteAttendance" style="display: inline;" onsubmit="return confirm('Delete this attendance entry?');">
-                                    <input type="hidden" name="id" value="@log.Id" />
-                                    <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                                </form>
+                                <div class="action-buttons">
+                                    @if (!log.TimeOut.HasValue)
+                                    {
+                                        <button type="button" class="btn btn-secondary" onclick="promptSupervisorClockOut(@log.Id, @log.Staff.Id, '@log.Staff.FirstName @log.Staff.LastName')" style="padding: 2px 6px; font-size: 0.85em; background-color: #e2e8f0; color: #4a5568;">End Shift (Supervisor)</button>
+                                    }
+                                    <form method="post" asp-page-handler="DeleteAttendance" style="display: inline;" onsubmit="return confirm('Delete this attendance entry?');">
+                                        <input type="hidden" name="id" value="@log.Id" />
+                                        <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -80,12 +90,12 @@
         </div>
 
         <!-- Add Attendance Entry -->
-        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-            <h3>Add Attendance Entry</h3>
+        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="margin-top:0;">Add Attendance Entry</h3>
             <form method="post" asp-page-handler="CreateAttendance">
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Employee:</label>
-                    <select name="staffId" style="width: 100%;" required>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
+                    <select name="staffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
                         @foreach (var staff in Model.StaffList)
                         {
                             <option value="@staff.Id">@staff.FirstName @staff.LastName (@staff.Username)</option>
@@ -93,39 +103,87 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Clock In Time:</label>
-                    <input type="datetime-local" name="timeIn" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock In Time:</label>
+                    <input type="datetime-local" name="timeIn" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Clock Out Time (Optional):</label>
-                    <input type="datetime-local" name="timeOut" style="width: 100%;" />
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock Out Time (Optional):</label>
+                    <input type="datetime-local" name="timeOut" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer;">Save Log</button>
+                <button type="submit" class="btn btn-success" style="width:100%;">Save Log Entry</button>
             </form>
+        </div>
+    }
+    else if (isLedger)
+    {
+        <!-- Transaction Ledger Content -->
+        <div style="flex-grow: 1; min-width: 600px;">
+            <h3>Transaction Ledger</h3>
+            
+            <!-- Type Filter -->
+            <div style="margin-bottom: 15px;">
+                <label for="ledgerTypeFilter" style="font-weight: bold; margin-right: 8px;">Filter by Type:</label>
+                <select id="ledgerTypeFilter" onchange="filterTransactionLedger(this.value)" style="padding: 6px; border-radius: 4px; border: 1px solid #cbd5e0;">
+                    <option value="All">All Types</option>
+                    <option value="Income">Income (Sales/Inflows)</option>
+                    <option value="Expense">Expense (Outflows)</option>
+                    <option value="Correction">Correction</option>
+                </select>
+            </div>
+
+            <table border="1" cellpadding="5" cellspacing="0" id="transactionTable" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th data-hide-default="true">Tx ID</th>
+                        <th>Type</th>
+                        <th data-numeric="true">Amount</th>
+                        <th data-date="true">Timestamp</th>
+                        <th>Cashier</th>
+                        <th>Payment Method</th>
+                        <th data-hide-default="true">Invoice ID</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var tx in Model.TransactionLedger)
+                    {
+                        <tr data-tx-type="@tx.TransactionType.ToString()">
+                            <td>@tx.Id</td>
+                            <td><strong style="color: @(tx.TransactionType == EZBM.Core.Entities.Transaction.Type.Income ? "green" : (tx.TransactionType == EZBM.Core.Entities.Transaction.Type.Expense ? "red" : "orange"))">@tx.TransactionType</strong></td>
+                            <td>@StateHelper.FormatCurrency(tx.Amount)</td>
+                            <td>@StateHelper.FormatDate(tx.Timestamp, HttpContext, true)</td>
+                            <td><strong>@tx.Staff.FirstName @tx.Staff.LastName</strong></td>
+                            <td>@(tx.PaymentMethod?.ToString() ?? "N/A")</td>
+                            <td>@(tx.InvoiceId ?? "N/A")</td>
+                            <td>@tx.Notes</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     }
     else if (isPayroll)
     {
         <!-- Payroll Tab Content -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>Payroll Records History</h3>
-            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <table border="1" cellpadding="5" cellspacing="0" id="payrollTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
                         <th>Invoice ID</th>
                         <th>Employee</th>
-                        <th>Period Start</th>
-                        <th>Period End</th>
-                        <th>Hours</th>
-                        <th>Gross Pay</th>
-                        <th>Modifiers</th>
-                        <th>Net Paid</th>
-                        <th>Pay Date</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
+                        <th data-date="true">Period Start</th>
+                        <th data-date="true">Period End</th>
+                        <th data-numeric="true">Hours</th>
+                        <th data-numeric="true">Gross Pay</th>
+                        <th data-numeric="true">Modifiers</th>
+                        <th data-numeric="true">Net Paid</th>
+                        <th data-date="true">Pay Date</th>
+                        <th data-hide-default="true">Notes</th>
+                        <th data-no-sort="true">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -133,20 +191,22 @@
                     {
                         <tr>
                             <td>@pay.InvoiceId</td>
-                            <td><strong>@pay.Staff.FirstName @pay.Staff.LastName</strong></td>
-                            <td>@pay.PeriodStart.ToShortDateString()</td>
-                            <td>@pay.PeriodEnd.ToShortDateString()</td>
+                            <td><strong>@pay.Staff.FirstName @pay.Staff.LastName</strong> (@pay.Staff.Username)</td>
+                            <td>@StateHelper.FormatDate(pay.PeriodStart, HttpContext)</td>
+                            <td>@StateHelper.FormatDate(pay.PeriodEnd, HttpContext)</td>
                             <td>@pay.TotalHours.ToString("F1")</td>
-                            <td>@pay.GrossAmount.ToString("C")</td>
-                            <td>@pay.Modifiers.ToString("C")</td>
-                            <td><strong>@pay.Amount.ToString("C")</strong></td>
-                            <td>@pay.Timestamp.ToShortDateString()</td>
+                            <td>@StateHelper.FormatCurrency(pay.GrossAmount)</td>
+                            <td>@StateHelper.FormatCurrency(pay.Modifiers)</td>
+                            <td><strong>@StateHelper.FormatCurrency(pay.Amount)</strong></td>
+                            <td>@StateHelper.FormatDate(pay.Timestamp, HttpContext)</td>
                             <td>@pay.Notes</td>
                             <td>
-                                <form method="post" asp-page-handler="DeletePayroll" style="display: inline;" onsubmit="return confirm('Delete this payroll entry?');">
-                                    <input type="hidden" name="id" value="@pay.Id" />
-                                    <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                                </form>
+                                <div class="action-buttons">
+                                    <form method="post" asp-page-handler="DeletePayroll" style="display: inline;" onsubmit="return confirm('Delete this payroll entry?');">
+                                        <input type="hidden" name="id" value="@pay.Id" />
+                                        <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -155,12 +215,12 @@
         </div>
 
         <!-- Add Payroll Entry -->
-        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-            <h3>Log Payroll Payment</h3>
+        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="margin-top:0;">Log Payroll Payment</h3>
             <form method="post" asp-page-handler="CreatePayroll" id="payrollForm">
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Employee:</label>
-                    <select name="staffId" id="payStaffId" style="width: 100%;" required>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
+                    <select name="staffId" id="payStaffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
                         @foreach (var staff in Model.StaffList)
                         {
                             <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
@@ -168,74 +228,74 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Period Start:</label>
-                    <input type="date" name="periodStart" id="payPeriodStart" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period Start:</label>
+                    <input type="date" name="periodStart" id="payPeriodStart" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Period End:</label>
-                    <input type="date" name="periodEnd" id="payPeriodEnd" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period End:</label>
+                    <input type="date" name="periodEnd" id="payPeriodEnd" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px; text-align: center;">
-                    <button type="button" onclick="autoCalculatePayroll()" style="background-color: #007bff; color: white; border: none; padding: 6px 12px; font-weight: bold; cursor: pointer; width: 100%;">
+                    <button type="button" onclick="autoCalculatePayroll()" class="btn btn-primary" style="width: 100%;">
                         ⚡ Auto-Calculate Stats
                     </button>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Total Hours:</label>
-                    <input type="number" step="0.1" min="0" name="totalHours" id="payTotalHours" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Total Hours:</label>
+                    <input type="number" step="0.1" min="0" name="totalHours" id="payTotalHours" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Gross Amount ($):</label>
-                    <input type="number" step="0.01" min="0" name="grossAmount" id="payGrossAmount" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Gross Amount:</label>
+                    <input type="number" step="0.01" min="0" name="grossAmount" id="payGrossAmount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Net Modifiers ($):</label>
-                    <input type="number" step="0.01" name="modifiers" id="payModifiers" value="0.00" required style="width: 100%;" />
-                    <small style="color: #666;">(Commissions & Bonuses - Deductions)</small>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Modifiers:</label>
+                    <input type="number" step="0.01" name="modifiers" id="payModifiers" value="0.00" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">(Commissions Override minus Deductions)</small>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Net Paid ($):</label>
-                    <input type="number" step="0.01" min="0" name="netAmount" id="payNetAmount" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Paid:</label>
+                    <input type="number" step="0.01" min="0" name="netAmount" id="payNetAmount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Payment Date:</label>
-                    <input type="date" name="payDate" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payment Date:</label>
+                    <input type="date" name="payDate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Notes:</label>
-                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Regular pay" style="width: 100%;" />
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Notes:</label>
+                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Monthly salary payout" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer; width: 100%;">Log Payment</button>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Log Payment</button>
             </form>
         </div>
     }
     else if (isAdjustments)
     {
         <!-- Staff Adjustments Tab Content -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>Staff Adjustments Ledger</h3>
-            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <table border="1" cellpadding="5" cellspacing="0" id="adjustmentsTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
-                        <th>ID</th>
+                        <th data-hide-default="true">ID</th>
                         <th>Employee</th>
                         <th>Type</th>
-                        <th>Amount</th>
+                        <th data-numeric="true">Amount</th>
                         <th>Deduct Payroll</th>
                         <th>Status</th>
-                        <th>Timestamp (UTC)</th>
-                        <th>Notes</th>
-                        <th>Actions</th>
+                        <th data-date="true">Timestamp</th>
+                        <th data-hide-default="true">Notes</th>
+                        <th data-no-sort="true">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -247,27 +307,29 @@
                             <td>@adj.Id</td>
                             <td><strong>@staffName</strong></td>
                             <td>@adj.AdjustmentType</td>
-                            <td>@adj.Amount.ToString("C")</td>
+                            <td>@StateHelper.FormatCurrency(adj.Amount)</td>
                             <td>@(adj.DeductFromCurrentPayroll ? "Yes" : "No")</td>
                             <td>
-                                <span style="color: @(adj.IsPaid ? "green" : "orange"); font-weight: bold;">
-                                    @(adj.IsPaid ? "Paid/Settled" : "Unpaid")
+                                <span style="color: @(adj.IsPaid ? "#38a169" : "#dd6b20"); font-weight: bold;">
+                                    @(adj.IsPaid ? "Paid / Settled" : "Unpaid Balance")
                                 </span>
                             </td>
-                            <td>@adj.Timestamp.ToString("yyyy-MM-dd HH:mm")</td>
+                            <td>@StateHelper.FormatDate(adj.Timestamp, HttpContext)</td>
                             <td>@adj.Notes</td>
                             <td>
-                                @if (!adj.IsPaid)
-                                {
-                                    <form method="post" asp-page-handler="DeleteAdjustment" style="display: inline;" onsubmit="return confirm('Delete this adjustment entry?');">
-                                        <input type="hidden" name="id" value="@adj.Id" />
-                                        <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span style="color: #666; font-size: 0.9em;">Locked</span>
-                                }
+                                <div class="action-buttons">
+                                    @if (!adj.IsPaid)
+                                    {
+                                        <form method="post" asp-page-handler="DeleteAdjustment" style="display: inline;" onsubmit="return confirm('Delete this adjustment entry?');">
+                                            <input type="hidden" name="id" value="@adj.Id" />
+                                            <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #a0aec0; font-size: 0.9em;">Locked</span>
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -276,12 +338,12 @@
         </div>
 
         <!-- Add Adjustment Entry -->
-        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-            <h3>Log Staff Adjustment</h3>
+        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="margin-top:0;">Log Staff Adjustment</h3>
             <form method="post" asp-page-handler="CreateAdjustment">
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Employee:</label>
-                    <select name="staffId" style="width: 100%;" required>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
+                    <select name="staffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
                         @foreach (var staff in Model.StaffList)
                         {
                             <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
@@ -289,9 +351,9 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Adjustment Type:</label>
-                    <select name="adjustmentType" style="width: 100%;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Adjustment Type:</label>
+                    <select name="adjustmentType" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                         <option value="Bonus">Bonus</option>
                         <option value="Commission">Commission</option>
                         <option value="AdvancePay">Advance Pay (Cash Advance)</option>
@@ -299,39 +361,39 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Amount ($):</label>
-                    <input type="number" step="0.01" min="0.01" name="amount" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Amount (@StateHelper.GetCurrencySymbol()):</label>
+                    <input type="number" step="0.01" min="0.01" name="amount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold;">
+                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" name="deductFromCurrentPayroll" value="true" checked />
                         Deduct from payroll?
                     </label>
-                    <small style="display: block; color: #666; margin-top: 3px;">
-                        Check this for Cash Advance or Deductions to automatically reduce their net paycheck.
+                    <small style="display: block; color: #718096; margin-top: 3px;">
+                        Check for Cash Advances to automatically deduct from paycheck.
                     </small>
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Notes:</label>
-                    <input type="text" name="notes" placeholder="e.g. Cash advance for tuition" required style="width: 100%;" />
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Notes:</label>
+                    <input type="text" name="notes" placeholder="e.g. Tuition cash advance" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; border: none; cursor: pointer; width: 100%;">Log Adjustment</button>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Log Adjustment</button>
             </form>
         </div>
     }
     else if (isActions)
     {
         <!-- Action Audit Logs Tab -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>System Action Audit Logs</h3>
-            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <table border="1" cellpadding="5" cellspacing="0" id="actionsTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
-                        <th>Timestamp (UTC)</th>
+                        <th data-date="true">Timestamp</th>
                         <th>Action Type</th>
                         <th>Operator</th>
                         <th>Details</th>
@@ -341,8 +403,8 @@
                     @foreach (var log in Model.ActionLogs)
                     {
                         <tr>
-                            <td>@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</td>
-                            <td><span style="font-weight: bold;">@log.ActionType</span></td>
+                            <td>@StateHelper.FormatDate(log.Timestamp, HttpContext, true, true)</td>
+                            <td><strong style="color: #2b6cb0;">@log.ActionType</strong></td>
                             <td><strong>@log.OperatorUsername</strong></td>
                             <td>@log.Details</td>
                         </tr>
@@ -353,7 +415,165 @@
     }
 </div>
 
+<!-- Supervisor Force Clock-Out Modal Dialog -->
+<div id="supervisorClockOutModal" style="display: none; position: fixed; z-index: 2500; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+    <div style="background-color: white; padding: 25px; border-radius: 8px; width: 420px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+        <h3 style="margin-top: 0; color: #c53030;">Supervisor Force Clock-Out</h3>
+        <p style="font-size: 0.95em; color: #4a5568;">End shift for <strong id="supTargetEmployee">Employee</strong>. Supervisor credentials are required.</p>
+        
+        <form method="post" asp-page-handler="SupervisorClockOut" id="supervisorClockOutForm">
+            <input type="hidden" name="attendanceId" id="supAttendanceId" value="0" />
+            <input type="hidden" name="expectedCash" id="supExpectedCash" value="0" />
+            <input type="hidden" name="actualCash" id="supActualCash" value="0" />
+            <input type="hidden" name="reconciliationNotes" id="supNotes" value="" />
+            
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Username:</label>
+                <input type="text" name="supervisorUsername" id="supervisorUsernameInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Password:</label>
+                <input type="password" name="supervisorPassword" id="supervisorPasswordInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+            </div>
+
+            <div style="background: #fffaf0; padding: 12px; border-radius: 6px; border: 1px solid #feebc8; margin-bottom: 12px; font-weight: bold;">
+                Expected Drawer Cash: <span id="supExpectedText">0.00</span>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Actual Drawer Cash:</label>
+                <input type="number" step="0.01" min="0" id="supActualCashInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" oninput="calculateSupervisorDiscrepancy()" />
+            </div>
+
+            <div style="margin-bottom: 12px; display: none;" id="supDiscrepancyBox">
+                Discrepancy: <strong id="supDiscrepancyText">0.00</strong>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Reason / Discrepancy Notes:</label>
+                <textarea id="supReconciliationNotesInput" style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"></textarea>
+            </div>
+
+            <div style="text-align: right; display: flex; gap: 10px;">
+                <button type="button" onclick="closeSupervisorModal()" class="btn" style="flex: 1;">Cancel</button>
+                <button type="button" onclick="submitSupervisorClockOut()" class="btn btn-danger" style="flex: 1;">Verify & Clock Out</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 @section Scripts {
+    <!-- DataTable hooks -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const attTable = document.getElementById("attendanceTable");
+            if (attTable) initCommonTable(attTable);
+
+            const txTable = document.getElementById("transactionTable");
+            if (txTable) initCommonTable(txTable);
+
+            const payTable = document.getElementById("payrollTable");
+            if (payTable) initCommonTable(payTable);
+
+            const adjTable = document.getElementById("adjustmentsTable");
+            if (adjTable) initCommonTable(adjTable);
+
+            const actTable = document.getElementById("actionsTable");
+            if (actTable) initCommonTable(actTable);
+        });
+    </script>
+
+    @if (isLedger)
+    {
+        <script>
+            function filterTransactionLedger(type) {
+                const table = document.getElementById("transactionTable");
+                const tbody = table.querySelector("tbody");
+                const rows = tbody.querySelectorAll("tr");
+                rows.forEach(row => {
+                    const rowType = row.getAttribute("data-tx-type");
+                    if (type === "All" || rowType === type) {
+                        row.setAttribute("data-filtered", "false");
+                    } else {
+                        row.setAttribute("data-filtered", "true");
+                    }
+                });
+                table.dispatchEvent(new Event("filterRefreshed"));
+            }
+        </script>
+    }
+
+    @if (isAttendance)
+    {
+        <script>
+            let currentAttendanceId = 0;
+            let currentStaffId = 0;
+            let supervisorExpectedCash = 0;
+
+            async function promptSupervisorClockOut(attendanceId, staffId, employeeName) {
+                currentAttendanceId = attendanceId;
+                currentStaffId = staffId;
+                
+                try {
+                    const response = await fetch(`/Logs?handler=GetShiftCash&staffId=${staffId}`);
+                    const data = await response.json();
+                    if (data.success) {
+                        supervisorExpectedCash = data.expectedCash;
+                        document.getElementById("supExpectedText").textContent = window.CurrencySymbol + supervisorExpectedCash.toFixed(2);
+                        document.getElementById("supTargetEmployee").textContent = employeeName;
+                        document.getElementById("supAttendanceId").value = attendanceId;
+                        document.getElementById("supervisorUsernameInput").value = "";
+                        document.getElementById("supervisorPasswordInput").value = "";
+                        document.getElementById("supActualCashInput").value = "";
+                        document.getElementById("supReconciliationNotesInput").value = "";
+                        document.getElementById("supDiscrepancyBox").style.display = "none";
+                        document.getElementById("supervisorClockOutModal").style.display = "flex";
+                    } else {
+                        alert("Failed to retrieve employee shift cash data: " + data.message);
+                    }
+                } catch(e) {
+                    alert("Error loading shift cash details: " + e.message);
+                }
+            }
+
+            function closeSupervisorModal() {
+                document.getElementById("supervisorClockOutModal").style.display = "none";
+            }
+
+            function calculateSupervisorDiscrepancy() {
+                const val = parseFloat(document.getElementById("supActualCashInput").value) || 0;
+                const diff = val - supervisorExpectedCash;
+                
+                const discText = document.getElementById("supDiscrepancyText");
+                const discBox = document.getElementById("supDiscrepancyBox");
+                
+                discBox.style.display = "block";
+                discText.textContent = (diff >= 0 ? "+" : "") + window.CurrencySymbol + diff.toFixed(2);
+                discText.style.color = diff === 0 ? "green" : (diff > 0 ? "blue" : "red");
+            }
+
+            function submitSupervisorClockOut() {
+                const actualVal = parseFloat(document.getElementById("supActualCashInput").value) || 0;
+                const notes = document.getElementById("supReconciliationNotesInput").value;
+                const user = document.getElementById("supervisorUsernameInput").value;
+                const pass = document.getElementById("supervisorPasswordInput").value;
+
+                if (!user || !pass) {
+                    alert("Please input supervisor username and password credentials.");
+                    return;
+                }
+                
+                document.getElementById("supExpectedCash").value = supervisorExpectedCash;
+                document.getElementById("supActualCash").value = actualVal;
+                document.getElementById("supNotes").value = notes;
+                
+                closeSupervisorModal();
+                document.getElementById("supervisorClockOutForm").submit();
+            }
+        </script>
+    }
+
     @if (isPayroll)
     {
         <script>
@@ -392,3 +612,4 @@
         </script>
     }
 }
+

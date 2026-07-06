@@ -3,9 +3,20 @@
 @{
     Staff? activeStaff = await StateHelper.GetActiveStaffAsync(Context);
     bool isClockedIn = false;
+    bool soundAlertsEnabled = true;
     if (activeStaff is not null)
     {
         isClockedIn = await StateHelper.IsClockedInAsync(activeStaff.Id);
+        try
+        {
+            string userSettingsJson = EZBM.Core.Services.SettingsService.LoadUserSettings(activeStaff.Id);
+            var userPrefs = System.Text.Json.JsonSerializer.Deserialize<EZBM.DesktopClient.Pages.SettingsModel.UserPreferences>(userSettingsJson);
+            if (userPrefs != null)
+            {
+                soundAlertsEnabled = userPrefs.SoundAlertsEnabled;
+            }
+        }
+        catch {}
     }
 }
 <!DOCTYPE html>
@@ -14,71 +25,774 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EZBM Testing Platform</title>
+    <style>
+        /* Modern font & body resets */
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            color: #2d3748;
+            background-color: #f7fafc;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Responsive grid/flex layout */
+        .layout-container {
+            display: flex;
+            min-height: 600px;
+            margin: 0 auto;
+            transition: max-width 0.3s ease;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+
+        /* Desktop (>= 1600px) layout */
+        @@media (min-width: 1600px) {
+            .layout-container {
+                max-width: 1550px;
+            }
+            .mobile-only {
+                display: none !important;
+            }
+            .desktop-only {
+                display: block !important;
+            }
+            nav.main-nav {
+                width: 220px;
+                border-right: 1px solid #e2e8f0;
+                padding-right: 20px;
+                margin-right: 25px;
+                transition: margin-left 0.3s ease, opacity 0.3s ease;
+                display: block;
+            }
+            .layout-container.sidebar-collapsed nav.main-nav {
+                margin-left: -265px;
+                opacity: 0;
+                pointer-events: none;
+            }
+        }
+
+        /* Tablet/Mobile (< 1600px) layout */
+        @@media (max-width: 1599.98px) {
+            .desktop-only {
+                display: none !important;
+            }
+            .mobile-only {
+                display: block !important;
+            }
+            .layout-container {
+                max-width: 100%;
+            }
+            nav.main-nav {
+                position: fixed;
+                left: -260px;
+                top: 0;
+                width: 220px;
+                height: 100vh;
+                background: white;
+                z-index: 1050;
+                box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+                padding: 20px;
+                margin-right: 0;
+                transition: left 0.3s ease;
+                box-sizing: border-box;
+            }
+            .layout-container.sidebar-open nav.main-nav {
+                left: 0;
+            }
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                background: rgba(0,0,0,0.4);
+                z-index: 1040;
+            }
+            .layout-container.sidebar-open .sidebar-backdrop {
+                display: block;
+            }
+        }
+
+        /* Shared Button & Link Styling */
+        .btn, button, input[type="submit"], input[type="button"] {
+            padding: 7px 14px;
+            font-family: inherit;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid #d2d6dc;
+            background-color: white;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn:hover, button:hover, input[type="submit"]:hover {
+            background-color: #f9fafb;
+            border-color: #b5bdc9;
+            color: #111827;
+        }
+        .btn:disabled, button:disabled, input[type="submit"]:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            border-color: #e5e7eb;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .btn-primary {
+            background-color: #3182ce;
+            color: white;
+            border-color: #3182ce;
+        }
+        .btn-primary:hover {
+            background-color: #2b6cb0;
+            border-color: #2b6cb0;
+            color: white;
+        }
+        .btn-success {
+            background-color: #38a169;
+            color: white;
+            border-color: #38a169;
+        }
+        .btn-success:hover {
+            background-color: #2f855a;
+            border-color: #2f855a;
+            color: white;
+        }
+        .btn-danger {
+            background-color: #e53e3e;
+            color: white;
+            border-color: #e53e3e;
+        }
+        .btn-danger:hover {
+            background-color: #c53030;
+            border-color: #c53030;
+            color: white;
+        }
+        .btn-secondary {
+            background-color: #718096;
+            color: white;
+            border-color: #718096;
+        }
+        .btn-secondary:hover {
+            background-color: #4a5568;
+            border-color: #4a5568;
+            color: white;
+        }
+
+        /* Action buttons hover behavior */
+        table tbody tr .action-buttons {
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+        }
+        table tbody tr:hover .action-buttons {
+            opacity: 1;
+        }
+
+        /* Google Docs style subtabs */
+        .subtabs-container {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+        .subtab-item {
+            padding: 8px 16px;
+            font-weight: 500;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            border-bottom: none;
+            margin-bottom: -2px;
+        }
+        .subtab-item:hover {
+            background-color: #edf2f7;
+            color: #2d3748;
+        }
+        .subtab-item.active {
+            font-weight: 600;
+            color: #3182ce;
+            background-color: #fff;
+            border-color: #e2e8f0;
+            border-bottom: 2px solid #fff;
+        }
+
+        /* Sticky nav styling */
+        .sticky-nav {
+            position: sticky;
+            top: 20px;
+            align-self: flex-start;
+        }
+
+        /* Base table updates */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #edf2f7;
+        }
+        th {
+            background-color: #f7fafc;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        tr:hover {
+            background-color: #f8fafc;
+        }
+    </style>
 </head>
 <body>
-    <header style="border-bottom: 1px solid #000; padding: 10px; margin-bottom: 20px;">
+    <header style="background-color: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <strong>@(EZBM.Core.Services.SettingsService.LoadSettings().StoreName) Testing Platform</strong>
+            <div style="display: flex; align-items: center;">
+                <button type="button" id="mobileSidebarToggleBtn" onclick="toggleMobileSidebar()" class="btn mobile-only" style="margin-right: 15px;">☰ Menu</button>
+                <strong style="font-size: 1.2em; color: #2b6cb0;">@(EZBM.Core.Services.SettingsService.LoadSettings().StoreName) Platform</strong>
             </div>
             <div>
                 @if (activeStaff is not null)
                 {
-                    <span>Logged in as: <strong>@activeStaff.Username</strong> (@(activeStaff.Position ?? "Staff"))</span>
-                    <span> | </span>
-                    <form method="post" asp-page="/Index" asp-page-handler="ToggleAttendance" style="display: inline;">
+                    <span style="font-size: 0.95em;">Logged in as: <strong>@activeStaff.Username</strong> (@(activeStaff.Position ?? "Staff"))</span>
+                    <span style="color: #cbd5e0; margin: 0 10px;">|</span>
+                    <form method="post" asp-page="/Index" asp-page-handler="ToggleAttendance" id="reconcileClockOutForm" style="display: inline;">
                         <input type="hidden" name="staffId" value="@activeStaff.Id" />
                         <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                        <input type="hidden" name="expectedCash" id="reconcileExpectedCash" value="0" />
+                        <input type="hidden" name="actualCash" id="reconcileActualCash" value="0" />
+                        <input type="hidden" name="reconciliationNotes" id="reconcileNotes" value="" />
                         @if (isClockedIn)
                         {
-                            <button type="submit" style="background-color: #ffcccc; color: #990000; font-weight: bold;">
+                            <button type="button" onclick="promptClockOutReconciliation()" class="btn" style="background-color: #fed7d7; color: #9b2c2c; border-color: #fecaca;">
                                 Clock Out
                             </button>
                         }
                         else
                         {
-                            <button type="submit" style="background-color: #ccffcc; color: #006600; font-weight: bold;">
+                            <button type="submit" class="btn" style="background-color: #c6f6d5; color: #22543d; border-color: #bbf7d0;">
                                 Clock In
                             </button>
                         }
                     </form>
-                    <span> | </span>
+                    <span style="color: #cbd5e0; margin: 0 10px;">|</span>
                     <form method="post" asp-page="/Login" asp-page-handler="Logout" style="display: inline;">
-                        <button type="submit">Logout</button>
+                        <button type="submit" class="btn" style="padding: 5px 10px;">Logout</button>
                     </form>
                 }
                 else
                 {
-                    <span>Not Logged In</span>
-                    <span> | </span>
-                    <a href="/Login">Login Screen</a>
+                    <span style="font-size: 0.95em; color: #718096;">Not Logged In</span>
+                    <span style="color: #cbd5e0; margin: 0 10px;">|</span>
+                    <a href="/Login" class="btn btn-primary" style="padding: 5px 10px;">Login Screen</a>
                 }
             </div>
         </div>
     </header>
 
-    <div style="display: flex; min-height: 500px;">
-        <nav style="width: 200px; border-right: 1px solid #000; padding-right: 10px; margin-right: 20px;">
-            <h3>Navigation</h3>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li style="margin-bottom: 10px;"><a href="/">Analytics Dashboard</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Inventory">Inventory Management</a></li>
-                <li style="margin-bottom: 10px;"><a href="/POS">POS Checkout</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Staff">Staff Management</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Logs">Attendance & Payroll Logs</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Settings">Store Settings</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Login">Login / Session</a></li>
+    <div class="layout-container" id="layoutContainer">
+        <div class="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
+        <nav class="main-nav sticky-nav">
+            <h3 style="margin-top: 0; color: #4a5568; font-size: 1.1em; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;">Navigation</h3>
+            <ul style="list-style-type: none; padding-left: 0; margin: 0;">
+                <li style="margin-bottom: 10px;"><a href="/" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📊 Dashboard</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Inventory" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📦 Inventory</a></li>
+                <li style="margin-bottom: 10px;"><a href="/POS" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">🛒 POS Checkout</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Staff" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">👥 Staff Directory</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Logs" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📄 Logs & Ledger</a></li>
+                <li style="margin-bottom: 10px;"><a href="/Settings" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">⚙ Settings</a></li>
             </ul>
+            <div style="margin-top: 20px;" class="desktop-only">
+                <button type="button" onclick="toggleDesktopSidebar()" id="desktopSidebarToggleBtn" style="width: 100%; font-size: 0.8em;">⛶ Toggle Width</button>
+            </div>
         </nav>
 
-        <main style="flex-grow: 1;">
+        <main style="flex-grow: 1; min-width: 0;">
             @RenderBody()
         </main>
     </div>
 
-    <footer style="border-top: 1px solid #000; margin-top: 20px; padding: 10px; font-size: 0.8em; text-align: center;">
+    <!-- Shift Clock-Out Cash Reconciliation Modal -->
+    <div id="reconcileModal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+        <div style="background-color: white; padding: 25px; border-radius: 8px; width: 420px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+            <h3 style="margin-top: 0; color: #2b6cb0;">End-of-Shift Cash Reconciliation</h3>
+            <p style="font-size: 0.95em; color: #4a5568;">Please verify the drawer cash balance before clocking out.</p>
+            
+            <div style="background: #ebf8ff; padding: 12px; border-radius: 6px; border: 1px solid #bee3f8; margin-bottom: 15px; font-weight: bold;">
+                Expected Drawer Cash: <span id="reconcileExpectedText">0.00</span>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Actual Cash in Drawer:</label>
+                <input type="number" step="0.01" min="0" id="actualCashInput" placeholder="0.00" style="width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 1.1em;" oninput="calculateReconciliationDiscrepancy()" />
+            </div>
+
+            <div style="margin-bottom: 15px; display: none;" id="discrepancyBox">
+                Discrepancy: <strong id="reconcileDiscrepancyText" style="color: red;">0.00</strong>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Discrepancy / Reconciliation Notes:</label>
+                <textarea id="reconciliationNotesInput" placeholder="Explain any discrepancy or add shift end notes..." style="width: 100%; height: 60px; box-sizing: border-box; border: 1px solid #cbd5e0; border-radius: 4px; padding: 5px;"></textarea>
+            </div>
+
+            <div style="text-align: right; display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="closeReconcileModal()" class="btn" style="flex: 1;">Cancel</button>
+                <button type="button" onclick="submitClockOutReconciliation()" class="btn btn-primary" style="flex: 1;">Confirm & Clock Out</button>
+            </div>
+        </div>
+    </div>
+
+    <footer style="background-color: #fff; border-top: 1px solid #e2e8f0; margin-top: 40px; padding: 16px; font-size: 0.85em; text-align: center; color: #718096;">
         <p>&copy; 2026 - EZBM Testing Platform. Integrated with C# Backend.</p>
     </footer>
+
+    <!-- Pass global configs to Javascript -->
+    <script>
+        window.CurrencySymbol = "@Html.Raw(StateHelper.GetCurrencySymbol())";
+        window.SoundAlertsEnabled = @(soundAlertsEnabled ? "true" : "false");
+    </script>
+
+    <!-- Global Responsive Sidebars script -->
+    <script>
+        function toggleMobileSidebar() {
+            const container = document.getElementById("layoutContainer");
+            container.classList.toggle("sidebar-open");
+        }
+
+        function toggleDesktopSidebar() {
+            const container = document.getElementById("layoutContainer");
+            container.classList.toggle("sidebar-collapsed");
+            
+            // Save state
+            const isCollapsed = container.classList.contains("sidebar-collapsed");
+            localStorage.setItem("desktop_sidebar_collapsed", isCollapsed ? "true" : "false");
+        }
+
+        // Restore sidebar state
+        document.addEventListener("DOMContentLoaded", () => {
+            const container = document.getElementById("layoutContainer");
+            const collapsed = localStorage.getItem("desktop_sidebar_collapsed");
+            if (collapsed === "true" && window.innerWidth >= 1600) {
+                container.classList.add("sidebar-collapsed");
+            }
+        });
+    </script>
+
+    <!-- Cash Reconciliation Script -->
+    <script>
+        let currentExpectedCash = 0;
+
+        async function promptClockOutReconciliation() {
+            try {
+                const response = await fetch("/Index?handler=GetShiftCash");
+                const data = await response.json();
+                if (data.success) {
+                    currentExpectedCash = data.expectedCash;
+                    document.getElementById("reconcileExpectedText").textContent = window.CurrencySymbol + currentExpectedCash.toFixed(2);
+                    document.getElementById("actualCashInput").value = "";
+                    document.getElementById("reconciliationNotesInput").value = "";
+                    document.getElementById("discrepancyBox").style.display = "none";
+                    document.getElementById("reconcileModal").style.display = "flex";
+                } else {
+                    alert("Failed to retrieve shift cash data: " + data.message);
+                }
+            } catch(e) {
+                alert("Error loading shift cash reconciliation: " + e.message);
+            }
+        }
+
+        function closeReconcileModal() {
+            document.getElementById("reconcileModal").style.display = "none";
+        }
+
+        function calculateReconciliationDiscrepancy() {
+            const val = parseFloat(document.getElementById("actualCashInput").value) || 0;
+            const diff = val - currentExpectedCash;
+            
+            const discText = document.getElementById("reconcileDiscrepancyText");
+            const discBox = document.getElementById("discrepancyBox");
+            
+            discBox.style.display = "block";
+            discText.textContent = (diff >= 0 ? "+" : "") + window.CurrencySymbol + diff.toFixed(2);
+            discText.style.color = diff === 0 ? "green" : (diff > 0 ? "blue" : "red");
+        }
+
+        function submitClockOutReconciliation() {
+            const actualVal = parseFloat(document.getElementById("actualCashInput").value) || 0;
+            const notes = document.getElementById("reconciliationNotesInput").value;
+            
+            document.getElementById("reconcileExpectedCash").value = currentExpectedCash;
+            document.getElementById("reconcileActualCash").value = actualVal;
+            document.getElementById("reconcileNotes").value = notes;
+            
+            closeReconcileModal();
+            document.getElementById("reconcileClockOutForm").submit();
+        }
+    </script>
+
+    <!-- DataTable Global Script implementation -->
+    <script>
+        function initCommonTable(table, options = {}) {
+            const tableId = table.id || ("table-" + Math.random().toString(36).substr(2, 9));
+            table.id = tableId;
+            const tbody = table.querySelector("tbody");
+            if (!tbody) return;
+
+            const storageKey = "table_state_" + window.location.pathname + "_" + tableId;
+            let savedState = {};
+            try {
+                savedState = JSON.parse(localStorage.getItem(storageKey)) || {};
+            } catch(e) {}
+
+            const headers = Array.from(table.querySelectorAll("thead th"));
+            
+            // Set up column hides
+            let visibleCols = savedState.visibleColumns || {};
+            headers.forEach((th, idx) => {
+                const label = th.textContent.toLowerCase();
+                if (visibleCols[idx] === undefined) {
+                    if (th.hasAttribute("data-hide-default") || label.includes("id") || label.includes("barcode")) {
+                        visibleCols[idx] = false;
+                    } else {
+                        visibleCols[idx] = true;
+                    }
+                }
+            });
+
+            let currentPage = 1;
+            let pageSize = savedState.pageSize !== undefined ? savedState.pageSize : 25;
+            let sortCol = savedState.sortCol !== undefined ? savedState.sortCol : null;
+            let sortAsc = savedState.sortAsc !== undefined ? savedState.sortAsc : true;
+            let loadedAllShown = 50;
+
+            applyColumnVisibility();
+            createColumnSelector();
+
+            // Setup sort handlers
+            headers.forEach((th, idx) => {
+                if (th.textContent.trim() === "Actions" || th.hasAttribute("data-no-sort")) return;
+                th.style.cursor = "pointer";
+                th.innerHTML = th.innerHTML.replace(/[↕↕]/g, "").trim() + " ↕";
+                th.addEventListener("click", () => {
+                    if (sortCol === idx) {
+                        sortAsc = !sortAsc;
+                    } else {
+                        sortCol = idx;
+                        sortAsc = true;
+                    }
+                    sortTable();
+                    saveState();
+                });
+            });
+
+            if (sortCol !== null) {
+                sortTable();
+            }
+
+            // Create pagination elements
+            let paginationDiv = document.createElement("div");
+            paginationDiv.style.display = "flex";
+            paginationDiv.style.justifyContent = "space-between";
+            paginationDiv.style.alignItems = "center";
+            paginationDiv.style.marginTop = "15px";
+            paginationDiv.style.gap = "15px";
+            table.parentNode.insertBefore(paginationDiv, table.nextSibling);
+
+            let endOfListLabel = document.createElement("div");
+            endOfListLabel.textContent = "— End of the list —";
+            endOfListLabel.style.textAlign = "center";
+            endOfListLabel.style.color = "#888";
+            endOfListLabel.style.fontSize = "0.9em";
+            endOfListLabel.style.margin = "15px 0";
+            endOfListLabel.style.display = "none";
+            paginationDiv.parentNode.insertBefore(endOfListLabel, paginationDiv.nextSibling);
+
+            let emptyStateDiv = document.createElement("div");
+            emptyStateDiv.textContent = "Nothing to show here.";
+            emptyStateDiv.style.textAlign = "center";
+            emptyStateDiv.style.padding = "20px";
+            emptyStateDiv.style.color = "#888";
+            emptyStateDiv.style.fontSize = "1.1em";
+            emptyStateDiv.style.border = "1px dashed #cbd5e0";
+            emptyStateDiv.style.borderRadius = "6px";
+            emptyStateDiv.style.display = "none";
+            table.parentNode.insertBefore(emptyStateDiv, table);
+
+            updatePaginationView();
+
+            // Infinite scroll for Load All
+            window.addEventListener("scroll", () => {
+                if (pageSize === "all") {
+                    const rect = table.getBoundingClientRect();
+                    const bottomInView = rect.bottom <= window.innerHeight + 150;
+                    const rows = Array.from(tbody.querySelectorAll("tr"));
+                    const activeRows = rows.filter(row => row.getAttribute("data-filtered") !== "true");
+                    if (bottomInView && loadedAllShown < activeRows.length) {
+                        loadedAllShown += 50;
+                        renderRows();
+                    }
+                }
+            });
+
+            function saveState() {
+                try {
+                    localStorage.setItem(storageKey, JSON.stringify({
+                        pageSize,
+                        sortCol,
+                        sortAsc,
+                        visibleColumns: visibleCols
+                    }));
+                } catch(e) {}
+            }
+
+            function createColumnSelector() {
+                const container = document.createElement("div");
+                container.style.margin = "10px 0";
+                container.style.display = "inline-block";
+                container.style.position = "relative";
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "btn";
+                btn.style.fontSize = "0.8em";
+                btn.style.padding = "4px 8px";
+                btn.textContent = "⚙ Columns";
+                container.appendChild(btn);
+
+                const dropdown = document.createElement("div");
+                dropdown.style.display = "none";
+                dropdown.style.position = "absolute";
+                dropdown.style.zIndex = "100";
+                dropdown.style.backgroundColor = "white";
+                dropdown.style.border = "1px solid #cbd5e0";
+                dropdown.style.borderRadius = "6px";
+                dropdown.style.padding = "10px";
+                dropdown.style.boxShadow = "0 10px 15px -3px rgba(0,0,0,0.1)";
+                dropdown.style.minWidth = "180px";
+                dropdown.style.top = "100%";
+                dropdown.style.left = "0";
+
+                headers.forEach((th, idx) => {
+                    const text = th.textContent.replace(/[↕↕]/g, "").trim();
+                    if (text === "Actions" || !text) return;
+
+                    const label = document.createElement("label");
+                    label.style.display = "flex";
+                    label.style.alignItems = "center";
+                    label.style.marginBottom = "6px";
+                    label.style.fontWeight = "normal";
+                    label.style.fontSize = "0.85em";
+                    label.style.cursor = "pointer";
+
+                    const cb = document.createElement("input");
+                    cb.type = "checkbox";
+                    cb.checked = visibleCols[idx] !== false;
+                    cb.style.marginRight = "8px";
+                    cb.addEventListener("change", () => {
+                        visibleCols[idx] = cb.checked;
+                        applyColumnVisibility();
+                        saveState();
+                    });
+
+                    label.appendChild(cb);
+                    label.appendChild(document.createTextNode(text));
+                    dropdown.appendChild(label);
+                });
+
+                btn.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+                });
+
+                document.addEventListener("click", () => {
+                    dropdown.style.display = "none";
+                });
+
+                dropdown.addEventListener("click", (e) => e.stopPropagation());
+
+                container.appendChild(dropdown);
+                table.parentNode.insertBefore(container, table);
+            }
+
+            function applyColumnVisibility() {
+                headers.forEach((th, idx) => {
+                    const visible = visibleCols[idx] !== false;
+                    th.style.display = visible ? "" : "none";
+                });
+                Array.from(tbody.querySelectorAll("tr")).forEach(row => {
+                    Array.from(row.cells).forEach((td, idx) => {
+                        const visible = visibleCols[idx] !== false;
+                        td.style.display = visible ? "" : "none";
+                    });
+                });
+            }
+
+            function sortTable() {
+                const rows = Array.from(tbody.querySelectorAll("tr"));
+                const isNumeric = headers[sortCol].hasAttribute("data-numeric");
+                const isDate = headers[sortCol].hasAttribute("data-date");
+
+                rows.sort((a, b) => {
+                    let cellA = a.cells[sortCol] ? a.cells[sortCol].textContent.trim() : "";
+                    let cellB = b.cells[sortCol] ? b.cells[sortCol].textContent.trim() : "";
+
+                    if (isNumeric) {
+                        let valA = parseFloat(cellA.replace(/[^0-9.-]+/g, "")) || 0;
+                        let valB = parseFloat(cellB.replace(/[^0-9.-]+/g, "")) || 0;
+                        return sortAsc ? valA - valB : valB - valA;
+                    } else if (isDate) {
+                        let valA = Date.parse(cellA) || 0;
+                        let valB = Date.parse(cellB) || 0;
+                        return sortAsc ? valA - valB : valB - valA;
+                    } else {
+                        return sortAsc ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
+                    }
+                });
+
+                rows.forEach(row => tbody.appendChild(row));
+                renderRows();
+            }
+
+            function renderRows() {
+                const rows = Array.from(tbody.querySelectorAll("tr"));
+                const activeRows = rows.filter(row => row.getAttribute("data-filtered") !== "true");
+
+                if (activeRows.length === 0) {
+                    table.style.display = "none";
+                    emptyStateDiv.style.display = "block";
+                    endOfListLabel.style.display = "none";
+                    paginationDiv.style.display = "none";
+                    return;
+                } else {
+                    table.style.display = "";
+                    emptyStateDiv.style.display = "none";
+                    paginationDiv.style.display = "flex";
+                }
+
+                rows.forEach(row => row.style.display = "none");
+
+                if (pageSize === "all") {
+                    activeRows.slice(0, loadedAllShown).forEach(row => row.style.display = "");
+                    endOfListLabel.style.display = loadedAllShown >= activeRows.length ? "block" : "none";
+                } else {
+                    const totalPages = Math.ceil(activeRows.length / pageSize) || 1;
+                    if (currentPage > totalPages) currentPage = totalPages;
+                    if (currentPage < 1) currentPage = 1;
+
+                    const startIdx = (currentPage - 1) * pageSize;
+                    const endIdx = startIdx + pageSize;
+                    activeRows.slice(startIdx, endIdx).forEach(row => row.style.display = "");
+                    endOfListLabel.style.display = "block";
+                }
+            }
+
+            function updatePaginationView() {
+                paginationDiv.innerHTML = "";
+                renderRows();
+
+                const rows = Array.from(tbody.querySelectorAll("tr"));
+                const activeRows = rows.filter(row => row.getAttribute("data-filtered") !== "true");
+                
+                if (activeRows.length === 0) return;
+
+                const selectorLabel = document.createElement("div");
+                selectorLabel.style.display = "flex";
+                selectorLabel.style.alignItems = "center";
+                selectorLabel.style.gap = "5px";
+                selectorLabel.style.fontSize = "0.85em";
+
+                const select = document.createElement("select");
+                select.style.padding = "3px";
+                select.style.borderRadius = "4px";
+                select.style.border = "1px solid #cbd5e0";
+                [25, 50, 100, "all"].forEach(opt => {
+                    const option = document.createElement("option");
+                    option.value = opt;
+                    option.textContent = opt === "all" ? "Load All" : opt;
+                    option.selected = pageSize.toString() === opt.toString();
+                    select.appendChild(option);
+                });
+
+                select.addEventListener("change", () => {
+                    pageSize = select.value === "all" ? "all" : parseInt(select.value);
+                    currentPage = 1;
+                    loadedAllShown = 50;
+                    updatePaginationView();
+                    saveState();
+                });
+
+                selectorLabel.appendChild(document.createTextNode("Rows: "));
+                selectorLabel.appendChild(select);
+                paginationDiv.appendChild(selectorLabel);
+
+                if (pageSize !== "all") {
+                    const totalPages = Math.ceil(activeRows.length / pageSize) || 1;
+
+                    const btnsContainer = document.createElement("div");
+                    btnsContainer.style.display = "flex";
+                    btnsContainer.style.alignItems = "center";
+                    btnsContainer.style.gap = "8px";
+
+                    const prev = document.createElement("button");
+                    prev.type = "button";
+                    prev.className = "btn";
+                    prev.style.padding = "3px 8px";
+                    prev.textContent = "Prev";
+                    prev.disabled = currentPage === 1;
+                    prev.addEventListener("click", () => {
+                        currentPage--;
+                        updatePaginationView();
+                    });
+
+                    const indicator = document.createElement("span");
+                    indicator.textContent = `${currentPage} / ${totalPages}`;
+                    indicator.style.fontSize = "0.85em";
+                    indicator.style.fontWeight = "bold";
+
+                    const next = document.createElement("button");
+                    next.type = "button";
+                    next.className = "btn";
+                    next.style.padding = "3px 8px";
+                    next.textContent = "Next";
+                    next.disabled = currentPage === totalPages;
+                    next.addEventListener("click", () => {
+                        currentPage++;
+                        updatePaginationView();
+                    });
+
+                    btnsContainer.appendChild(prev);
+                    btnsContainer.appendChild(indicator);
+                    btnsContainer.appendChild(next);
+                    paginationDiv.appendChild(btnsContainer);
+                }
+            }
+
+            table.addEventListener("filterRefreshed", () => {
+                currentPage = 1;
+                loadedAllShown = 50;
+                updatePaginationView();
+            });
+        }
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

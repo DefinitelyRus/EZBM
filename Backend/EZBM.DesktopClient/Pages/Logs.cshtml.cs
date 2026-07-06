@@ -2,6 +2,7 @@ using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
 using EZBM.Core.Data;
+using EZBM.DesktopClient.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,8 @@ public class LogsModel : PageModel
 
     #region Handlers
 
+    public List<Transaction> TransactionLedger { get; set; } = new();
+
     /// <summary>
     /// Handles GET request to fetch logs and staff options.
     /// </summary>
@@ -94,6 +97,12 @@ public class LogsModel : PageModel
 
         // Load action logs
         ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
+
+        // Load transactions for Ledger
+        TransactionLedger = await context.Transaction
+            .Include(t => t.Staff)
+            .OrderByDescending(t => t.Timestamp)
+            .ToListAsync();
     }
 
     /// <summary>
@@ -119,6 +128,12 @@ public class LogsModel : PageModel
             ErrorMessage = result.Message;
 
         return RedirectToPage("/Logs", new { tab = "attendance" });
+    }
+
+    public async Task<IActionResult> OnGetGetShiftCashAsync(ulong staffId)
+    {
+        float expectedCash = await StateHelper.CalculateExpectedShiftCashAsync(staffId);
+        return new JsonResult(new { success = true, expectedCash });
     }
 
     /// <summary>
@@ -305,6 +320,70 @@ public class LogsModel : PageModel
         }
 
         return RedirectToPage("/Logs", new { tab = "adjustments" });
+    }
+
+    public async Task<IActionResult> OnPostSupervisorClockOutAsync(
+        ulong attendanceId,
+        string supervisorUsername,
+        string supervisorPassword,
+        float expectedCash,
+        float actualCash,
+        string? reconciliationNotes
+    )
+    {
+        LoginRequest loginRequest = new(
+            Username: supervisorUsername,
+            Password: supervisorPassword
+        );
+        var authResult = await AuthenticationService.LoginAsync(loginRequest);
+        if (authResult.Type != Utils.Result.Success)
+        {
+            ErrorMessage = "Authentication failed: " + authResult.Message;
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        ulong supervisorId = ulong.Parse(authResult.Data);
+        using AppDbContext context = new();
+        var supervisor = await context.Staff.FindAsync(supervisorId);
+        if (supervisor == null || (supervisor.Position != "Admin" && supervisor.Position != "Supervisor"))
+        {
+            ErrorMessage = "Unauthorized: Only Admin or Supervisor roles can force clock-out other employees.";
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        var attendance = await context.Attendance
+            .Include(a => a.Staff)
+            .FirstOrDefaultAsync(a => a.Id == attendanceId);
+        
+        if (attendance == null || attendance.TimeOut != null)
+        {
+            ErrorMessage = "Attendance record not found or already clocked out.";
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        attendance.TimeOut = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+
+        float discrepancy = actualCash - expectedCash;
+        string details = $"SUPERVISOR FORCE CLOCK-OUT for {attendance.Staff.FirstName} {attendance.Staff.LastName} ({attendance.Staff.Username}) " +
+                         $"by supervisor {supervisor.FirstName} {supervisor.LastName}. " +
+                         $"Expected Cash: {StateHelper.FormatCurrency(expectedCash)}, " +
+                         $"Actual Cash: {StateHelper.FormatCurrency(actualCash)}, " +
+                         $"Discrepancy: {StateHelper.FormatCurrency(discrepancy)}. " +
+                         $"Notes: {(string.IsNullOrEmpty(reconciliationNotes) ? "None" : reconciliationNotes)}";
+
+        ActionLog log = new(
+            id: Utils.GenerateEntityId(),
+            actionType: "Reconciliation",
+            operatorUsername: supervisor.Username,
+            details: details,
+            timestamp: DateTime.UtcNow
+        );
+        context.ActionLog.Add(log);
+        await context.SaveChangesAsync();
+
+        SuccessMessage = $"Force clocked out {attendance.Staff.FirstName} successfully.";
+        return RedirectToPage("/Logs", new { tab = "attendance" });
     }
 
     #endregion

@@ -102,6 +102,8 @@ public class SettingsModel : PageModel
 
     [TempData]
     public string? ErrorMessage { get; set; }
+    
+    public Dictionary<string, StoreSettings.PromoCodeInfo> PromoCodesList { get; set; } = new();
     #endregion
 
     public async Task OnGetAsync()
@@ -129,6 +131,7 @@ public class SettingsModel : PageModel
         BackupAutosaveInterval = settings.BackupAutosaveInterval;
         BackupRetentionCount = settings.BackupRetentionCount;
         BackupRotationEnabled = settings.BackupRotationEnabled;
+        PromoCodesList = settings.PromoCodes ?? new();
 
         // Load available backup files
         if (Directory.Exists(BackupTargetPath))
@@ -253,6 +256,20 @@ public class SettingsModel : PageModel
             settings.BackupAutosaveInterval = BackupAutosaveInterval;
             settings.BackupRetentionCount = BackupRetentionCount;
             settings.BackupRotationEnabled = BackupRotationEnabled;
+
+            var promoCodes = new Dictionary<string, StoreSettings.PromoCodeInfo>();
+            var codes = Request.Form["promo_code[]"];
+            var discounts = Request.Form["promo_discount[]"];
+            var expiries = Request.Form["promo_expiry[]"];
+            for (int i = 0; i < codes.Count; i++)
+            {
+                string code = codes[i].ToString().Trim().ToUpper();
+                if (!string.IsNullOrEmpty(code) && float.TryParse(discounts[i], out float discount) && DateTime.TryParse(expiries[i], out DateTime expiry))
+                {
+                    promoCodes[code] = new StoreSettings.PromoCodeInfo { DiscountPercentage = discount, ExpirationDate = expiry };
+                }
+            }
+            settings.PromoCodes = promoCodes;
 
             SettingsService.SaveSettings(settings);
             SuccessMessage = "Business settings saved successfully.";

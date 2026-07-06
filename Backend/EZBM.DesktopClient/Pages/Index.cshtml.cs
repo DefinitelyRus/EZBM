@@ -125,12 +125,24 @@ public class IndexModel : PageModel
             .ToListAsync();
     }
 
+    public async Task<IActionResult> OnGetGetShiftCashAsync()
+    {
+        var activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+        if (activeStaff == null) return new JsonResult(new { success = false, message = "Not logged in" });
+
+        float expectedCash = await StateHelper.CalculateExpectedShiftCashAsync(activeStaff.Id);
+        return new JsonResult(new { success = true, expectedCash });
+    }
+
     /// <summary>
     /// Handles POST request to toggle employee attendance clock-in/out.
     /// </summary>
     public async Task<IActionResult> OnPostToggleAttendanceAsync(
         ulong staffId,
-        string? returnUrl
+        string? returnUrl,
+        float? expectedCash,
+        float? actualCash,
+        string? reconciliationNotes
     )
     {
         bool clockedIn = await StateHelper.IsClockedInAsync(staffId);
@@ -141,7 +153,35 @@ public class IndexModel : PageModel
             ActionType: actionType
         );
 
-        await StaffService.LogAttendanceAsync(request);
+        var result = await StaffService.LogAttendanceAsync(request);
+
+        if (result.Type == Utils.Result.Success && clockedIn)
+        {
+            // Log discrepancy in ActionLog!
+            using AppDbContext db = new();
+            var staff = await db.Staff.FindAsync(staffId);
+            string staffName = staff != null ? $"{staff.FirstName} {staff.LastName}" : "Unknown Staff";
+            
+            float expectedVal = expectedCash ?? 0f;
+            float actualVal = actualCash ?? 0f;
+            float discrepancy = actualVal - expectedVal;
+            
+            string details = $"Shift reconciliation for {staffName} ({staff?.Username}). " +
+                             $"Expected Cash: {StateHelper.FormatCurrency(expectedVal)}, " +
+                             $"Actual Cash: {StateHelper.FormatCurrency(actualVal)}, " +
+                             $"Discrepancy: {StateHelper.FormatCurrency(discrepancy)}. " +
+                             $"Notes: {(string.IsNullOrEmpty(reconciliationNotes) ? "None" : reconciliationNotes)}";
+
+            ActionLog log = new(
+                id: Utils.GenerateEntityId(),
+                actionType: "Reconciliation",
+                operatorUsername: staff?.Username ?? "System",
+                details: details,
+                timestamp: DateTime.UtcNow
+            );
+            db.ActionLog.Add(log);
+            await db.SaveChangesAsync();
+        }
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return Redirect(returnUrl);

@@ -1,158 +1,160 @@
 @page
 @model EZBM.DesktopClient.Pages.InventoryModel
 @using EZBM.Core.Entities
+@using EZBM.DesktopClient.Helpers
 @{
     ViewData["Title"] = "Inventory Management";
     bool isEditing = Model.EditingItem is not null;
 }
 
-<h2>Page 3: Inventory Management</h2>
+<h2>Inventory Management</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Error:</strong> @Model.ErrorMessage
     </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Success:</strong> @Model.SuccessMessage
     </div>
 }
 
-<div style="display: flex; gap: 40px; align-items: flex-start;">
+<div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
     <!-- Catalog Table Section -->
-    <div style="flex-grow: 1;">
+    <div style="flex-grow: 1; min-width: 600px;">
         <h3>Product & Service Catalog</h3>
         
         <!-- Search bar -->
         <div style="margin-bottom: 15px;">
             <label for="searchInput" style="font-weight: bold; margin-right: 10px;">Search Catalog:</label>
-            <input type="text" id="searchInput" placeholder="Type to filter in real-time..." style="width: 300px; padding: 5px;" onkeyup="filterTable()" />
+            <input type="text" id="searchInput" placeholder="Type to filter in real-time..." style="width: 300px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onkeyup="filterTable()" />
         </div>
 
-        <table border="1" cellpadding="5" cellspacing="0" id="catalogTable" style="width: 100%; border-collapse: collapse;">
+        <table border="1" cellpadding="5" cellspacing="0" id="catalogTable" data-common-table="true" style="width: 100%; border-collapse: collapse;">
             <thead>
                 <tr style="background-color: #eee;">
-                    <th onclick="sortTable(0, true)" style="cursor: pointer; text-decoration: underline;">ID ↕</th>
-                    <th onclick="sortTable(1, false)" style="cursor: pointer; text-decoration: underline;">Name ↕</th>
-                    <th onclick="sortTable(2, false)" style="cursor: pointer; text-decoration: underline;">Type ↕</th>
-                    <th onclick="sortTable(3, false)" style="cursor: pointer; text-decoration: underline;">Description ↕</th>
-                    <th onclick="sortTable(4, false)" style="cursor: pointer; text-decoration: underline;">For Sale? ↕</th>
-                    <th onclick="sortTable(5, true)" style="cursor: pointer; text-decoration: underline;">Cost Price ↕</th>
-                    <th onclick="sortTable(6, true)" style="cursor: pointer; text-decoration: underline;">Sale Price ↕</th>
-                    <th onclick="sortTable(7, true)" style="cursor: pointer; text-decoration: underline;">Quantity ↕</th>
-                    <th onclick="sortTable(8, false)" style="cursor: pointer; text-decoration: underline;">Unit ↕</th>
-                    <th onclick="sortTable(9, true)" style="cursor: pointer; text-decoration: underline;">Target Stock ↕</th>
-                    <th onclick="sortTable(10, true)" style="cursor: pointer; text-decoration: underline;">Threshold % ↕</th>
-                    <th onclick="sortTable(11, false)" style="cursor: pointer; text-decoration: underline;">Expiration ↕</th>
-                    <th onclick="sortTable(12, false)" style="cursor: pointer; text-decoration: underline;">Tags ↕</th>
-                    <th>Actions</th>
+                    <th data-hide-default="true">ID</th>
+                    <th>Name</th>
+                    <th data-hide-default="true">Type</th>
+                    <th>Description</th>
+                    <th data-hide-default="true">For Sale?</th>
+                    <th data-numeric="true">Cost Price</th>
+                    <th data-numeric="true">Sale Price</th>
+                    <th>Stock Level</th>
+                    <th data-numeric="true" data-hide-default="true">Threshold %</th>
+                    <th data-date="true" data-hide-default="true">Expiration</th>
+                    <th data-hide-default="true">Tags</th>
+                    <th data-no-sort="true">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var item in Model.Items)
                 {
-                    <tr>
+                    bool isLowStock = false;
+                    if (item is Product prod)
+                    {
+                        isLowStock = prod.Quantity < prod.TargetStock * prod.LowStockThresholdPercentage;
+                    }
+                    <tr style="@(isLowStock ? "background-color: #fff5f5; color: #c53030;" : "")">
                         <td>@item.Id</td>
                         <td class="search-name"><strong>@item.Name</strong></td>
                         <td>@(item is Service ? "Service" : "Product")</td>
                         <td>@item.Description</td>
                         <td>@(item.IsForSale ? "Yes" : "No")</td>
-                        <td>@(item.Cost?.ToString("C") ?? "N/A")</td>
-                        <td>@(item.SalePrice?.ToString("C") ?? "N/A")</td>
-                        <td>@item.Quantity</td>
-                        <td>@item.UnitOfMeasurement</td>
-                        <td>@(item is Product p ? p.TargetStock.ToString("F1") : "N/A")</td>
-                        <td>@(item is Product prod ? $"{(prod.LowStockThresholdPercentage * 100):F0}%" : "N/A")</td>
-                        <td>@(item.ExpirationDate?.ToShortDateString() ?? "N/A")</td>
+                        <td>@StateHelper.FormatCurrency(item.Cost)</td>
+                        <td>@StateHelper.FormatCurrency(item.SalePrice)</td>
+                        <td>
+                            <strong>@item.Quantity @item.UnitOfMeasurement</strong>
+                            @if (item is Product p)
+                            {
+                                <span style="color: #718096; font-size: 0.9em;"> / @p.TargetStock.ToString("F1") @item.UnitOfMeasurement</span>
+                            }
+                        </td>
+                        <td>@(item is Product pThresh ? $"{(pThresh.LowStockThresholdPercentage * 100):F0}%" : "N/A")</td>
+                        <td>@StateHelper.FormatDate(item.ExpirationDate, HttpContext)</td>
                         <td>@string.Join(", ", item.Tags)</td>
                         <td>
-                            <a href="/Inventory?action=edit&id=@item.Id">Edit</a>
-                            |
-                            <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                            </form>
+                            <div class="action-buttons">
+                                <a href="/Inventory?action=edit&id=@item.Id" class="btn" style="padding: 2px 6px; font-size: 0.85em;">Edit</a>
+                                <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 }
             </tbody>
         </table>
-
-        <!-- Pagination Controls -->
-        <div style="margin-top: 15px; display: flex; align-items: center; gap: 15px;">
-            <button type="button" onclick="prevPage()" style="padding: 5px 10px; cursor: pointer;">Previous</button>
-            <span id="pageIndicator" style="font-weight: bold;">Page 1 of 1</span>
-            <button type="button" onclick="nextPage()" style="padding: 5px 10px; cursor: pointer;">Next</button>
-        </div>
     </div>
 
     <!-- Add / Edit Item Form Workspace -->
-    <div style="width: 350px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
+    <div style="width: 350px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         @if (isEditing)
         {
-            <h3>Edit Item (ID: @Model.EditingItem!.Id)</h3>
+            <h3 style="margin-top:0;">Edit Item (ID: @Model.EditingItem!.Id)</h3>
             <form method="post" asp-page-handler="Update">
                 <input type="hidden" name="id" value="@Model.EditingItem.Id" />
                 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Name:</label>
-                    <input type="text" name="name" value="@Model.EditingItem.Name" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name:</label>
+                    <input type="text" name="name" value="@Model.EditingItem.Name" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
                 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Description:</label>
-                    <textarea name="description" style="width: 100%;">@Model.EditingItem.Description</textarea>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description:</label>
+                    <textarea name="description" style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">@Model.EditingItem.Description</textarea>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="font-weight: bold;">
+                <div style="margin-bottom: 12px;">
+                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" name="isForSale" value="true" @(Model.EditingItem.IsForSale ? "checked" : "") />
                         Available For Sale
                     </label>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Item Type:</label>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type:</label>
                     <input type="hidden" name="itemType" value="@(Model.EditingItem is Service ? "Service" : "Product")" />
                     <strong>@(Model.EditingItem is Service ? "Service" : "Product")</strong>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Cost Price ($):</label>
-                    <input type="number" step="0.01" min="0" name="cost" value="@Model.EditingItem.Cost" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price (@StateHelper.GetCurrencySymbol()):</label>
+                    <input type="number" step="0.01" min="0" name="cost" value="@Model.EditingItem.Cost" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Sale Price ($):</label>
-                    <input type="number" step="0.01" min="0" name="salePrice" value="@Model.EditingItem.SalePrice" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price (@StateHelper.GetCurrencySymbol()):</label>
+                    <input type="number" step="0.01" min="0" name="salePrice" value="@Model.EditingItem.SalePrice" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Stock Quantity:</label>
-                    <input type="number" step="0.01" min="0" name="quantity" value="@Model.EditingItem.Quantity" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity:</label>
+                    <input type="number" step="0.01" min="0" name="quantity" value="@Model.EditingItem.Quantity" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 @if (Model.EditingItem is Product pEdit)
                 {
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Target Stock:</label>
-                        <input type="number" step="0.01" min="0" name="targetStock" value="@pEdit.TargetStock" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Target Stock:</label>
+                        <input type="number" step="0.01" min="0" name="targetStock" value="@pEdit.TargetStock" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Low Stock Warning Threshold (%):</label>
-                        <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="@pEdit.LowStockThresholdPercentage" style="width: 100%;" />
-                        <small style="color: #666;">Enter fraction (e.g. 0.20 for 20%)</small>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Low Stock Warning Threshold (%):</label>
+                        <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="@pEdit.LowStockThresholdPercentage" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096;">Enter fraction (e.g. 0.20 for 20%)</small>
                     </div>
                 }
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Unit of Measurement:</label>
-                    <select name="unitOfMeasurement" style="width: 100%;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement:</label>
+                    <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                         @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
                         {
                             @if (Model.EditingItem.UnitOfMeasurement == unit)
@@ -167,14 +169,14 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Expiration Date:</label>
-                    <input type="date" name="expirationDate" value="@(Model.EditingItem.ExpirationDate?.ToString("yyyy-MM-dd"))" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date:</label>
+                    <input type="date" name="expirationDate" value="@(Model.EditingItem.ExpirationDate?.ToString("yyyy-MM-dd"))" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Tags (Hold Ctrl to multi-select):</label>
-                    <select name="tags" multiple style="width: 100%; height: 80px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags (Hold Ctrl to multi-select):</label>
+                    <select name="tags" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                         @foreach (Item.Tag tag in Enum.GetValues<Item.Tag>())
                         {
                             @if (Model.EditingItem.Tags.Contains(tag))
@@ -189,69 +191,71 @@
                     </select>
                 </div>
 
-                <button type="submit" style="background-color: blue; color: white; padding: 5px 10px; font-weight: bold;">Update Item</button>
-                <a href="/Inventory" style="margin-left: 10px;">Cancel</a>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">Update Item</button>
+                    <a href="/Inventory" class="btn" style="flex: 1; text-align: center;">Cancel</a>
+                </div>
             </form>
         }
         else
         {
-            <h3>Add New Item</h3>
+            <h3 style="margin-top:0;">Add New Item</h3>
             <form method="post" asp-page-handler="Create" id="createItemForm">
                 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Item Type:</label>
-                    <select name="itemType" style="width: 100%;" onchange="toggleItemTypeFields(this.form)">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type:</label>
+                    <select name="itemType" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="toggleItemTypeFields(this.form)">
                         <option value="Product" selected>Product</option>
                         <option value="Service">Service</option>
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Name:</label>
-                    <input type="text" name="name" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name:</label>
+                    <input type="text" name="name" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
                 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Description:</label>
-                    <textarea name="description" style="width: 100%;"></textarea>
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description:</label>
+                    <textarea name="description" style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"></textarea>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="font-weight: bold;">
+                <div style="margin-bottom: 12px;">
+                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
                         <input type="checkbox" name="isForSale" value="true" checked />
                         Available For Sale
                     </label>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Cost Price ($):</label>
-                    <input type="number" step="0.01" min="0" name="cost" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price (@StateHelper.GetCurrencySymbol()):</label>
+                    <input type="number" step="0.01" min="0" name="cost" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Sale Price ($):</label>
-                    <input type="number" step="0.01" min="0" name="salePrice" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price (@StateHelper.GetCurrencySymbol()):</label>
+                    <input type="number" step="0.01" min="0" name="salePrice" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Stock Quantity:</label>
-                    <input type="number" step="0.01" min="0" name="quantity" value="0" required style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity:</label>
+                    <input type="number" step="0.01" min="0" name="quantity" value="0" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div class="product-only-field" style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Target Stock:</label>
-                    <input type="number" step="0.01" min="0" name="targetStock" value="0" style="width: 100%;" />
+                <div class="product-only-field" style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Target Stock:</label>
+                    <input type="number" step="0.01" min="0" name="targetStock" value="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
-                <div class="product-only-field" style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Low Stock Warning Threshold (%):</label>
-                    <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="0.20" style="width: 100%;" />
-                    <small style="color: #666;">Enter fraction (e.g. 0.20 for 20%)</small>
+                <div class="product-only-field" style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Low Stock Warning Threshold (%):</label>
+                    <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="0.20" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                    <small style="color: #718096;">Enter fraction (e.g. 0.20 for 20%)</small>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Unit of Measurement:</label>
-                    <select name="unitOfMeasurement" style="width: 100%;">
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement:</label>
+                    <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                         @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
                         {
                             <option value="@unit">@unit</option>
@@ -259,14 +263,14 @@
                     </select>
                 </div>
 
-                <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-weight: bold;">Expiration Date:</label>
-                    <input type="date" name="expirationDate" style="width: 100%;" />
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date:</label>
+                    <input type="date" name="expirationDate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold;">Tags (Hold Ctrl to multi-select):</label>
-                    <select name="tags" multiple style="width: 100%; height: 80px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags (Hold Ctrl to multi-select):</label>
+                    <select name="tags" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                         @foreach (Item.Tag tag in Enum.GetValues<Item.Tag>())
                         {
                             <option value="@tag">@tag</option>
@@ -274,7 +278,7 @@
                     </select>
                 </div>
 
-                <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold;">Create Item</button>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Create Item</button>
             </form>
         }
     </div>
@@ -282,65 +286,6 @@
 
 @section Scripts {
     <script>
-        var currentPage = 1;
-        var rowsPerPage = 10;
-
-        function paginateTable() {
-            var table = document.getElementById("catalogTable");
-            var tbody = table.querySelector("tbody");
-            var rows = Array.from(tbody.querySelectorAll("tr"));
-            var activeRows = rows.filter(row => row.getAttribute("data-filtered") !== "true");
-            var totalPages = Math.ceil(activeRows.length / rowsPerPage) || 1;
-
-            if (currentPage > totalPages) currentPage = totalPages;
-            if (currentPage < 1) currentPage = 1;
-
-            rows.forEach(row => row.style.display = "none");
-
-            var startIdx = (currentPage - 1) * rowsPerPage;
-            var endIdx = startIdx + rowsPerPage;
-
-            activeRows.slice(startIdx, endIdx).forEach(row => row.style.display = "");
-
-            document.getElementById("pageIndicator").textContent = "Page " + currentPage + " of " + totalPages;
-        }
-
-        function nextPage() {
-            currentPage++;
-            paginateTable();
-        }
-
-        function prevPage() {
-            currentPage--;
-            paginateTable();
-        }
-
-        var sortDirections = {};
-        function sortTable(columnIndex, isNumeric) {
-            var table = document.getElementById("catalogTable");
-            var tbody = table.querySelector("tbody");
-            var rows = Array.from(tbody.querySelectorAll("tr"));
-
-            var dir = sortDirections[columnIndex] === "asc" ? "desc" : "asc";
-            sortDirections[columnIndex] = dir;
-
-            rows.sort((a, b) => {
-                var cellA = a.cells[columnIndex].textContent.trim();
-                var cellB = b.cells[columnIndex].textContent.trim();
-
-                if (isNumeric) {
-                    var valA = parseFloat(cellA.replace(/[^0-9.-]+/g, "")) || 0;
-                    var valB = parseFloat(cellB.replace(/[^0-9.-]+/g, "")) || 0;
-                    return dir === "asc" ? valA - valB : valB - valA;
-                } else {
-                    return dir === "asc" ? cellA.localeCompare(cellB) : cellB.localeCompare(cellA);
-                }
-            });
-
-            rows.forEach(row => tbody.appendChild(row));
-            paginateTable();
-        }
-
         function filterTable() {
             var input = document.getElementById("searchInput");
             var filter = input.value.toLowerCase();
@@ -349,23 +294,14 @@
             var rows = tbody.querySelectorAll("tr");
 
             rows.forEach(row => {
-                var cells = row.getElementsByTagName("td");
-                if (cells.length > 12) {
-                    var idText = cells[0].textContent || cells[0].innerText;
-                    var nameText = cells[1].textContent || cells[1].innerText;
-                    var descText = cells[3].textContent || cells[3].innerText;
-                    var tagsText = cells[12].textContent || cells[12].innerText;
-
-                    var combinedText = (idText + " " + nameText + " " + descText + " " + tagsText).toLowerCase();
-                    if (combinedText.indexOf(filter) > -1) {
-                        row.setAttribute("data-filtered", "false");
-                    } else {
-                        row.setAttribute("data-filtered", "true");
-                    }
+                var text = row.textContent.toLowerCase();
+                if (text.indexOf(filter) > -1) {
+                    row.setAttribute("data-filtered", "false");
+                } else {
+                    row.setAttribute("data-filtered", "true");
                 }
             });
-            currentPage = 1;
-            paginateTable();
+            table.dispatchEvent(new Event("filterRefreshed"));
         }
 
         function toggleItemTypeFields(form) {
@@ -381,15 +317,15 @@
             });
         }
 
-        // Initialize fields on load
         document.addEventListener("DOMContentLoaded", function() {
             var addForm = document.getElementById("createItemForm");
             if (addForm) {
                 toggleItemTypeFields(addForm);
             }
             
-            // Run pagination on startup
-            filterTable();
+            // Initialize Common Table helper
+            initCommonTable(document.getElementById("catalogTable"));
         });
     </script>
 }
+

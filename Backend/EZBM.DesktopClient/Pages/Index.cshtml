@@ -1,60 +1,113 @@
 @page
 @model EZBM.DesktopClient.Pages.IndexModel
+@using EZBM.DesktopClient.Helpers
 @{
     ViewData["Title"] = "Analytics Dashboard";
 }
 
-<h2>Page 2: Analytics Dashboard (Home Screen)</h2>
+<h2>Analytics Dashboard</h2>
 
+<!-- Metrics Cards Section -->
 <div style="display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap;">
-    <div style="border: 1px solid #000; padding: 15px; min-width: 180px; background-color: #f0f8ff;">
-        <h4 style="margin: 0 0 10px 0;">Today's Sales</h4>
-        <p style="font-size: 1.6em; font-weight: bold; margin: 0; color: #0066cc;">
-            @Model.TodaySales.ToString("C")
+    <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid #3182ce;">
+        <h4 style="margin: 0 0 8px 0; color: #718096; font-size: 0.9em; text-transform: uppercase;">Today's Sales</h4>
+        <p style="font-size: 1.8em; font-weight: bold; margin: 0; color: #2b6cb0;">
+            @StateHelper.FormatCurrency(Model.TodaySales)
         </p>
     </div>
 
-    <div style="border: 1px solid #000; padding: 15px; min-width: 180px; background-color: #f0fff0;">
-        <h4 style="margin: 0 0 10px 0;">Today's Profit</h4>
-        <p style="font-size: 1.6em; font-weight: bold; margin: 0; color: #008800;">
-            @Model.TodayProfit.ToString("C")
+    <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid #38a169;">
+        <h4 style="margin: 0 0 8px 0; color: #718096; font-size: 0.9em; text-transform: uppercase;">Today's Profit</h4>
+        <p style="font-size: 1.8em; font-weight: bold; margin: 0; color: #2f855a;">
+            @StateHelper.FormatCurrency(Model.TodayProfit)
         </p>
     </div>
 
-    <div style="border: 1px solid #000; padding: 15px; min-width: 180px; background-color: #fafafa;">
-        <h4 style="margin: 0 0 10px 0;">Gross Sales (All-Time)</h4>
-        <p style="font-size: 1.6em; font-weight: bold; margin: 0;">
-            @Model.TotalSales.ToString("C")
+    <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid #4a5568;">
+        <h4 style="margin: 0 0 8px 0; color: #718096; font-size: 0.9em; text-transform: uppercase;">Gross Sales (All-Time)</h4>
+        <p style="font-size: 1.8em; font-weight: bold; margin: 0; color: #2d3748;">
+            @StateHelper.FormatCurrency(Model.TotalSales)
         </p>
     </div>
 
-    <div style="border: 1px solid #000; padding: 15px; min-width: 180px; background-color: #fafafa;">
-        <h4 style="margin: 0 0 10px 0;">Gross Profit (All-Time)</h4>
-        <p style="font-size: 1.6em; font-weight: bold; margin: 0;">
-            @Model.GrossProfit.ToString("C")
+    <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid #718096;">
+        <h4 style="margin: 0 0 8px 0; color: #718096; font-size: 0.9em; text-transform: uppercase;">Gross Profit (All-Time)</h4>
+        <p style="font-size: 1.8em; font-weight: bold; margin: 0; color: #4a5568;">
+            @StateHelper.FormatCurrency(Model.GrossProfit)
         </p>
     </div>
 
-    <div style="border: 1px solid #000; padding: 15px; min-width: 180px; background-color: #fff0f5;">
-        <h4 style="margin: 0 0 10px 0;">Net Profit (All-Time)</h4>
-        <p style="font-size: 1.6em; font-weight: bold; margin: 0; color: #cc0066;">
-            @Model.NetProfit.ToString("C")
+    <div style="flex: 1; min-width: 200px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 4px solid #e53e3e;">
+        <h4 style="margin: 0 0 8px 0; color: #718096; font-size: 0.9em; text-transform: uppercase;">Net Profit (All-Time)</h4>
+        <p style="font-size: 1.8em; font-weight: bold; margin: 0; color: #c53030;">
+            @StateHelper.FormatCurrency(Model.NetProfit)
         </p>
     </div>
 </div>
 
-<hr />
+<hr style="border: none; border-top: 1px solid #e2e8f0; margin: 30px 0;" />
 
 <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
     <!-- Left Column (Alerts & Trends & Lists) -->
     <div style="flex: 2; min-width: 500px; display: flex; flex-direction: column; gap: 30px;">
         
+        <!-- Sales Volume Trends SVG Chart -->
+        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #2d3748;">7-Day Sales Volume Trend</h3>
+            @{
+                float maxSales = Model.SalesVolumeTrends.Count > 0 ? Model.SalesVolumeTrends.Max(t => t.TotalAmount) : 0f;
+                if (maxSales < 100f) maxSales = 100f; // min scale
+            }
+            <div style="width: 100%; overflow-x: auto;">
+                <svg width="100%" height="220" style="background-color: #fff; min-width: 580px;">
+                    <!-- Grid Lines -->
+                    <line x1="60" y1="20" x2="95%" y2="20" stroke="#f0f0f0" stroke-width="1" />
+                    <line x1="60" y1="70" x2="95%" y2="70" stroke="#f0f0f0" stroke-width="1" />
+                    <line x1="60" y1="120" x2="95%" y2="120" stroke="#f0f0f0" stroke-width="1" />
+                    <line x1="60" y1="170" x2="95%" y2="170" stroke="#e2e8f0" stroke-width="1.5" />
+
+                    <!-- Y Axis Labels -->
+                    <text x="50" y="24" font-size="10" text-anchor="end" fill="#718096">@StateHelper.FormatCurrency(maxSales)</text>
+                    <text x="50" y="99" font-size="10" text-anchor="end" fill="#718096">@StateHelper.FormatCurrency(maxSales * 0.5f)</text>
+                    <text x="50" y="174" font-size="10" text-anchor="end" fill="#718096">@StateHelper.FormatCurrency(0f)</text>
+
+                    <!-- Bars -->
+                    @{
+                        int index = 0;
+                        int barCount = Model.SalesVolumeTrends.Count;
+                    }
+                    @foreach (var trend in Model.SalesVolumeTrends)
+                    {
+                        float barHeight = (trend.TotalAmount / maxSales) * 140f;
+                        float xPos = 75 + (index * 75); // spacing
+                        float yPos = 170 - barHeight;
+                        
+                        <rect x="@xPos" y="@yPos" width="36" height="@barHeight" fill="#3182ce" rx="3" ry="3">
+                            <title>@trend.Date: @StateHelper.FormatCurrency(trend.TotalAmount) (@trend.SalesCount transactions)</title>
+                        </rect>
+                        
+                        <!-- Value Label -->
+                        @if (trend.TotalAmount > 0)
+                        {
+                            <g><text x="@(xPos + 18)" y="@(yPos - 6)" font-size="9" font-weight="bold" text-anchor="middle" fill="#2d3748">@StateHelper.FormatCurrency(trend.TotalAmount)</text></g>
+                        }
+                        
+                        <!-- X Axis Date Label -->
+                        var dateStr = DateTime.TryParse(trend.Date, out DateTime dt) ? dt.ToString("MM/dd") : trend.Date;
+                        <g><text x="@(xPos + 18)" y="190" font-size="10.5" text-anchor="middle" fill="#4a5568">@dateStr</text></g>
+                        
+                        index++;
+                    }
+                </svg>
+            </div>
+        </div>
+
         <!-- Low Stock Alerts -->
         <div>
-            <h3>Low Stock Alerts (Product TPH)</h3>
+            <h3>Low Stock Alerts</h3>
             @if (Model.LowStockAlerts.Count == 0)
             {
-                <div style="background-color: #ccffcc; padding: 15px; border: 1px solid #00aa00;">
+                <div style="background-color: #c6f6d5; color: #22543d; padding: 15px; border-radius: 6px; border: 1px solid #bbf7d0;">
                     <strong>Notice:</strong> All items are fully stocked based on their individual thresholds.
                 </div>
             }
@@ -72,9 +125,9 @@
                     <tbody>
                         @foreach (var alert in Model.LowStockAlerts)
                         {
-                            <tr style="background-color: #ffcccc;">
-                                <td>@alert.Name</td>
-                                <td><strong>@alert.Quantity</strong></td>
+                            <tr style="background-color: #fff5f5;">
+                                <td style="color: #c53030; font-weight: bold;">@alert.Name</td>
+                                <td style="color: #c53030; font-weight: bold;">@alert.Quantity</td>
                                 <td>@alert.TargetStock</td>
                                 <td>@(alert.LowStockThresholdPercentage * 100)%</td>
                             </tr>
@@ -84,9 +137,9 @@
             }
         </div>
 
-        <!-- Sales Volume Trends -->
+        <!-- Sales Volume Trends Table -->
         <div>
-            <h3>Sales Volume Trends (Last 7 Days)</h3>
+            <h3>Sales Trends List</h3>
             <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
@@ -100,7 +153,7 @@
                     {
                         <tr>
                             <td>@trend.Date</td>
-                            <td>@trend.TotalAmount.ToString("C")</td>
+                            <td><strong>@StateHelper.FormatCurrency(trend.TotalAmount)</strong></td>
                             <td>@trend.SalesCount</td>
                         </tr>
                     }
@@ -123,9 +176,9 @@
                     @foreach (var prod in Model.PopularProducts)
                     {
                         <tr>
-                            <td>@prod.Name</td>
+                            <td><strong>@prod.Name</strong></td>
                             <td>@prod.TotalQuantitySold</td>
-                            <td>@prod.TotalRevenue.ToString("C")</td>
+                            <td><strong>@StateHelper.FormatCurrency(prod.TotalRevenue)</strong></td>
                         </tr>
                     }
                 </tbody>
@@ -154,7 +207,7 @@
                             <td><strong>@cash.Name</strong></td>
                             <td>@cash.Username</td>
                             <td>@cash.SalesCount</td>
-                            <td>@cash.TotalRevenue.ToString("C")</td>
+                            <td><strong>@StateHelper.FormatCurrency(cash.TotalRevenue)</strong></td>
                         </tr>
                         rank++;
                     }
@@ -165,25 +218,25 @@
     </div>
 
     <!-- Right Column (Recent Transactions Feed) -->
-    <div style="width: 380px; border: 1px solid #000; padding: 15px; background-color: #fafafa;">
-        <h3>Recent Transactions (Latest 10)</h3>
+    <div style="width: 380px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
+        <h3 style="margin-top: 0; color: #2d3748; border-bottom: 2px solid #edf2f7; padding-bottom: 10px;">Recent Transactions</h3>
         @if (Model.RecentSales.Count == 0)
         {
-            <p style="color: #888; text-align: center;">No transactions recorded yet.</p>
+            <p style="color: #a0aec0; text-align: center; margin-top: 20px;">No transactions recorded yet.</p>
         }
         else
         {
             <ul style="list-style-type: none; padding-left: 0; margin: 0;">
                 @foreach (var sale in Model.RecentSales)
                 {
-                    <li style="border-bottom: 1px solid #ddd; padding: 10px 0;">
-                        <div style="display: flex; justify-content: space-between; font-weight: bold;">
-                            <span>@sale.InvoiceId</span>
-                            <span>@sale.Amount.ToString("C")</span>
+                    <li style="border-bottom: 1px solid #edf2f7; padding: 12px 0;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 0.95em;">
+                            <span style="color: #2b6cb0;">@sale.InvoiceId</span>
+                            <span>@StateHelper.FormatCurrency(sale.Amount)</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 0.85em; color: #555; margin-top: 3px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #718096; margin-top: 4px;">
                             <span>By: @sale.Staff.FirstName @sale.Staff.LastName</span>
-                            <span>@sale.Timestamp.ToString("yyyy-MM-dd HH:mm")</span>
+                            <span>@StateHelper.FormatDate(sale.Timestamp, HttpContext, true)</span>
                         </div>
                     </li>
                 }
@@ -191,3 +244,4 @@
         }
     </div>
 </div>
+

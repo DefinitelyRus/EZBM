@@ -1,56 +1,52 @@
 @page
 @model EZBM.DesktopClient.Pages.StaffModel
+@using EZBM.DesktopClient.Helpers
 @{
     ViewData["Title"] = "Staff Directory & Roles Matrix";
     bool isDirectory = Model.ActiveTab == "directory" || string.IsNullOrEmpty(Model.ActiveTab);
     bool isRoles = Model.ActiveTab == "roles";
 }
 
-<h2>Page 5: Staff Management & Roles Matrix</h2>
+<h2>Staff Management & Security Roles</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Error:</strong> @Model.ErrorMessage
     </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
         <strong>Success:</strong> @Model.SuccessMessage
     </div>
 }
 
-<!-- Tab Headers -->
-<div style="margin-bottom: 20px; display: flex; gap: 0;">
-    <a href="/Staff?tab=directory" style="padding: 10px; font-weight: @(isDirectory ? "bold" : "normal"); border: 1px solid #000; background-color: @(isDirectory ? "#eee" : "#fff"); text-decoration: none;">
-        Staff Directory
-    </a>
-    <a href="/Staff?tab=roles" style="padding: 10px; font-weight: @(isRoles ? "bold" : "normal"); border: 1px solid #000; border-left: none; background-color: @(isRoles ? "#eee" : "#fff"); text-decoration: none;">
-        Security Roles Matrix
-    </a>
+<!-- Google Docs Style Subtabs -->
+<div class="subtabs-container">
+    <a href="/Staff?tab=directory" class="subtab-item @(isDirectory ? "active" : "")">Staff Directory</a>
+    <a href="/Staff?tab=roles" class="subtab-item @(isRoles ? "active" : "")">Security Roles Matrix</a>
 </div>
 
-<div style="display: flex; gap: 40px; align-items: flex-start;">
+<div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
     @if (isDirectory)
     {
         <!-- Tab 1: Staff Directory -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>Active Staff Profiles</h3>
-            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+            <table border="1" cellpadding="5" cellspacing="0" id="staffTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
-                        <th>ID</th>
+                        <th data-hide-default="true">ID</th>
                         <th>Name</th>
-                        <th>Username</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Position</th>
+                        <th>Position / Access Type</th>
+                        <th data-hide-default="true">Email</th>
+                        <th data-hide-default="true">Phone</th>
                         <th>Assigned Roles</th>
-                        <th>Pay Rate</th>
-                        <th>Comm. Rate</th>
-                        <th>Actions</th>
+                        <th data-numeric="true" data-hide-default="true">Pay Rate</th>
+                        <th data-numeric="true" data-hide-default="true">Comm. Override</th>
+                        <th data-no-sort="true">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,30 +54,30 @@
                     {
                         <tr>
                             <td>@staff.Id</td>
-                            <td><strong>@staff.FirstName @staff.LastName</strong></td>
-                            <td>@staff.Username</td>
+                            <td><strong>@staff.FirstName @staff.LastName</strong> (@staff.Username)</td>
+                            <td>@(staff.Position ?? "Staff") / @staff.AccessType</td>
                             <td>@staff.Email</td>
                             <td>@staff.PhoneNumber</td>
-                            <td>@(staff.Position ?? "Staff")</td>
                             <td>
                                 @if (staff.Roles.Count == 0)
                                 {
-                                    <span style="color: #888; font-style: italic;">None</span>
+                                    <span style="color: #a0aec0; font-style: italic;">None Assigned</span>
                                 }
                                 else
                                 {
                                     @string.Join(", ", staff.Roles.Select(r => r.Name))
                                 }
                             </td>
-                            <td>@staff.PayRate.ToString("C") (@staff.PayFrequency)</td>
+                            <td>@StateHelper.FormatCurrency(staff.PayRate) (@staff.PayFrequency)</td>
                             <td>@(staff.CommissionRate.HasValue ? staff.CommissionRate.Value.ToString("F2") : "1.00 (Default)")</td>
                             <td>
-                                <a href="/Staff?action=edit&id=@staff.Id&tab=directory">Edit</a>
-                                |
-                                <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
-                                    <input type="hidden" name="id" value="@staff.Id" />
-                                    <button type="submit" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer; padding: 0;">Delete</button>
-                                </form>
+                                <div class="action-buttons">
+                                    <a href="/Staff?action=edit&id=@staff.Id&tab=directory" class="btn" style="padding: 2px 6px; font-size: 0.85em;">Edit</a>
+                                    <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                        <input type="hidden" name="id" value="@staff.Id" />
+                                        <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -90,51 +86,51 @@
         </div>
 
         <!-- Add or Edit Side Panel -->
-        <div style="width: 350px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9; box-sizing: border-box;">
+        <div style="width: 350px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
             @if (Model.EditingStaff is not null)
             {
-                <h3>Edit Employee Details</h3>
+                <h3 style="margin-top:0;">Edit Employee Profile</h3>
                 <form method="post" asp-page-handler="Update">
                     <input type="hidden" name="id" value="@Model.EditingStaff.Id" />
                     
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Username:</label>
-                        <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username:</label>
+                        <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Password (blank to keep same):</label>
-                        <input type="text" name="password" style="width: 100%;" placeholder="••••••••" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Password (blank to keep same):</label>
+                        <input type="password" name="password" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" placeholder="••••••••" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">First Name:</label>
-                        <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">First Name:</label>
+                        <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Last Name:</label>
-                        <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Last Name:</label>
+                        <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Email:</label>
-                        <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Email:</label>
+                        <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Phone:</label>
-                        <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Phone:</label>
+                        <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Position/Role:</label>
-                        <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Position/Title:</label>
+                        <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Pay Frequency:</label>
-                        <select name="payFrequency" style="width: 100%;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Frequency:</label>
+                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                             @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
                                 @if (Model.EditingStaff.PayFrequency == freq)
@@ -149,20 +145,20 @@
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
-                        <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()):</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Commission Rate Override:</label>
-                        <input type="number" step="0.01" min="0" name="commissionRate" value="@Model.EditingStaff.CommissionRate" style="width: 100%;" />
-                        <small style="color: #666;">Leave blank for default multiplier (1.0)</small>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate:</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" value="@Model.EditingStaff.CommissionRate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 2px;">Leave blank for default (1.0)</small>
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold;">Security Roles (Multi-select):</label>
-                        <select name="roleIds" multiple style="width: 100%; height: 80px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Security Roles (Hold Ctrl to multi-select):</label>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                             @foreach (var role in Model.RolesList)
                             {
                                 bool isAssigned = Model.EditingStaff.Roles.Any(r => r.Id == role.Id);
@@ -176,56 +172,56 @@
                                 }
                             }
                         </select>
-                        <small style="color:#666;">Hold Ctrl key to select multiple roles.</small>
                     </div>
 
-                    <button type="submit" style="background-color: blue; color: white; padding: 5px 10px; font-weight: bold; cursor: pointer;">Update Profile</button>
-                    <a href="/Staff?tab=directory" style="margin-left: 10px;">Cancel</a>
+                    <div style="display: flex; gap: 10px;">
+                        <button type="submit" class="btn btn-primary" style="flex: 1;">Update Profile</button>
+                        <a href="/Staff?tab=directory" class="btn" style="flex: 1; text-align: center;">Cancel</a>
+                    </div>
                 </form>
             }
             else
             {
-                <h3>Add New Employee</h3>
+                <h3 style="margin-top:0;">Add New Employee</h3>
                 <form method="post" asp-page-handler="Create">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username:</label>
+                        <input type="text" name="username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Password:</label>
+                        <input type="password" name="password" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                    </div>
                     
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Username:</label>
-                        <input type="text" name="username" required style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">First Name:</label>
+                        <input type="text" name="firstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Password:</label>
-                        <input type="text" name="password" style="width: 100%;" />
-                    </div>
-                    
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">First Name:</label>
-                        <input type="text" name="firstName" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Last Name:</label>
+                        <input type="text" name="lastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Last Name:</label>
-                        <input type="text" name="lastName" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Email:</label>
+                        <input type="email" name="email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Email:</label>
-                        <input type="email" name="email" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Phone Number:</label>
+                        <input type="text" name="phoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Phone Number:</label>
-                        <input type="text" name="phoneNumber" style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Position/Title:</label>
+                        <input type="text" name="position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Position/Role:</label>
-                        <input type="text" name="position" style="width: 100%;" />
-                    </div>
-
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Pay Frequency:</label>
-                        <select name="payFrequency" style="width: 100%;">
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Frequency:</label>
+                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                             @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
                                 <option value="@freq">@freq</option>
@@ -233,20 +229,20 @@
                         </select>
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Pay Rate ($):</label>
-                        <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%;" />
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()):</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                     </div>
 
-                    <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-weight: bold;">Commission Rate Override:</label>
-                        <input type="number" step="0.01" min="0" name="commissionRate" style="width: 100%;" />
-                        <small style="color: #666;">Leave blank for default multiplier (1.0)</small>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate:</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 2px;">Leave blank for default multiplier (1.0)</small>
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold;">Security Roles (Multi-select):</label>
-                        <select name="roleIds" multiple style="width: 100%; height: 80px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Security Roles (Hold Ctrl to multi-select):</label>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
                             @foreach (var role in Model.RolesList)
                             {
                                 <option value="@role.Id">@role.Name</option>
@@ -254,7 +250,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" style="background-color: green; color: white; padding: 5px 10px; font-weight: bold; cursor: pointer;">Register Employee</button>
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Register Employee</button>
                 </form>
             }
         </div>
@@ -262,12 +258,12 @@
     else if (isRoles)
     {
         <!-- Tab 2: Security Roles Matrix -->
-        <div style="flex-grow: 1;">
+        <div style="flex-grow: 1; min-width: 600px;">
             <h3>Granular Role Permissions Matrix</h3>
             
             @if (Model.RolesList.Count == 0)
             {
-                <div style="background-color: #ffffcc; padding: 15px; border: 1px solid #aaaa00; margin-bottom: 20px;">
+                <div style="background-color: #fffaf0; padding: 15px; border: 1px solid #feebc8; margin-bottom: 20px; border-radius: 6px; color: #c05621;">
                     <strong>Notice:</strong> No security roles have been created yet. Add your first role using the form on the right.
                 </div>
             }
@@ -282,8 +278,8 @@
                                 {
                                     <th style="text-align: center;">
                                         @role.Name
-                                        <div style="margin-top: 5px; font-size: 0.8em; font-weight: normal;">
-                                            <button type="submit" asp-page-handler="DeleteRole" asp-route-id="@role.Id" onclick="return confirm('Are you sure you want to delete role @role.Name?');" style="color: red; border: none; background: none; text-decoration: underline; cursor: pointer;">Delete Role</button>
+                                        <div style="margin-top: 6px; font-weight: normal;">
+                                            <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.8em;" asp-page-handler="DeleteRole" asp-route-id="@role.Id" onclick="return confirm('Are you sure you want to delete role @role.Name?');">Delete Role</button>
                                         </div>
                                     </th>
                                 }
@@ -308,11 +304,17 @@
                                         int curVal = permMap.GetValueOrDefault(perm, 0);
                                         
                                         <td style="text-align: center;">
-                                            <select name="perm_@(role.Id)_@(perm)" style="padding: 4px;">
-                                                <option value="1" selected="@(curVal == 1)">Allow</option>
-                                                <option value="0" selected="@(curVal == 0)">Default</option>
-                                                <option value="-1" selected="@(curVal == -1)">Deny</option>
-                                            </select>
+                                            <div style="display: inline-flex; gap: 8px; justify-content: center; align-items: center;">
+                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="1" @(curVal == 1 ? "checked" : "") /> Allow
+                                                </label>
+                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="0" @(curVal == 0 ? "checked" : "") /> Inherit
+                                                </label>
+                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="-1" @(curVal == -1 ? "checked" : "") /> Deny
+                                                </label>
+                                            </div>
                                         </td>
                                     }
                                 </tr>
@@ -320,7 +322,7 @@
                         </tbody>
                     </table>
 
-                    <button type="submit" style="margin-top: 20px; background-color: blue; color: white; padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 3px;">
+                    <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
                         Save Permissions Matrix
                     </button>
                 </form>
@@ -328,18 +330,29 @@
         </div>
 
         <!-- Add Custom Role Panel -->
-        <div style="width: 300px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9;">
-            <h3>Create Security Role</h3>
+        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
+            <h3 style="margin-top:0;">Create Security Role</h3>
             <form method="post" asp-page-handler="CreateRole">
                 <div style="margin-bottom: 15px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 5px;">Role Name:</label>
-                    <input type="text" name="roleName" required placeholder="e.g. Cashier, Auditor" style="width: 100%; padding: 5px;" />
+                    <input type="text" name="roleName" required placeholder="e.g. Cashier, Supervisor" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
                 
-                <button type="submit" style="background-color: green; color: white; padding: 10px 15px; font-weight: bold; cursor: pointer; border: none; border-radius: 3px; width: 100%;">
+                <button type="submit" class="btn btn-success" style="width: 100%;">
                     Create Role
                 </button>
             </form>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const table = document.getElementById("staffTable");
+            if (table) {
+                initCommonTable(table);
+            }
+        });
+    </script>
+}
