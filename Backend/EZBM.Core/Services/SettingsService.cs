@@ -79,7 +79,26 @@ public class StoreSettings
         { "Dog Grooming - Large", 40f },
         { "Cat Grooming", 25f }
     };
+
+    /// <summary>
+    /// Represents info about a promotional discount code.
+    /// </summary>
+    public class PromoCodeInfo
+    {
+        public float DiscountPercentage { get; set; }
+        public DateTime ExpirationDate { get; set; }
+    }
+
+    /// <summary>
+    /// Custom promotion discount codes and their settings.
+    /// </summary>
+    public Dictionary<string, PromoCodeInfo> PromoCodes { get; set; } = new()
+    {
+        { "FREEWEEK", new PromoCodeInfo { DiscountPercentage = 100f, ExpirationDate = new DateTime(2026, 12, 31) } },
+        { "EZBM10", new PromoCodeInfo { DiscountPercentage = 10f, ExpirationDate = new DateTime(2026, 12, 31) } }
+    };
 }
+
 
 /// <summary>
 /// Provides access to read/write storefront configurations from settings.json.

@@ -39,6 +39,49 @@ public static class SalesService
                 return noStaffResult;
             }
 
+            float discountPercentage = 0f;
+            if (!string.IsNullOrEmpty(request.PromoCode))
+            {
+                string codeUpper = request.PromoCode.Trim().ToUpper();
+                StoreSettings settings = SettingsService.LoadSettings();
+
+                if (settings.PromoCodes != null && settings.PromoCodes.TryGetValue(codeUpper, out var promoInfo))
+                {
+                    if (DateTime.UtcNow > promoInfo.ExpirationDate.Date.AddDays(1).AddSeconds(-1))
+                    {
+                        message = $"Promo code {request.PromoCode} is invalid: the promotion has expired.";
+                        Log.Me(message);
+                        Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                        return failResult;
+                    }
+                    discountPercentage = promoInfo.DiscountPercentage;
+                }
+                else if (codeUpper.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
+                    {
+                        discountPercentage = 100f;
+                    }
+                    else
+                    {
+                        message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                        Log.Me(message);
+                        Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                        return failResult;
+                    }
+                }
+                else
+                {
+                    message = $"Promo code {request.PromoCode} is invalid or unrecognized.";
+                    Log.Me(message);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    return failResult;
+                }
+            }
+
+            float finalAmount = request.TotalAmount * (1f - discountPercentage / 100f);
+            if (finalAmount < 0f) finalAmount = 0f;
+
             if (request.PaymentMethod == Transaction.PayMethod.Mixed)
             {
                 if (request.SplitPayments is null || request.SplitPayments.Count == 0)
@@ -49,26 +92,9 @@ public static class SalesService
                     return failResult;
                 }
                 float sum = request.SplitPayments.Sum(s => s.Amount);
-                if (Math.Abs(sum - request.TotalAmount) > 0.01f)
+                if (Math.Abs(sum - finalAmount) > 0.01f)
                 {
-                    message = $"Cannot checkout: Split payments sum (${sum}) does not match total amount (${request.TotalAmount}).";
-                    Log.Me(message);
-                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
-                    return failResult;
-                }
-            }
-
-            bool hasFreeWeekPromo = false;
-            if (!string.IsNullOrEmpty(request.PromoCode) && request.PromoCode.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
-            {
-                StoreSettings settings = SettingsService.LoadSettings();
-                if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
-                {
-                    hasFreeWeekPromo = true;
-                }
-                else
-                {
-                    message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                    message = $"Cannot checkout: Split payments sum (${sum}) does not match discounted total amount (${finalAmount}).";
                     Log.Me(message);
                     Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
                     return failResult;
@@ -77,7 +103,6 @@ public static class SalesService
 
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
-            float finalAmount = hasFreeWeekPromo ? 0f : request.TotalAmount;
 
             Sale sale = new(
                 id: Utils.GenerateEntityId(),
