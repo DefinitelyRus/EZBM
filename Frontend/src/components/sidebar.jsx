@@ -17,6 +17,39 @@ import SettingsIcon from "../assets/settings.svg?react";
 function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
+   const navItems = [
+    {
+      to: "/dashboard",
+      text: "Analytics Dashboard",
+      icon: <DashboardIcon />,
+    },
+    {
+      to: "/inventory",
+      text: "Inventory Management",
+      icon: <InventoryIcon />,
+    },
+    {
+      to: "/pos",
+      text: "POS Checkout",
+      icon: <CheckoutIcon />,
+    },
+    {
+      to: "/staff",
+      text: "Staff Management",
+      icon: <StaffIcon />,
+    },
+    {
+      to: "/logs",
+      text: "Attendance & Payroll Logs",
+      icon: <LogsIcon />,
+    },
+    {
+      to: "/settings",
+      text: "Store Settings",
+      icon: <SettingsIcon />,
+    },
+  ];
+
   useEffect(() => {
   const tooltipTriggerList = document.querySelectorAll(
     '[data-bs-toggle="tooltip"]'
@@ -54,47 +87,15 @@ function Sidebar() {
       </div>
 
       <div id="nav-btn-group">
-        <Button
-          to="/dashboard"
-          text="Analytics Dashboard"
-          icon={<DashboardIcon />}
-          collapsed={collapsed}
-        />
-
-        <Button
-          to="/inventory"
-          text="Inventory Management"
-          icon={<InventoryIcon />}
-          collapsed={collapsed}
-        />
-
-        <Button
-          to="/pos"
-          text="POS Checkout"
-          icon={<CheckoutIcon />}
-          collapsed={collapsed}
-        />
-
-        <Button
-          to="/staff"
-          text="Staff Management"
-          icon={<StaffIcon />}
-          collapsed={collapsed}
-        />
-
-        <Button
-          to="/logs"
-          text="Attendance & Payroll Logs"
-          icon={<LogsIcon />}
-          collapsed={collapsed}
-        />
-
-        <Button
-          to="/settings"
-          text="Store Settings"
-          icon={<SettingsIcon />}
-          collapsed={collapsed}
-        />
+        {navItems.map((item) => (
+          <Button
+            key={item.to}
+            to={item.to}
+            text={item.text}
+            icon={item.icon}
+            collapsed={collapsed}
+          />
+        ))}
       </div>
 
       <div id="log-out">
