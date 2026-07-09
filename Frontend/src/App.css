@@ -7,17 +7,13 @@ body {
     height: 100%;
 }
 
-/* Section Containers */
+/* =========================== 
+Section Containers 
+=========================== */
 #main-pages {
-    /* Sizing */
     min-height: 100vh;
 
-    /* Appearance */
-    background: linear-gradient(
-        180deg,
-        #ffffff 0%,
-        #ecf2f8 50%,
-        #EAF4FF 100%
-    );
-}
+    background: var(--md-background);
 
+    transition: background-color var(--transition);
+}
