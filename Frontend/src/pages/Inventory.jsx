@@ -2,6 +2,7 @@ import './Inventory.css';
 
 import React, { useState } from "react";
 import Dropdown from '../components/Dropdown';
+import DataTable from "../components/DataTable";
 import { dropdownOptions } from "../components/dropdownOptions";
 
 import SearchIcon from "../assets/search.svg?react";
@@ -65,10 +66,28 @@ const inventoryItems = [
 ];
 
 function Dashboard() {
-  const [expiryDate, setExpiryDate] = useState(new Date());
+
+    const handlePriceChange = (field, value) => {
+      if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      }
+    };
+
+  const handleQuantityChange = (value) => {
+  if (/^\d*\.?\d*$/.test(value) || value === "") {
+    setFormData((prev) => ({
+      ...prev,
+      quantity: value,
+    }));
+  }
+};
 
   const [search, setSearch] = useState("");
 
+  /* Search Bar */
   const filteredItems = inventoryItems.filter((item) => {
     const query = search.toLowerCase();
     return (
@@ -77,6 +96,106 @@ function Dashboard() {
       (item.description && item.description.toLowerCase().includes(query))
     );
   });
+
+  /* Clear Button */
+  const initialForm = {
+      name: "",
+      description: "",
+      forSale: false,
+      costPrice: "",
+      salePrice: "",
+      quantity: "",
+      unit: "",
+      expiryDate: null,
+      tags: [],
+    };
+
+  const [formData, setFormData] = useState(initialForm);
+
+  const handleClear = () => {
+    setFormData(initialForm);
+  };
+
+  const toggleTag = (tag) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter((t) => t !== tag)
+        : [...prev.tags, tag],
+    }));
+  };
+
+  /* Table */
+  const columns = [
+    {
+      key: "name",
+      label: "Name",
+      width: "28%",
+      className: "col-left",
+    },
+    {
+      key: "forSale",
+      label: <>For<br />Sale?</>,
+      width: "6%",
+      className: "col-center",
+      render: (row) => (row.forSale ? "Yes" : "No"),
+    },
+    {
+      key: "costPrice",
+      label: <>Cost<br />Price</>,
+      width: "8%",
+      className: "col-center",
+      render: (row) => `₱${row.costPrice}`,
+    },
+    {
+      key: "salePrice",
+      label: <>Sale<br />Price</>,
+      width: "8%",
+      className: "col-center",
+      render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
+    },
+    {
+      key: "quantity",
+      label: "Quantity",
+      width: "9%",
+      className: "col-center",
+    },
+    {
+      key: "unit",
+      label: "Unit",
+      width: "10%",
+      className: "col-center",
+    },
+    {
+      key: "expiration",
+      label: "Expiration",
+      width: "12%",
+      className: "col-center",
+    },
+    {
+      key: "tags",
+      label: "Tags",
+      width: "12%",
+      className: "col-center",
+    },
+    {
+      key: "actions",
+      label: "",
+      width: "12%",
+      className: "col-center-btn",
+      render: () => (
+        <div className="d-flex flex-direction col btn-group">
+          <button className="edit" title="Edit">
+            <img src={EditIcon} alt="Edit" />
+          </button>
+
+          <button className="delete" title="Delete">
+            <img src={DeleteIcon} alt="Delete" />
+          </button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div id="inventory-contents" className="d-flex flex-row gap-4">
@@ -98,90 +217,38 @@ function Dashboard() {
           </div>
 
            <div className="table-container">
-              <table className="inventory-table">
-              <colgroup>
-                <col style={{ width: "27%" }} /> {/* Name */}
-                <col style={{ width: "6%" }} />  {/* For Sale */}
-                <col style={{ width: "8%" }} /> {/* Cost Price */}
-                <col style={{ width: "8%" }} /> {/* Sale Price */}
-                <col style={{ width: "10%" }} />  {/* Quantity */}
-                <col style={{ width: "10%" }} /> {/* Unit */}
-                <col style={{ width: "12%" }} /> {/* Expiration */}
-                <col style={{ width: "12%" }} /> {/* Tags */}
-                <col style={{ width: "10%" }} />  {/* Actions */}
-              </colgroup>
-
-              <thead>
-                <tr>
-                  <th className="col-left">Name</th>
-                  <th className="col-center">For<br />Sale?</th>
-                  <th className="col-center">Cost<br />Price</th>
-                  <th className="col-center">Sale<br />Price</th>
-                  <th className="col-center">Quantity</th>
-                  <th className="col-center">Unit</th>
-                  <th className="col-center">Expiration</th>
-                  <th className="col-center">Tags</th>
-                  <th className="col-center"></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredItems.length > 0 ? (
-                  filteredItems.map((item) => (
-                    <tr key={item.name}>
-                      <td className="col-left">{item.name}</td>
-                      <td className="col-center">
-                        {item.forSale ? "Yes" : "No"}
-                      </td>
-                      <td className="col-center">₱{item.costPrice}</td>
-                      <td className="col-center">
-                        {item.salePrice ? `₱${item.salePrice}` : "-"}
-                      </td>
-                      <td className="col-center">{item.quantity}</td>
-                      <td className="col-center">{item.unit}</td>
-                      <td className="col-center">{item.expiration}</td>
-                      <td className="col-center">{item.tags}</td>
-
-                      <td className="col-center-btn">
-                        <div className="d-flex flex-direction col gap-1 btn-group">
-                          <button className="edit" title="Edit">
-                            <img src={EditIcon} alt="Edit" />
-                          </button>
-
-                          <button className="delete" title="Delete">
-                            <img src={DeleteIcon} alt="Delete" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="9" className="text-center py-4">
-                      No items found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+              <DataTable
+                columns={columns}
+                data={filteredItems}
+              />
             </div>
           </div>
         </div>
 
       <div
-        id="add-items-container"
-        className="d-flex card"
-        style={{ backgroundColor: '#FFFFFF' }}
+          id="add-items-container"
+          className="card"
       >
         <div className="card-body">
-          <h5 >Add New Item</h5>
+          <div className="panel-header">
+            <h4>Add New Item</h4>
+            <p>Create a new inventory item.</p>
+        </div>
 
+        <form id="item-form">
           <div id="item-inputs">
             <div className="mb-3">
               <label className="form-label">Name</label>
               <input
                 type="text"
                 className="form-control usr-input"
+                 value={formData.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      name: e.target.value,
+                    })
+                  }
               />
             </div>
 
@@ -189,8 +256,36 @@ function Dashboard() {
               <label className="form-label">Description</label>
               <textarea
                 className="form-control usr-input"
-                style={{ minHeight: "80px" }}
+                style={{ minHeight: "60px" }}
+                 value={formData.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  })
+                }
               ></textarea>
+            </div>
+
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="flexCheckDefault"
+                checked={formData.forSale}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    forSale: e.target.checked,
+                  })
+                }
+              />
+              <label
+                className="form-check-label"
+                htmlFor="flexCheckDefault"
+              >
+                Available for Sale
+              </label>
             </div>
 
             <div className="mb-3">
@@ -200,6 +295,8 @@ function Dashboard() {
                 <input
                   type="text"
                   className="form-control usr-input"
+                  value={formData.costPrice}
+                  onChange={(e) => handlePriceChange("costPrice", e.target.value)}
                 />
               </div>
             </div>
@@ -211,39 +308,36 @@ function Dashboard() {
                 <input
                   type="text"
                   className="form-control usr-input"
+                  value={formData.salePrice}
+                  onChange={(e) => handlePriceChange("salePrice", e.target.value)}
                 />
               </div>
             </div>
 
             <div className="mb-3">
-              <label className="form-label">Stock Quantity</label>
+              <label className="form-label">Quantity</label>
               <input
                 type="text"
-                className="form-control usr-input"
+                className="form-control usr-input w-70"
+                value={formData.quantity}
+                onChange={(e) => handleQuantityChange(e.target.value)}
+                inputMode="decimal"
               />
             </div>
 
             <div className="mb-3">
               <label className="form-label">Unit of Measurement</label>
               <Dropdown
-                  title="Select an option"
-                  options={dropdownOptions.units}
-                  className="usr-input"
-              />
-            </div>
-
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="flexCheckDefault"
-              />
-              <label
-                className="form-check-label"
-                htmlFor="flexCheckDefault"
-              >
-                Available for Sale
-              </label>
+                title="Select Unit"
+                options={dropdownOptions.units}
+                value={formData.unit}
+                onSelect={(value) =>
+                    setFormData({
+                        ...formData,
+                        unit: value,
+                    })
+                }
+            />
             </div>
 
             <div className="mb-3">
@@ -252,42 +346,65 @@ function Dashboard() {
               </label>
 
               <DatePicker
-                selected={expiryDate}
-                onChange={(date) => setExpiryDate(date)}
                 className="form-control usr-input date-picker"
+                calendarClassName="md-calendar"
                 dateFormat="MM/dd/yyyy"
+                placeholderText="mm/dd/yyyy"
+                isClearable
+
+                selected={formData.expiryDate}
+                onChange={(date) =>
+                  setFormData({
+                    ...formData,
+                    expiryDate: date,
+                  })
+                }
               />
             </div>
+
             <div className="mb-2 d-flex flex-direction row">
-            <label className="form-label">
-              Tags:
-            </label>
-                <div className="d-flex flex-wrap gap-1">
-                  <button className="tag-btn">Beverage</button>
-                  <button className="tag-btn">Food</button>
-                  <button className="tag-btn">Ingredient</button>
-                  <button className="tag-btn">Dairy</button>
-                  <button className="tag-btn">Supplies</button>
-                  <button className="tag-btn">Hygiene</button>
+                <label className="form-label">Tags</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {[
+                    "Beverage",
+                    "Food",
+                    "Ingredient",
+                    "Dairy",
+                    "Supplies",
+                    "Hygiene",
+                  ].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`tag-btn ${
+                        formData.tags.includes(tag) ? "selected" : ""
+                      }`}
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
                 </div>
             </div>
           </div>
-        </div>
-        
-        <div className="d-flex justify-content-center gap-3">
-          <button
-            id="create-item"
-            className="btn btn-light align-self-center"
-          >
-            Create Item
-          </button>
-          <button
-            id="clear-item"
-            className="btn btn-light align-self-center"
-          >
-            Clear
-          </button>
-        </div>
+        </form>
+            </div>
+            <div className="d-flex justify-content-center gap-3">
+              <button
+                id="create-item"
+                className="btn btn-light align-self-center"
+              >
+                Create Item
+              </button>
+              <button
+                id="clear-item"
+                className="btn btn-light align-self-center"
+                type="button"
+                onClick={handleClear}
+              >
+                Clear
+            </button>
+            </div>
       </div>
     </div>
   );
