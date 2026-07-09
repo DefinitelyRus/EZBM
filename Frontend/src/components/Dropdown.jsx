@@ -1,33 +1,60 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import "./Dropdown.css";
 
-function Dropdown({ title, options }) {
-  const [selected, setSelected] = useState(title);
+function Dropdown({ title, options, value, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleOutsideClick(e) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () =>
+      document.removeEventListener("mousedown", handleOutsideClick);
+  }, []);
+
+  const handleSelect = (option) => {
+    setOpen(false);
+
+    if (onSelect) {
+      onSelect(option);
+    }
+  };
 
   return (
-    <div className="dropdown w-100">
+    <div className="md-dropdown" ref={dropdownRef}>
       <button
-        className="btn btn-secondary dropdown-toggle w-100 d-flex justify-content-between align-items-center"
         type="button"
-        data-bs-toggle="dropdown"
-        aria-expanded="false"
-        style={{ backgroundColor: '#FFFFFF', color: '#1C1E21', borderRadius: '25px' }}
+        className={`md-dropdown-btn ${open ? "open" : ""}`}
+        onClick={() => setOpen(!open)}
       >
-        {selected}
+        <span>{value || title}</span>
+
+        <span className={`md-arrow ${open ? "rotate" : ""}`}>
+          ▼
+        </span>
       </button>
 
-      <ul className="dropdown-menu w-100">
+      <div className={`md-dropdown-menu ${open ? "show" : ""}`}>
         {options.map((option) => (
-          <li key={option}>
-            <button
-              className="dropdown-item"
-              type="button"
-              onClick={() => setSelected(option)}
-            >
-              {option}
-            </button>
-          </li>
+          <button
+            key={option}
+            type="button"
+            className="md-dropdown-item"
+            onClick={() => handleSelect(option)}
+          >
+            {option}
+          </button>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
