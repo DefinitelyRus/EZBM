@@ -136,7 +136,7 @@
 }
 
 .table-empty {
-    padding: 48px 24px !important;
+    padding: 16px 16px !important;
     text-align: center !important;
 
     color: var(--md-on-surface-variant);

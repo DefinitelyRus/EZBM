@@ -1,10 +1,10 @@
 import './Checkout.css';
 import { useState } from "react";
 
-import Dropdown from '../components/Dropdown';
-import { dropdownOptions } from "../components/dropdownOptions";
+import Dropdown from '../../components/Dropdown';
+import { dropdownOptions } from "../../components/dropdownOptions";
 
-import AddCartIcon from "../assets/add_cart.svg";
+import AddCartIcon from "../../assets/add_cart.svg";
 
 const forSaleItems = [
   {
