@@ -18,10 +18,12 @@
 }
 
 #add-items-container {
-    align-self: flex-start;
     max-height: fit-content;
-    width: 420px;
-    position: relative;
+    width: 370px;
+    position: fixed;
+
+    top: 24px;
+    right: 24px;
 
     background: var(--md-surface);
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { InventoryAPI } from "../../api/inventory";
 import './Inventory.css';
 
 import Dropdown from "../../components/Dropdown";
@@ -20,62 +21,19 @@ function Dashboard() {
   const [showAddItem, setShowAddItem] = useState(true);
   const [search, setSearch] = useState("");
 
-  // Fetch items from the backend!
   useEffect(() => {
-    fetch("http://localhost:5056/api/items")
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch inventory items.");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Items from server:", data);
 
-        const mappedItems = data.map((item) => ({
-          name: item.name ?? item.Name,
-          description: item.description ?? item.Description,
-          forSale: item.isForSale ?? item.IsForSale,
-          costPrice: item.cost ?? item.Cost,
-          salePrice: item.salePrice ?? item.SalePrice,
-          quantity: item.quantity ?? item.Quantity,
+    async function load() {
+      try {
+          const data = await InventoryAPI.getAll();
+          setInventoryItems(data);
+      }
+      catch(err){
+          console.error(err);
+      }
+    }
 
-          // Handles either a string or an object
-          unit:
-            typeof (item.unitOfMeasurement ?? item.UnitOfMeasurement) === "object"
-              ? (item.unitOfMeasurement ?? item.UnitOfMeasurement)?.name ??
-                (item.unitOfMeasurement ?? item.UnitOfMeasurement)?.Name ??
-                ""
-              : (item.unitOfMeasurement ?? item.UnitOfMeasurement),
-
-          expiration: item.expirationDate ?? item.ExpirationDate
-            ? new Date(item.expirationDate ?? item.ExpirationDate).toLocaleDateString(
-                "en-US",
-                {
-                  month: "2-digit",
-                  day: "2-digit",
-                  year: "numeric",
-                }
-              )
-            : "N/A",
-
-          // Converts tags array into a comma-separated string
-          tags: Array.isArray(item.tags ?? item.Tags)
-            ? (item.tags ?? item.Tags)
-                .map((tag) =>
-                  typeof tag === "object"
-                    ? tag.name ?? tag.Name
-                    : tag
-                )
-                .join(", ")
-            : "",
-        }));
-
-        setInventoryItems(mappedItems);
-      })
-      .catch((error) => {
-        console.error("Error fetching inventory:", error);
-      });
+    load();
   }, []);
 
   const handlePriceChange = (field, value) => {
@@ -88,13 +46,13 @@ function Dashboard() {
   };
 
   const handleQuantityChange = (value) => {
-  if (/^\d*\.?\d*$/.test(value) || value === "") {
-    setFormData((prev) => ({
-      ...prev,
-      quantity: value,
-    }));
-  }
-};
+    if (/^\d*\.?\d*$/.test(value) || value === "") {
+      setFormData((prev) => ({
+        ...prev,
+        quantity: value,
+      }));
+    }
+  };
 
   /* Search Bar */
   const filteredItems = inventoryItems.filter((item) => {
@@ -111,12 +69,12 @@ function Dashboard() {
   const initialForm = {
       name: "",
       description: "",
-      forSale: false,
-      costPrice: "",
+      isForSale: false,
+      cost: "",
       salePrice: "",
       quantity: "",
-      unit: "",
-      expiryDate: null,
+      unitOfMeasurement: "",
+      expirationDate: null,
       tags: [],
     };
 
@@ -144,18 +102,18 @@ function Dashboard() {
       className: "col-left",
     },
     {
-      key: "forSale",
+      key: "isForSale",
       label: <>For<br />Sale?</>,
       width: "6%",
       className: "col-center",
-      render: (row) => (row.forSale ? "Yes" : "No"),
+      render: (row) => (row.isForSale ? "Yes" : "No"),
     },
     {
-      key: "costPrice",
+      key: "cost",
       label: <>Cost<br />Price</>,
       width: "8%",
       className: "col-center",
-      render: (row) => `₱${row.costPrice}`,
+      render: (row) => `₱${row.cost}`,
     },
     {
       key: "salePrice",
@@ -171,16 +129,20 @@ function Dashboard() {
       className: "col-center",
     },
     {
-      key: "unit",
+      key: "unitOfMeasurement",
       label: "Unit",
       width: "10%",
       className: "col-center",
     },
     {
-      key: "expiration",
+      key: "expirationDate",
       label: "Expiration",
       width: "12%",
       className: "col-center",
+      render: (row) =>
+        row.expirationDate
+          ? new Date(row.expirationDate).toLocaleDateString("en-US")
+          : "-",
     },
     {
       key: "tags",
@@ -208,32 +170,34 @@ function Dashboard() {
   ];
 
   return (
-    <div id="inventory-contents" className="d-flex flex-row gap-4 align-items-start">
-      <div id="inventory-content-left" className="d-flex col-9">
-        <div id='top-text'>
-          <h2>Inventory Management</h2>
-          <h5>Keep track of your products and stock levels.</h5>
-        </div>
-
-        <div className="input-group flex-direction row">
-          <div className="search-bar-container">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Type in to filter..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+    <>
+      <div id="inventory-contents">
+        <div id="inventory-content-left" className="d-flex col-9">
+          <div id='top-text'>
+            <h2>Inventory Management</h2>
+            <h5>Keep track of your products and stock levels.</h5>
           </div>
 
-           <div className="table-container">
-              <DataTable
-                columns={columns}
-                data={filteredItems}
+          <div className="input-group flex-direction row">
+            <div className="search-bar-container">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Type in to filter..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+
+            <div className="table-container">
+                <DataTable
+                  columns={columns}
+                  data={filteredItems}
+                />
+              </div>
+            </div>
           </div>
-        </div>
+      </div>
 
         <div 
           id="add-items-container" 
@@ -299,11 +263,11 @@ function Dashboard() {
                   className="form-check-input"
                   type="checkbox"
                   id="flexCheckDefault"
-                  checked={formData.forSale}
+                  checked={formData.isForSale}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      forSale: e.target.checked,
+                      isForSale: e.target.checked,
                     })
                   }
                 />
@@ -322,8 +286,8 @@ function Dashboard() {
                   <input
                     type="text"
                     className="form-control usr-input"
-                    value={formData.costPrice}
-                    onChange={(e) => handlePriceChange("costPrice", e.target.value)}
+                    value={formData.cost}
+                    onChange={(e) => handlePriceChange("cost", e.target.value)}
                   />
                 </div>
               </div>
@@ -356,12 +320,12 @@ function Dashboard() {
                 <label className="form-label">Unit of Measurement</label>
                 <Dropdown
                   title="Select Unit"
-                  options={dropdownOptions.units}
-                  value={formData.unit}
+                  options={dropdownOptions.unitOfMeasurement}
+                  value={formData.unitOfMeasurement}
                   onSelect={(value) =>
                       setFormData({
                           ...formData,
-                          unit: value,
+                          unitOfMeasurement: value,
                       })
                   }
               />
@@ -379,11 +343,11 @@ function Dashboard() {
                   placeholderText="mm/dd/yyyy"
                   isClearable
 
-                  selected={formData.expiryDate}
+                  selected={formData.expirationDate}
                   onChange={(date) =>
                     setFormData({
                       ...formData,
-                      expiryDate: date,
+                      expirationDate: date,
                     })
                   }
                 />
@@ -431,20 +395,19 @@ function Dashboard() {
                   Clear
               </button>
             </div>
-            </div>
+          </div>
         </div>
-        <button
-          className={`floating-add-btn ${
-            showAddItem ? "btn-hidden" : "btn-visible"
-          }`}
-          type="button"
-          onClick={() => setShowAddItem(true)}
-        >
-          <img src={AddIcon} alt="" />
-          <span>Add New Item</span>
-        </button>
-    </div>
-    
+         <button
+            className={`floating-add-btn ${
+              showAddItem ? "btn-hidden" : "btn-visible"
+            }`}
+            type="button"
+            onClick={() => setShowAddItem(true)}
+          >
+            <img src={AddIcon} alt="" />
+            <span>Add New Item</span>
+          </button>
+    </>
   );
 }
 
