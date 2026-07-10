@@ -1,5 +1,5 @@
 export const dropdownOptions = {
-  units: [
+  unitOfMeasurement: [
     "Kilograms (Kg)",
     "Packs",
     "Bottles",
