@@ -82,9 +82,7 @@
     background: var(--md-hover);
 }
 
-/* ==========================
-   Action Buttons
-   ========================== */
+/* ---------- Action Buttons ---------- */
 
 .ez-table tbody td:last-child > * {
     opacity: 0;
@@ -100,9 +98,7 @@
     transform: translateY(0);
 }
 
-/* ==========================
-   Column Alignment
-   ========================== */
+/* ---------- Column Alignment ---------- */
 
 .ez-table th.col-left,
 .ez-table td.col-left {
@@ -124,4 +120,29 @@
 .ez-table td.col-center-btn {
     text-align: center;
     padding: 8px 0;
+}
+
+/* ---------- Table State ---------- */
+.table-end {
+    padding: 16px 0 8px;
+
+    text-align: center;
+
+    color: var(--md-on-surface-variant);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    user-select: none;
+}
+
+.table-empty {
+    padding: 48px 24px !important;
+    text-align: center !important;
+
+    color: var(--md-on-surface-variant);
+    font-size: 15px;
+    font-weight: 500;
+    font-style: italic;
+
+    background: var(--md-surface);
 }

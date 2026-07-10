@@ -27,25 +27,39 @@ function DataTable({
                 </thead>
 
                 <tbody>
-                    {data.map((row, index) => (
-                        <tr key={row.id || index}>
-                            {columns.map((column) => (
-                               <td
-                                key={column.key}
-                                className={column.className}
-                                style={{
-                                    textAlign: column.align
-                                }}
+                    {data.length > 0 ? (
+                        data.map((row, index) => (
+                            <tr key={row.id || index}>
+                                {columns.map((column) => (
+                                    <td
+                                        key={column.key}
+                                        className={column.className}
+                                        style={{ textAlign: column.align }}
+                                    >
+                                        {column.render
+                                            ? column.render(row)
+                                            : row[column.key]}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td
+                                colSpan={columns.length}
+                                className="table-empty"
                             >
-                                {column.render
-                                    ? column.render(row)
-                                    : row[column.key]}
+                                Nothing to show here.
                             </td>
-                            ))}
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
+            {data.length > 0 && (
+                <div className="table-end">
+                    — End of the list —
+                </div>
+            )}
         </div>
     );
 }
