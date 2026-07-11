@@ -12,9 +12,23 @@
 }
 
 #inventory-content-left {
-    /* Layout */
+    width: 100%;
+    max-width: 1125px;
+
     display: flex;
     flex-direction: column;
+}
+
+/* When the sidebar is collapsed */
+@media (max-width: 1599px) {
+    #inventory-contents {
+        padding-left: 116px; /* 84px sidebar + ~32px gap */
+    }
+
+    #inventory-content-left {
+        max-width: none;
+        flex: 1;
+    }
 }
 
 #add-items-container {

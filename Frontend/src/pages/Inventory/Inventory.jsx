@@ -15,25 +15,29 @@ import AddIcon from "../../assets/add.svg";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+const BREAKPOINT = 1600;
+
 function Dashboard() {
-  
+ 
   const [inventoryItems, setInventoryItems] = useState([]);
   const [showAddItem, setShowAddItem] = useState(true);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
 
-    async function load() {
-      try {
-          const data = await InventoryAPI.getAll();
-          setInventoryItems(data);
-      }
-      catch(err){
-          console.error(err);
-      }
-    }
+    const handleChange = ({ matches }) => {
+      // Hide the panel on small screens
+      setShowAddItem(!matches);
+    };
 
-    load();
+    // Set initial state
+    handleChange(mediaQuery);
+
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () =>
+      mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   const handlePriceChange = (field, value) => {
@@ -55,15 +59,24 @@ function Dashboard() {
   };
 
   /* Search Bar */
-  const filteredItems = inventoryItems.filter((item) => {
-    const query = search.toLowerCase();
+ useEffect(() => {
+    const timeout = setTimeout(async () => {
+      try {
+        const data =
+          search.trim() === ""
+            ? await InventoryAPI.getAll()
+            : await InventoryAPI.find({
+                name: search.trim(),
+              });
 
-    return (
-      (item.name && item.name.toLowerCase().includes(query)) ||
-      (item.tags && item.tags.toLowerCase().includes(query)) ||
-      (item.description && item.description.toLowerCase().includes(query))
-    );
-  });
+        setInventoryItems(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   /* Clear Button */
   const initialForm = {
@@ -172,7 +185,7 @@ function Dashboard() {
   return (
     <>
       <div id="inventory-contents">
-        <div id="inventory-content-left" className="d-flex col-9">
+        <div id="inventory-content-left" className="d-flex">
           <div id='top-text'>
             <h2>Inventory Management</h2>
             <h5>Keep track of your products and stock levels.</h5>
@@ -189,11 +202,11 @@ function Dashboard() {
               />
             </div>
 
-            <div className="table-container">
-                <DataTable
-                  columns={columns}
-                  data={filteredItems}
-                />
+            <div className="table-container w-100">
+               <DataTable
+                columns={columns}
+                data={inventoryItems}
+              />
               </div>
             </div>
           </div>

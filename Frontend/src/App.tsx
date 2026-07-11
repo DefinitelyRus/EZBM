@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/sidebar';
+import Sidebar from './components/Sidebar';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Inventory from './pages/Inventory/Inventory';
 import Checkout from './pages/Checkout/Checkout';

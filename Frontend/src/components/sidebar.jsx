@@ -14,8 +14,29 @@ import LogsIcon from "../assets/logs.svg?react";
 import LogOutIcon from "../assets/log_out.svg?react";
 import SettingsIcon from "../assets/settings.svg?react";
 
+const BREAKPOINT = 1600;
+
 function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  
+const [collapsed, setCollapsed] = useState(false);
+const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+useEffect(() => {
+  const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
+
+  const handleChange = ({ matches }) => {
+    setCollapsed(matches);
+  };
+
+  // Set initial state
+  handleChange(mediaQuery);
+
+  mediaQuery.addEventListener("change", handleChange);
+
+  return () => {
+    mediaQuery.removeEventListener("change", handleChange);
+  };
+}, []);
 
    const navItems = [
     {
