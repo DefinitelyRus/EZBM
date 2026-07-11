@@ -56,6 +56,42 @@
     transform: rotate(180deg);
 }
 
+.logs-parent {
+    width: 100%;
+    border: none;
+    background: transparent;
+}
+
+.logs-submenu {
+    display: flex;
+    flex-direction: column;
+
+    margin-left: 30px;
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+.submenu-link {
+    color: #6c757d;
+    text-decoration: none;
+
+    padding: 10px 10px;
+
+    border-left: 2px solid transparent;
+
+    transition: all .2s ease;
+}
+
+.submenu-link:hover {
+    color: #212529;
+}
+
+.submenu-link.active {
+    color: #212529;
+    font-weight: 600;
+    border-left: 2px solid #CFE6FA;
+}
+
 /* ===========================
    Header
 =========================== */

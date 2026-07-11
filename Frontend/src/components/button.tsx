@@ -2,7 +2,13 @@ import { NavLink } from "react-router-dom";
 import { Tooltip } from "bootstrap";
 import "./button.css";
 
-function Button({ to, text, icon, collapsed }) {
+function Button({
+  to,
+  text,
+  icon,
+  collapsed,
+  onClick,
+}) {
   const handleClick = (e) => {
     const tooltip = Tooltip.getInstance(e.currentTarget);
 
@@ -11,6 +17,8 @@ function Button({ to, text, icon, collapsed }) {
     }
 
     e.currentTarget.blur();
+
+    onClick?.();
   };
 
   return (

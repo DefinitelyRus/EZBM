@@ -5,7 +5,7 @@ function AttendanceLogs() {
     <div id="attendance-logs-contents" className="d-flex flex-row gap-4">
       <div id="attendance-logs-content-left" className="d-flex col-9">
       <div id="top-text">
-        <h2>Shift Attendance & Payroll Logs</h2>
+        <h2>Attendance & Payroll Logs</h2>
        <h5>Keep attendance and payroll records organized and up to date.</h5>
       </div>
       
