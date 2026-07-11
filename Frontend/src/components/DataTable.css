@@ -1,4 +1,7 @@
 /* ---------- Data Table ---------- */
+.table-wrapper {
+    width: 100%;
+}
 
 .ez-table {
     width: 100%;
@@ -145,4 +148,34 @@
     font-style: italic;
 
     background: var(--md-surface);
+}
+
+/* Table Load Options */
+.table-footer {
+    display: flex;
+    align-items: center;
+}
+
+.table-row-selector {
+    width: 80%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #5f6368;
+    font-size: 14px;
+}
+
+.table-row-selector select {
+    padding: 6px 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.table-end {
+    color: #9aa0a6;
+    font-size: 14px;
+    padding: 5px
 }
