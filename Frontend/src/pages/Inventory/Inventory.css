@@ -93,9 +93,56 @@
 
     transform: scaleX(-1);
 }
-
-#inventory-content-left .search-bar-container {
+.search-bar-container {
     padding-bottom: 20px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+
+    width: 60%;
+
+    background: white;
+    border: 1px solid var(--md-outline);
+    border-radius: 30px;
+
+    padding: 0 10px;
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+
+    border: none;
+    outline: none;
+    background: transparent;
+
+    padding: 12px;
+    min-width: 0;
+}
+
+.clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    flex-shrink: 0;
 }
 
 #item-inputs .form-control.usr-input,

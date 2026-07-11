@@ -191,15 +191,30 @@ function Dashboard() {
             <h5>Keep track of your products and stock levels.</h5>
           </div>
 
+          
           <div className="input-group flex-direction row">
             <div className="search-bar-container">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Type in to filter..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <div className="search-bar">
+                <SearchIcon className="search-icon" />
+
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Type in to filter..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+
+                {search && (
+                  <button
+                    type="button"
+                    className="clear-search-btn"
+                    onClick={() => setSearch("")}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="table-container w-100">
