@@ -22,6 +22,7 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
+EZBM.Core.Data.DbManager.ConfigureFromArgs(args);
 EZBM.Core.Data.DbManager.Initialize();
 
 if (app.Environment.IsDevelopment()) app.MapOpenApi();

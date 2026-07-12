@@ -22,6 +22,7 @@ internal class Program
 
     static async Task Main(string[] args)
     {
+        DbManager.ConfigureFromArgs(args);
         Console.WriteLine("Starting Endpoint Tests...");
         resultsBuilder.AppendLine("# EZBM Endpoints Test Results");
         resultsBuilder.AppendLine();
