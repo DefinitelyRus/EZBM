@@ -561,7 +561,6 @@ Adds a new employee profile.
     "position": "Cashier",
     "payFrequency": "Daily", // Hourly, Daily, Weekly, Biweekly, Monthly, Invalid
     "payRate": 150.0,
-    "commissionRate": 0.05,
     "rfidCardId": "RFID-123456",
     "permissions": ["OpenRegister", "ApplyDiscount"],
     "permissionsAfterExpiry": ["ClockIn"],
@@ -618,7 +617,6 @@ Updates an employee's details.
     "username": "teto_new",
     "position": "Senior Cashier",
     "payRate": 180.0,
-    "commissionRate": 0.06,
     "rfidCardId": "RFID-123456-NEW",
     "permissions": ["OpenRegister", "ApplyDiscount", "ManageStaff"],
     "permissionsAfterExpiry": ["ClockIn"],
