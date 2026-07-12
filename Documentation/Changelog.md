@@ -27,6 +27,28 @@ Changes:
 
 ## Logs
 
+### 07/12/2026
+
+Implemented comprehensive performance, database safety, UI layout, and backend refactoring updates. This includes caching user settings, configuring database delete cascades, optimizing seeder execution, rewriting the step wizard element lifecycle using CSS, merging logs subtabs and forms into a single unified Compensation tab/wizard, dynamically querying logs tables, and consolidating API controllers using generic routing extensions.
+
+Changes:
+
+- Cached user settings date format string on HttpContext items to prevent blocking synchronous file system queries.
+- Configured cascading deletion rules on EF Core context mappings (Sales -> SaleEntries -> ItemTransactions).
+- Modified the data seeder utility to populate mockup records only if the Staff table is completely empty.
+- Tied payroll records deletion to staff adjustments, resetting the adjustment paid state when a payroll entry is deleted.
+- Adjusted main dashboard sidebars and layout containers to scale and transition smoothly on wide screens without page content shifting.
+- Re-styled the cashier mobile checkout sidebar to act as a collapsible drawer sliding in from the right.
+- Refactored FormWizardComponent to toggle wizard steps via CSS displays instead of DOM detaching, preserving input state and listeners.
+- Added step wizard layout options to default to standard form layouts and suppress toggle controls.
+- Reordered inventory item creation steps to ask for unit type first, skipping stock-related fields for "Unlimited" units.
+- Fixed dynamic POS cashier shopping cart rendering issues by bypassing common table handlers.
+- Merged Payroll and Staff Payments subtabs into a unified "Compensation & Payments" ledger tab with separate payroll history and adjustments tables.
+- Provided a single modal dialog step wizard for compensation entries, dynamically showing relevant inputs based on category.
+- Optimized Logs page model to conditionally query SQLite database tables corresponding only to the active tab.
+- Created generic MapCrud extension method for Minimal APIs, consolidating Program.cs routes boilerplate.
+- Cleaned up trailing colons from all statement, label, and wizard question headers.
+
 ### 07/11/2026
 
 Implemented security roles permissions layout updates and default access configuration presets. Refactored the unit test suite to compile cleanly with the updated string-based item tags schema.
