@@ -162,8 +162,36 @@ public static class DataSeeder
             )
         ];
 
-        staffMembers[0].RfidCardId = "alice_card";
-        staffMembers[10].RfidCardId = "teto_card";
+        List<Role> defaultRoles =
+        [
+            new Role(
+                id: Utils.GenerateEntityId(),
+                name: "Admin",
+                permissionsJson: "{\"Checkout\":1,\"ApplyDiscounts\":1,\"Refunds\":1,\"ViewInventory\":1,\"ModifyInventory\":1,\"ViewSensitiveInventoryCost\":1,\"ViewStaffInfo\":1,\"ManageStaff\":1,\"ManageAccess\":1,\"ManagePayroll\":1,\"ViewLogs\":1,\"DeleteLogs\":1,\"ManageSettings\":1}"
+            ),
+            new Role(
+                id: Utils.GenerateEntityId(),
+                name: "Manager",
+                permissionsJson: "{\"Checkout\":1,\"ApplyDiscounts\":1,\"Refunds\":1,\"ViewInventory\":1,\"ModifyInventory\":1,\"ViewSensitiveInventoryCost\":1,\"ViewStaffInfo\":1,\"ManageStaff\":1,\"ManageAccess\":0,\"ManagePayroll\":1,\"ViewLogs\":1,\"DeleteLogs\":0,\"ManageSettings\":0}"
+            ),
+            new Role(
+                id: Utils.GenerateEntityId(),
+                name: "Cashier",
+                permissionsJson: "{\"Checkout\":1,\"ApplyDiscounts\":0,\"Refunds\":0,\"ViewInventory\":1,\"ModifyInventory\":0,\"ViewSensitiveInventoryCost\":0,\"ViewStaffInfo\":0,\"ManageStaff\":0,\"ManageAccess\":0,\"ManagePayroll\":0,\"ViewLogs\":0,\"DeleteLogs\":0,\"ManageSettings\":0}"
+            ),
+            new Role(
+                id: Utils.GenerateEntityId(),
+                name: "Logistics",
+                permissionsJson: "{\"Checkout\":0,\"ApplyDiscounts\":0,\"Refunds\":0,\"ViewInventory\":1,\"ModifyInventory\":1,\"ViewSensitiveInventoryCost\":0,\"ViewStaffInfo\":0,\"ManageStaff\":0,\"ManageAccess\":0,\"ManagePayroll\":0,\"ViewLogs\":1,\"DeleteLogs\":0,\"ManageSettings\":0}"
+            )
+        ];
+        context.Role.AddRange(defaultRoles);
+
+        staffMembers[0].RfidCardId = "3144185349";
+        staffMembers[0].Roles.Add(defaultRoles[2]); // Cashier
+        staffMembers[1].Roles.Add(defaultRoles[1]); // Manager
+        staffMembers[4].Roles.Add(defaultRoles[0]); // Admin
+        staffMembers[10].RfidCardId = "2853591044";
         foreach (var s in staffMembers)
         {
             s.Password = EZBM.Core.Services.AuthenticationService.HashPassword(s.Password ?? "password");
@@ -180,7 +208,7 @@ public static class DataSeeder
                 price: 180.00f,
                 name: "Pedigree Dog Food Dry (1kg)",
                 description: "Nutritious dry food for adult dogs, beef flavor",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                tags: ["Food", "Consumable"],
                 quantity: 120.0f,
                 expirationDate: DateTime.UtcNow.AddDays(180),
                 cost: 140.00f,
@@ -193,7 +221,7 @@ public static class DataSeeder
                 price: 35.00f,
                 name: "Whiskas Cat Food Wet (85g)",
                 description: "Wet food pouch for cats, tuna flavor in jelly",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                tags: ["Food", "Consumable"],
                 quantity: 35.0f,
                 expirationDate: DateTime.UtcNow.AddDays(90),
                 cost: 25.00f,
@@ -206,7 +234,7 @@ public static class DataSeeder
                 price: 280.00f,
                 name: "Purina Friskies Cat Food Dry (1.1kg)",
                 description: "Seafood sensations dry food for active cats",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                tags: ["Food", "Consumable"],
                 quantity: 75.0f,
                 expirationDate: DateTime.UtcNow.AddMonths(6),
                 cost: 220.00f,
@@ -219,7 +247,7 @@ public static class DataSeeder
                 price: 350.00f,
                 name: "Kit Cat Soya Clump Cat Litter (7L)",
                 description: "Eco-friendly, biodegradable soybean cat litter, original scent",
-                tags: [Item.Tag.Consumable],
+                tags: ["Consumable"],
                 quantity: 3.0f,
                 expirationDate: null,
                 cost: 270.00f,
@@ -232,7 +260,7 @@ public static class DataSeeder
                 price: 160.00f,
                 name: "Sleeky Dog Shampoo (350ml)",
                 description: "Mild formula conditioning shampoo for dogs",
-                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
+                tags: ["Hygiene", "Consumable"],
                 quantity: 110.0f,
                 expirationDate: null,
                 cost: 110.00f,
@@ -245,7 +273,7 @@ public static class DataSeeder
                 price: 390.00f,
                 name: "Saint Roche Dog Shampoo (628ml)",
                 description: "Premium organic dog shampoo, sweet heaven scent",
-                tags: [Item.Tag.Hygiene, Item.Tag.Consumable],
+                tags: ["Hygiene", "Consumable"],
                 quantity: 250.0f,
                 expirationDate: null,
                 cost: 290.00f,
@@ -258,7 +286,7 @@ public static class DataSeeder
                 price: 75.00f,
                 name: "Pet Collar Basic",
                 description: "Adjustable nylon collar with safety bell",
-                tags: [Item.Tag.Reusable],
+                tags: ["Reusable"],
                 quantity: 45.0f,
                 expirationDate: null,
                 cost: 35.00f,
@@ -271,7 +299,7 @@ public static class DataSeeder
                 price: 120.00f,
                 name: "Pet Bowl Stainless Steel",
                 description: "Non-slip stainless steel feeding bowl, medium size",
-                tags: [Item.Tag.Reusable],
+                tags: ["Reusable"],
                 quantity: 2.0f,
                 expirationDate: null,
                 cost: 80.00f,
@@ -284,7 +312,7 @@ public static class DataSeeder
                 price: 50.00f,
                 name: "Dog treats pack",
                 description: "Crunchy beef flavor dog treats",
-                tags: [Item.Tag.Food, Item.Tag.Consumable],
+                tags: ["Food", "Consumable"],
                 quantity: 1.0f,
                 expirationDate: DateTime.UtcNow.AddMonths(12),
                 cost: 35.00f,
@@ -297,7 +325,7 @@ public static class DataSeeder
                 price: null,
                 name: "Industrial Cleaning Alcohol",
                 description: "99% Isopropyl alcohol for store sanitization only",
-                tags: [Item.Tag.Consumable],
+                tags: ["Consumable"],
                 quantity: 25.0f,
                 expirationDate: null,
                 cost: 320.00f,
