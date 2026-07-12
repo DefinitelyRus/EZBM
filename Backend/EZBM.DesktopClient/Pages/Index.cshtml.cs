@@ -36,6 +36,25 @@ public class IndexModel : PageModel
 
     #region Handlers
 
+    /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
     public async Task OnGetAsync()
     {
         using AppDbContext context = new();
@@ -108,7 +127,7 @@ public class IndexModel : PageModel
 
         // 7. Low Stock Alerts (TPH Check)
         LowStockAlerts = await context.Product
-            .Where(p => p.Quantity < p.TargetStock * p.LowStockThresholdPercentage)
+            .Where(p => p.Quantity != -1f && p.Quantity < p.TargetStock * p.LowStockThresholdPercentage)
             .Select(p => new LowStockAlertDto(
                 Id: p.Id,
                 Name: p.Name,
@@ -120,6 +139,8 @@ public class IndexModel : PageModel
 
         RecentSales = await context.Sale
             .Include(s => s.Staff)
+            .Include(s => s.SaleEntries)
+                .ThenInclude(e => e.Item)
             .OrderByDescending(s => s.Timestamp)
             .Take(10)
             .ToListAsync();
