@@ -27,7 +27,6 @@ The local SQLite databases are configured to be saved inside the user's `My Docu
 * **Production Data:** `C:\Users\Rus\Documents\business_data.db`
 * **Test Data (using startup flags `-t` / `-g`):** `C:\Users\Rus\Documents\test_data.db`
 
-
 ## How to Reference
 
 To use the core library in other .NET projects (e.g. Host, Tests, CLI tools):

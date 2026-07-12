@@ -25,7 +25,7 @@ dotnet run --project EZBM.Tests.csproj
 By default, the tests reset and verify against the production `business_data.db`. To run them safely on a separate test database:
 
 * **`-t` or `--use_test_data` / `-g` or `--generate_test_data`:** Sets the target database to `test_data.db`.
+
   ```bash
   dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj -- --use_test_data
   ```
-

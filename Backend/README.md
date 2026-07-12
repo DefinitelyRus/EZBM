@@ -86,17 +86,19 @@ All executable projects support startup arguments to load or generate test data.
 ### Examples
 
 * **Run Desktop Client with existing test data:**
+
   ```bash
   dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj -- --use_test_data
   ```
 
 * **Run Desktop Host and regenerate random test data:**
+
   ```bash
   dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --generate_test_data
   ```
 
 * **Run Integration Tests on test database:**
+
   ```bash
   dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj -- --use_test_data
   ```
-

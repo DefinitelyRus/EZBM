@@ -85,14 +85,16 @@ You can access the auto-generated Swagger/OpenAPI documentation (in development 
 The application supports command line flags to load or generate randomized test data:
 
 * **`-t` or `--use_test_data`:** Uses the separate `test_data.db` file instead of production database.
+
   ```bash
   dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --use_test_data
   ```
+
 * **`-g` or `--generate_test_data`:** Re-seeds and populates fresh randomized test data under `test_data.db`.
+
   ```bash
   dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --generate_test_data
   ```
-
 
 ## How to Consume the API
 
