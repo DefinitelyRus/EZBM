@@ -27,6 +27,19 @@ Changes:
 
 ## Logs
 
+### 07/13/2026
+
+Implemented startup arguments to isolate testing environments and redesigned the database seeder to populate realistic, fully randomized business datasets.
+
+Changes:
+
+- Added --use_test_data / -t and --generate_test_data / -g startup arguments to all executable projects.
+- Configured dynamic DB target filename switching in DbManager to isolate testing data inside a separate test_data.db file.
+- Moved DataSeeder from EZBM.DesktopClient to EZBM.Core to make it globally accessible by all runner projects.
+- Rewrote the seeder engine to populate fully randomized records, covering custom roles, staff profiles (5-10 entries), customer profiles (15-30 entries), and over 100 inventory items (with optional properties randomly omitted).
+- Seeded simulated transaction records including daily attendance, staff payroll, adjustments ledger entries, and completed checkouts.
+- Updated all backend README files to include instructions for running and launching projects with and without test data flags.
+
 ### 07/12/2026
 
 Implemented comprehensive performance, database safety, UI layout, and backend refactoring updates. This includes caching user settings, configuring database delete cascades, optimizing seeder execution, rewriting the step wizard element lifecycle using CSS, merging logs subtabs and forms into a single unified Compensation tab/wizard, dynamically querying logs tables, and consolidating API controllers using generic routing extensions.

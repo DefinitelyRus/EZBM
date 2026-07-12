@@ -22,9 +22,11 @@ This is the core business logic library for the EZBM project. It manages the dat
 
 ## Local Database Save Location
 
-The SQLite database `business_data.db` is configured to be saved inside the user's `My Documents` folder (or OneDrive-backed Documents folder):
+The local SQLite databases are configured to be saved inside the user's `My Documents` folder (or OneDrive-backed Documents folder):
 
-* `C:\Users\Rus\Documents\business_data.db`
+* **Production Data:** `C:\Users\Rus\Documents\business_data.db`
+* **Test Data (using startup flags `-t` / `-g`):** `C:\Users\Rus\Documents\test_data.db`
+
 
 ## How to Reference
 

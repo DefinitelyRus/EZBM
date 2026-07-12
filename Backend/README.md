@@ -73,3 +73,30 @@ To run endpoint tests and review output:
 # From the repository root
 dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj
 ```
+
+## Running with Test Data
+
+All executable projects support startup arguments to load or generate test data. When active, operations target a separate `test_data.db` file in your Documents directory instead of the production `business_data.db`.
+
+### Arguments
+
+* **`-t` or `--use_test_data`**: Loads existing test data from `test_data.db`.
+* **`-g` or `--generate_test_data`**: Resets and regenerates random test data using the seeder under `test_data.db`.
+
+### Examples
+
+* **Run Desktop Client with existing test data:**
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj -- --use_test_data
+  ```
+
+* **Run Desktop Host and regenerate random test data:**
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --generate_test_data
+  ```
+
+* **Run Integration Tests on test database:**
+  ```bash
+  dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj -- --use_test_data
+  ```
+

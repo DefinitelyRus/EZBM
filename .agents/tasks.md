@@ -46,3 +46,15 @@
 - [ ] Combine staff adjustments and payroll records into a single ledger in backend
 - [x] Merge payroll and staff payment subtabs into one tab with a dynamic wizard
 - [ ] Reintroduce commission tracking feature under new design
+
+## Cycle 4 - Test Data Isolation & Seeder Randomization
+
+- [x] Add startup arguments `--use_test_data` / `-t` and `--generate_test_data` / `-g` to all executable backend projects
+- [x] Configure dynamic switching in `DbManager` to redirect operations to `test_data.db` when flags are set
+- [x] Move seeder execution block from `EZBM.DesktopClient` helper folder into `EZBM.Core.Data` namespace
+- [x] Refactor data seeder to generate fully randomized, erratic data records covering most nullable and required attributes
+- [x] Randomize counts for staff (5-10), customers (15-30), and items (100+ products/services)
+- [x] Seed mock attendance logs, payroll calculations, staff adjustment sheets, and income sales
+- [x] Document startup command arguments and how-to-run instructions in all backend README files
+- [x] Run full clean test passes and commit all changes in compliance with Git Style guidelines
+

@@ -16,9 +16,16 @@ Execute the following commands to clear existing test logs and run the suite:
 ```bash
 cd Backend/EZBM.Tests
 
-# Remove old results log file if it exists
-rm results.log
-
 # Run the test project
 dotnet run --project EZBM.Tests.csproj
 ```
+
+### Running with Test Data Flags
+
+By default, the tests reset and verify against the production `business_data.db`. To run them safely on a separate test database:
+
+* **`-t` or `--use_test_data` / `-g` or `--generate_test_data`:** Sets the target database to `test_data.db`.
+  ```bash
+  dotnet run --project Backend/EZBM.Tests/EZBM.Tests.csproj -- --use_test_data
+  ```
+

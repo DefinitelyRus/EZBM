@@ -80,6 +80,20 @@ dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 The server runs on HTTP/HTTPS local host ports defined in `appsettings.json` and `Properties/launchSettings.json`.
 You can access the auto-generated Swagger/OpenAPI documentation (in development mode) at `http://localhost:<port>/openapi/v1.json` or by examining the mapped endpoints list in `Program.cs`.
 
+### Running with Test Data Flags
+
+The application supports command line flags to load or generate randomized test data:
+
+* **`-t` or `--use_test_data`:** Uses the separate `test_data.db` file instead of production database.
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --use_test_data
+  ```
+* **`-g` or `--generate_test_data`:** Re-seeds and populates fresh randomized test data under `test_data.db`.
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --generate_test_data
+  ```
+
+
 ## How to Consume the API
 
 The frontend consumes these endpoints by sending standard HTTP requests to `localhost`.
