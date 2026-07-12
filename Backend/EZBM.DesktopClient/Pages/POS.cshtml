@@ -6,6 +6,17 @@
     ViewData["Title"] = "Cashier";
 }
 
+<style>
+    /* Hide POS catalog Add button until row hover */
+    #posCatalogTable tbody tr .pos-add-btn {
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+    }
+    #posCatalogTable tbody tr:hover .pos-add-btn {
+        opacity: 1;
+    }
+</style>
+
 <h2>Cashier</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -63,11 +74,11 @@
                         <td class="pos-item-name"><strong>@item.Name</strong></td>
                         <td>@StateHelper.FormatCurrency(item.SalePrice ?? 0f)</td>
                         <td><code class="pos-item-barcode">@(item.Barcode ?? "N/A")</code></td>
-                        <td>@(item.Quantity == -1f ? "unlimited" : $"{item.Quantity} {item.UnitOfMeasurement}")</td>
+                        <td>@StateHelper.FormatQuantity(item.Quantity, item.UnitOfMeasurement)</td>
                         <td>
                             @if (item.Quantity > 0 || item.Quantity == -1f || item.UnitOfMeasurement == Item.Unit.Count)
                             {
-                                <button type="button" class="btn btn-primary" onclick="addToCart(@item.Id, '@item.Name', @(item.SalePrice ?? 0f))" style="padding: 4px 10px; font-size: 0.85em;">Add</button>
+                                <button type="button" class="btn btn-primary pos-add-btn" onclick="addToCart('@item.Id')" style="padding: 4px 10px; font-size: 0.85em;">Add</button>
                             }
                             else
                             {
@@ -109,7 +120,7 @@
             Balance Remaining: <strong id="splitRemainingText" style="color: #e53e3e;">0.00</strong>
         </div>
 
-        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" data-no-common-table="true">
             <thead>
                 <tr style="background-color: #eee;">
                     <th>Payment Method</th>
@@ -143,13 +154,14 @@
     <div style="width: 100%; box-sizing: border-box;">
         <h3>Shopping Cart</h3>
         
-        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" data-no-common-table="true">
             <thead>
                 <tr style="background-color: #eee;">
                     <th>Item</th>
+                    <th style="width: 110px;">Qty</th>
                     <th data-numeric="true">Price</th>
-                    <th style="width: 70px;">Qty</th>
-                    <th data-no-sort="true"></th>
+                    <th data-numeric="true">Total</th>
+                    <th data-no-sort="true" style="width: 40px;"></th>
                 </tr>
             </thead>
             <tbody id="cartTableBody">
@@ -251,7 +263,7 @@
         {
             <text>
             catalog.push({
-                id: @item.Id,
+                id: '@item.Id',
                 name: '@Html.Raw(item.Name)',
                 saleprice: @(item.SalePrice ?? 0f),
                 barcode: '@(Html.Raw(item.Barcode ?? ""))',
@@ -335,6 +347,15 @@
         }
 
         function addToCart(itemId, name, price) {
+            if (!name || price === undefined) {
+                let item = catalog.find(i => i.id === itemId);
+                if (item) {
+                    name = item.name;
+                    price = item.saleprice;
+                } else {
+                    return;
+                }
+            }
             let existing = cart.find(i => i.itemId === itemId);
             if (existing) {
                 existing.quantity += 1;
@@ -409,15 +430,15 @@
                     <td><strong>${item.name}</strong></td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 4px;">
-                            <button type="button" class="btn" style="padding: 2px 6px; font-size: 0.8em;" onclick="adjustCartQty(${item.itemId}, -1)">-</button>
-                            <input type="number" step="0.1" min="0.1" value="${item.quantity}" onchange="updateQuantity(${item.itemId}, this.value)" style="width: 45px; text-align: center; padding: 2px;" />
-                            <button type="button" class="btn" style="padding: 2px 6px; font-size: 0.8em;" onclick="adjustCartQty(${item.itemId}, 1)">+</button>
+                            <button type="button" class="btn" style="padding: 2px 6px; font-size: 0.8em;" onclick="adjustCartQty('${item.itemId}', -1)">-</button>
+                            <input type="number" step="0.1" min="0.1" value="${item.quantity}" onchange="updateQuantity('${item.itemId}', this.value)" style="width: 45px; text-align: center; padding: 2px;" />
+                            <button type="button" class="btn" style="padding: 2px 6px; font-size: 0.8em;" onclick="adjustCartQty('${item.itemId}', 1)">+</button>
                         </div>
                     </td>
                     <td>${window.CurrencySymbol}${item.unitPrice.toFixed(2)}</td>
                     <td>${window.CurrencySymbol}${rowTotal.toFixed(2)}</td>
                     <td>
-                        <button type="button" class="btn btn-danger" onclick="removeFromCart(${item.itemId})" style="padding: 2px 6px; font-size: 0.8em;">X</button>
+                        <button type="button" class="btn btn-danger" onclick="removeFromCart('${item.itemId}')" style="padding: 2px 6px; font-size: 0.8em;">X</button>
                     </td>
                 </tr>`;
             });

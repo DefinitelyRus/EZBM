@@ -5,8 +5,7 @@
     ViewData["Title"] = "System Logs & Records";
     bool isAttendance = Model.ActiveTab == "attendance";
     bool isLedger = Model.ActiveTab == "ledger";
-    bool isPayroll = Model.ActiveTab == "payroll";
-    bool isAdjustments = Model.ActiveTab == "adjustments";
+    bool isCompensation = Model.ActiveTab == "compensation";
     bool isActions = Model.ActiveTab == "actions";
 }
 
@@ -30,8 +29,7 @@
 <div class="subtabs-container">
     <a href="/Logs?tab=attendance" class="subtab-item @(isAttendance ? "active" : "")">Attendance Ledger</a>
     <a href="/Logs?tab=ledger" class="subtab-item @(isLedger ? "active" : "")">Transaction Ledger</a>
-    <a href="/Logs?tab=payroll" class="subtab-item @(isPayroll ? "active" : "")">Payroll Records</a>
-    <a href="/Logs?tab=adjustments" class="subtab-item @(isAdjustments ? "active" : "")">Staff Adjustments</a>
+    <a href="/Logs?tab=compensation" class="subtab-item @(isCompensation ? "active" : "")">Compensation & Payments</a>
     <a href="/Logs?tab=actions" class="subtab-item @(isActions ? "active" : "")">Action Audit Logs</a>
 </div>
 
@@ -94,7 +92,7 @@
             <h3 style="margin-top:0;">Add Attendance Entry</h3>
             <form method="post" asp-page-handler="CreateAttendance" id="createAttendanceForm">
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee</label>
                     <select name="staffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
                         @foreach (var staff in Model.StaffList)
                         {
@@ -104,12 +102,12 @@
                 </div>
 
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock In Time:</label>
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock In Time</label>
                     <input type="datetime-local" name="timeIn" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock Out Time (Optional):</label>
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Clock Out Time (Optional)</label>
                     <input type="datetime-local" name="timeOut" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
                 </div>
 
@@ -165,224 +163,223 @@
             </table>
         </div>
     }
-    else if (isPayroll)
+    else if (isCompensation)
     {
-        <!-- Payroll Tab Content -->
-        <div style="flex-grow: 1; min-width: 600px;">
-            <h3>Payroll Records History</h3>
-            <table border="1" cellpadding="5" cellspacing="0" id="payrollTable" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color: #eee;">
-                        <th>Invoice ID</th>
-                        <th>Employee</th>
-                        <th data-date="true">Period Start</th>
-                        <th data-date="true">Period End</th>
-                        <th data-numeric="true">Hours</th>
-                        <th data-numeric="true">Gross Pay</th>
-                        <th data-numeric="true">Modifiers</th>
-                        <th data-numeric="true">Net Paid</th>
-                        <th data-date="true">Pay Date</th>
-                        <th data-hide-default="true">Notes</th>
-                        <th data-no-sort="true">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var pay in Model.PayrollLogs)
-                    {
-                        <tr>
-                            <td>@pay.InvoiceId</td>
-                            <td><strong>@pay.Staff.FirstName @pay.Staff.LastName</strong> (@pay.Staff.Username)</td>
-                            <td>@StateHelper.FormatDate(pay.PeriodStart, HttpContext)</td>
-                            <td>@StateHelper.FormatDate(pay.PeriodEnd, HttpContext)</td>
-                            <td>@pay.TotalHours.ToString("F1")</td>
-                            <td>@StateHelper.FormatCurrency(pay.GrossAmount)</td>
-                            <td>@StateHelper.FormatCurrency(pay.Modifiers)</td>
-                            <td><strong>@StateHelper.FormatCurrency(pay.Amount)</strong></td>
-                            <td>@StateHelper.FormatDate(pay.Timestamp, HttpContext)</td>
-                            <td>@pay.Notes</td>
-                            <td>
-                                <div class="action-buttons">
-                                    <form method="post" asp-page-handler="DeletePayroll" style="display: inline;" onsubmit="return confirm('Delete this payroll entry?');">
-                                        <input type="hidden" name="id" value="@pay.Id" />
-                                        <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
-                                    </form>
-                                </div>
-                            </td>
+        <!-- Compensation & Payments Content -->
+        <div style="flex-grow: 1; min-width: 600px; display: flex; flex-direction: column; gap: 30px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;">Periodic Payroll History</h3>
+                    <button type="button" onclick="openAddCompensationModal()" class="btn btn-success">+ Log Compensation & Payment</button>
+                </div>
+                <table border="1" cellpadding="5" cellspacing="0" id="payrollTable" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #eee;">
+                            <th>Invoice ID</th>
+                            <th>Employee</th>
+                            <th data-date="true">Period Start</th>
+                            <th data-date="true">Period End</th>
+                            <th data-numeric="true">Hours</th>
+                            <th data-numeric="true">Gross Pay</th>
+                            <th data-numeric="true">Modifiers</th>
+                            <th data-numeric="true">Net Paid</th>
+                            <th data-date="true">Pay Date</th>
+                            <th data-hide-default="true">Notes</th>
+                            <th data-no-sort="true">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Add Payroll Entry -->
-        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <h3 style="margin-top:0;">Log Payroll Payment</h3>
-            <form method="post" asp-page-handler="CreatePayroll" id="payrollForm">
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
-                    <select name="staffId" id="payStaffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
-                        @foreach (var staff in Model.StaffList)
+                    </thead>
+                    <tbody>
+                        @foreach (var pay in Model.PayrollLogs)
                         {
-                            <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
-                        }
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period Start:</label>
-                    <input type="date" name="periodStart" id="payPeriodStart" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period End:</label>
-                    <input type="date" name="periodEnd" id="payPeriodEnd" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 15px; text-align: center;">
-                    <button type="button" onclick="autoCalculatePayroll()" class="btn btn-primary payroll-calc-btn" style="width: 100%;">
-                        ⚡ Auto-Calculate Stats
-                    </button>
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Total Hours:</label>
-                    <input type="number" step="0.1" min="0" name="totalHours" id="payTotalHours" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Gross Amount:</label>
-                    <input type="number" step="0.01" min="0" name="grossAmount" id="payGrossAmount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Modifiers:</label>
-                    <input type="number" step="0.01" name="modifiers" id="payModifiers" value="0.00" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                    <small style="color: #718096; display: block; margin-top: 3px;">(Commissions Override minus Deductions)</small>
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Paid:</label>
-                    <input type="number" step="0.01" min="0" name="netAmount" id="payNetAmount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payment Date:</label>
-                    <input type="date" name="payDate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Notes:</label>
-                    <input type="text" name="notes" id="payNotes" placeholder="e.g. Monthly salary payout" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-
-                <button type="submit" class="btn btn-success" style="width: 100%;">Log Payment</button>
-            </form>
-        </div>
-    }
-    else if (isAdjustments)
-    {
-        <!-- Staff Adjustments Tab Content -->
-        <div style="flex-grow: 1; min-width: 600px;">
-            <h3>Staff Adjustments Ledger</h3>
-            <table border="1" cellpadding="5" cellspacing="0" id="adjustmentsTable" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color: #eee;">
-                        <th data-hide-default="true">ID</th>
-                        <th>Employee</th>
-                        <th>Type</th>
-                        <th data-numeric="true">Amount</th>
-                        <th>Deduct Payroll</th>
-                        <th>Status</th>
-                        <th data-date="true">Timestamp</th>
-                        <th data-hide-default="true">Notes</th>
-                        <th data-no-sort="true">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var adj in Model.StaffAdjustments)
-                    {
-                        var staffObj = Model.StaffList.FirstOrDefault(s => s.Id == adj.StaffId);
-                        var staffName = staffObj != null ? $"{staffObj.FirstName} {staffObj.LastName}" : $"ID #{adj.StaffId}";
-                        <tr>
-                            <td>@adj.Id</td>
-                            <td><strong>@staffName</strong></td>
-                            <td>@adj.AdjustmentType</td>
-                            <td>@StateHelper.FormatCurrency(adj.Amount)</td>
-                            <td>@(adj.DeductFromCurrentPayroll ? "Yes" : "No")</td>
-                            <td>
-                                <span style="color: @(adj.IsPaid ? "#38a169" : "#dd6b20"); font-weight: bold;">
-                                    @(adj.IsPaid ? "Paid / Settled" : "Unpaid Balance")
-                                </span>
-                            </td>
-                            <td>@StateHelper.FormatDate(adj.Timestamp, HttpContext)</td>
-                            <td>@adj.Notes</td>
-                            <td>
-                                <div class="action-buttons">
-                                    @if (!adj.IsPaid)
-                                    {
-                                        <form method="post" asp-page-handler="DeleteAdjustment" style="display: inline;" onsubmit="return confirm('Delete this adjustment entry?');">
-                                            <input type="hidden" name="id" value="@adj.Id" />
+                            <tr>
+                                <td>@pay.InvoiceId</td>
+                                <td><strong>@pay.Staff.FirstName @pay.Staff.LastName</strong> (@pay.Staff.Username)</td>
+                                <td>@StateHelper.FormatDate(pay.PeriodStart, HttpContext)</td>
+                                <td>@StateHelper.FormatDate(pay.PeriodEnd, HttpContext)</td>
+                                <td>@pay.TotalHours.ToString("F1")</td>
+                                <td>@StateHelper.FormatCurrency(pay.GrossAmount)</td>
+                                <td>@StateHelper.FormatCurrency(pay.Modifiers)</td>
+                                <td><strong>@StateHelper.FormatCurrency(pay.Amount)</strong></td>
+                                <td>@StateHelper.FormatDate(pay.Timestamp, HttpContext)</td>
+                                <td>@pay.Notes</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <form method="post" asp-page-handler="DeletePayroll" style="display: inline;" onsubmit="return confirm('Delete this payroll entry?');">
+                                            <input type="hidden" name="id" value="@pay.Id" />
                                             <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
                                         </form>
-                                    }
-                                    else
-                                    {
-                                        <span style="color: #a0aec0; font-size: 0.9em;">Locked</span>
-                                    }
-                                </div>
-                            </td>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div>
+                <h3 style="margin: 0; margin-bottom: 15px;">Staff Payments & Adjustments Ledger</h3>
+                <table border="1" cellpadding="5" cellspacing="0" id="adjustmentsTable" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #eee;">
+                            <th data-hide-default="true">ID</th>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th data-numeric="true">Amount</th>
+                            <th>Deduct Payroll</th>
+                            <th>Status</th>
+                            <th data-date="true">Timestamp</th>
+                            <th data-hide-default="true">Notes</th>
+                            <th data-no-sort="true">Actions</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var adj in Model.StaffAdjustments)
+                        {
+                            var staffObj = Model.StaffList.FirstOrDefault(s => s.Id == adj.StaffId);
+                            var staffName = staffObj != null ? string.Format("{0} {1}", staffObj.FirstName, staffObj.LastName) : string.Format("ID #{0}", adj.StaffId);
+                            <tr>
+                                <td>@adj.Id</td>
+                                <td><strong>@staffName</strong></td>
+                                <td>@adj.AdjustmentType</td>
+                                <td>@StateHelper.FormatCurrency(adj.Amount)</td>
+                                <td>@(adj.DeductFromCurrentPayroll ? "Yes" : "No")</td>
+                                <td>
+                                    <span style="color: @(adj.IsPaid ? "#38a169" : "#dd6b20"); font-weight: bold;">
+                                        @(adj.IsPaid ? "Paid / Settled" : "Unpaid Balance")
+                                    </span>
+                                </td>
+                                <td>@StateHelper.FormatDate(adj.Timestamp, HttpContext)</td>
+                                <td>@adj.Notes</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        @if (!adj.IsPaid)
+                                        {
+                                            <form method="post" asp-page-handler="DeleteAdjustment" style="display: inline;" onsubmit="return confirm('Delete this adjustment entry?');">
+                                                <input type="hidden" name="id" value="@adj.Id" />
+                                                <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #718096; font-size: 0.85em;">No actions available</span>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Add Adjustment Entry -->
-        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <h3 style="margin-top:0;">Log Staff Adjustment</h3>
-            <form method="post" asp-page-handler="CreateAdjustment">
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
-                    <select name="staffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
-                        @foreach (var staff in Model.StaffList)
-                        {
-                            <option value="@staff.Id">@staff.FirstName @staff.LastName</option>
-                        }
-                    </select>
-                </div>
+        <!-- Add Compensation Modal (Step Wizard) -->
+        <div id="addCompensationModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+            <div style="width: 400px; border-radius: 8px; padding: 25px; background-color: white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative; max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
+                <h3 style="margin-top:0; margin-bottom: 15px;">Log Compensation or Payment</h3>
+                <button type="button" onclick="closeAddCompensationModal()" style="position: absolute; top: 15px; right: 15px; background: transparent; border: none; font-size: 1.2em; cursor: pointer; color: #a0aec0;">&times;</button>
+                
+                <form method="post" id="createCompensationForm">
+                    <!-- Hidden fields for dynamic switching -->
+                    <input type="hidden" name="adjustmentType" id="compAdjustmentType" />
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payout Category <span style="color: red;">*</span></label>
+                        <select name="payoutCategory" id="compPayoutCategory" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onPayoutCategoryChanged()" required>
+                            <option value="RegularPayroll" selected>Regular Payroll</option>
+                            <option value="Bonus">Bonus</option>
+                            <option value="CashAdvance">Cash Advance</option>
+                            <option value="Deduction">Deduction</option>
+                        </select>
+                        <small style="color: #718096; display: block; margin-top: 3px;">Select whether this is a regular salary payroll or an adjustment (bonus/advance/deduction).</small>
+                    </div>
 
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Adjustment Type:</label>
-                    <select name="adjustmentType" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
-                        <option value="Bonus">Bonus</option>
-                        <option value="Commission">Commission</option>
-                        <option value="AdvancePay">Advance Pay (Cash Advance)</option>
-                        <option value="Deduction">Deduction (Other)</option>
-                    </select>
-                </div>
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee <span style="color: red;">*</span></label>
+                        <select name="staffId" id="compStaffId" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
+                            @foreach (var staff in Model.StaffList)
+                            {
+                                <option value="@staff.Id">@staff.FirstName @staff.LastName (@staff.Username)</option>
+                            }
+                        </select>
+                        <small style="color: #718096; display: block; margin-top: 3px;">The employee receiving this payout or adjustment.</small>
+                    </div>
 
-                <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Amount (@StateHelper.GetCurrencySymbol()):</label>
-                    <input type="number" step="0.01" min="0.01" name="amount" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
+                    <!-- Regular Payroll Specific Fields -->
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period Start <span style="color: red;">*</span></label>
+                        <input type="date" name="periodStart" id="compPeriodStart" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">The start date of the payroll period.</small>
+                    </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                        <input type="checkbox" name="deductFromCurrentPayroll" value="true" checked />
-                        Deduct from payroll?
-                    </label>
-                    <small style="display: block; color: #718096; margin-top: 3px;">
-                        Check for Cash Advances to automatically deduct from paycheck.
-                    </small>
-                </div>
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Period End <span style="color: red;">*</span></label>
+                        <input type="date" name="periodEnd" id="compPeriodEnd" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">The end date of the payroll period.</small>
+                    </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Notes:</label>
-                    <input type="text" name="notes" placeholder="e.g. Tuition cash advance" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
+                    <div class="payroll-only-field" style="margin-bottom: 15px; text-align: center;">
+                        <button type="button" onclick="autoCalculatePayrollComp()" class="btn btn-primary payroll-calc-btn" style="width: 100%;">
+                            ⚡ Auto-Calculate Stats
+                        </button>
+                    </div>
 
-                <button type="submit" class="btn btn-success" style="width: 100%;">Log Adjustment</button>
-            </form>
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Total Hours <span style="color: red;">*</span></label>
+                        <input type="number" step="0.1" min="0" name="totalHours" id="compTotalHours" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">Total working hours tracked during this period.</small>
+                    </div>
+
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Gross Amount <span style="color: red;">*</span></label>
+                        <input type="number" step="0.01" min="0" name="grossAmount" id="compGrossAmount" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">Base calculated pay before modifiers.</small>
+                    </div>
+
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Modifiers <span style="color: red;">*</span></label>
+                        <input type="number" step="0.01" name="modifiers" id="compModifiers" value="0.00" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">Adjustments, bonuses, or deductions applied to this payroll.</small>
+                    </div>
+
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Net Paid <span style="color: red;">*</span></label>
+                        <input type="number" step="0.01" min="0" name="netAmount" id="compNetAmount" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">The final net payout amount transferred to the employee.</small>
+                    </div>
+
+                    <div class="payroll-only-field" style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payment Date</label>
+                        <input type="date" name="payDate" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">The date this payroll transaction was settled.</small>
+                    </div>
+
+                    <!-- Staff Adjustment Specific Fields -->
+                    <div class="adjustment-only-field" style="margin-bottom: 12px; display: none;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Amount <span style="color: red;">*</span></label>
+                        <input type="number" step="0.01" min="0" name="amount" id="compAmount" value="0.00" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">The monetary amount for this adjustment payout or deduction.</small>
+                    </div>
+
+                    <div class="adjustment-only-field" style="margin-bottom: 12px; display: none;">
+                        <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                            <input type="checkbox" name="deductFromCurrentPayroll" value="true" checked />
+                            Deduct from Current Payroll
+                        </label>
+                        <small style="color: #718096; display: block; margin-top: 3px;">Automatically subtract this value during the next payroll calculation.</small>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Notes</label>
+                        <input type="text" name="notes" id="compNotes" placeholder="e.g. Monthly salary payout, annual bonus" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <small style="color: #718096; display: block; margin-top: 3px;">Optional description or justification notes.</small>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" onclick="closeAddCompensationModal()" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-success">Save Payment</button>
+                    </div>
+                </form>
+            </div>
         </div>
     }
     else if (isActions)
@@ -428,12 +425,12 @@
             <input type="hidden" name="reconciliationNotes" id="supNotes" value="" />
             
             <div style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Username:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Username</label>
                 <input type="text" name="supervisorUsername" id="supervisorUsernameInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
             </div>
 
             <div style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Password:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Supervisor Password</label>
                 <input type="password" name="supervisorPassword" id="supervisorPasswordInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
             </div>
 
@@ -442,7 +439,7 @@
             </div>
 
             <div style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Actual Drawer Cash:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Actual Drawer Cash</label>
                 <input type="number" step="0.01" min="0" id="supActualCashInput" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" oninput="calculateSupervisorDiscrepancy()" />
             </div>
 
@@ -451,7 +448,7 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Reason / Discrepancy Notes:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 3px;">Reason / Discrepancy Notes</label>
                 <textarea id="supReconciliationNotesInput" style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;"></textarea>
             </div>
 
@@ -475,6 +472,9 @@
 
             const payTable = document.getElementById("payrollTable");
             if (payTable) initCommonTable(payTable);
+
+            const adjTable = document.getElementById("adjustmentsTable");
+            if (adjTable) initCommonTable(adjTable);
 
             const adjTable = document.getElementById("adjustmentsTable");
             if (adjTable) initCommonTable(adjTable);
@@ -515,9 +515,9 @@
                 const form = document.getElementById("createAttendanceForm");
                 if (form) {
                     const steps = [
-                        { fields: ['staffId'], question: 'Select employee <span style="color: red;">*</span>:', required: true },
-                        { fields: ['timeIn'], question: 'Enter clock-in date & time <span style="color: red;">*</span>:', required: true },
-                        { fields: ['timeOut'], question: 'Enter clock-out date & time (optional):', required: false },
+                        { fields: ['staffId'], question: 'Select employee <span style="color: red;">*</span>', required: true },
+                        { fields: ['timeIn'], question: 'Enter clock-in date & time <span style="color: red;">*</span>', required: true },
+                        { fields: ['timeOut'], question: 'Enter clock-out date & time (optional)', required: false },
                         { isSummary: true, question: 'Review and Finish', fields: [] }
                     ];
                     new FormWizardComponent("createAttendanceForm", steps);
@@ -587,27 +587,57 @@
         </script>
     }
 
-    @if (isPayroll)
+    @if (isCompensation)
     {
         <script>
+            window.openAddCompensationModal = function() {
+                document.getElementById("addCompensationModal").style.display = "flex";
+            };
+            window.closeAddCompensationModal = function() {
+                document.getElementById("addCompensationModal").style.display = "none";
+            };
+
+            window.onPayoutCategoryChanged = function() {
+                const form = document.getElementById("createCompensationForm");
+                if (!form) return;
+                const category = document.getElementById("compPayoutCategory").value;
+                const payOnly = form.querySelectorAll(".payroll-only-field");
+                const adjOnly = form.querySelectorAll(".adjustment-only-field");
+                
+                if (category === "RegularPayroll") {
+                    form.action = "/Logs?handler=CreatePayroll";
+                    payOnly.forEach(el => el.style.display = "");
+                    adjOnly.forEach(el => el.style.display = "none");
+                    document.getElementById("compAdjustmentType").value = "";
+                } else {
+                    form.action = "/Logs?handler=CreateAdjustment";
+                    payOnly.forEach(el => el.style.display = "none");
+                    adjOnly.forEach(el => el.style.display = "");
+                    document.getElementById("compAdjustmentType").value = category;
+                }
+            };
+
             document.addEventListener("DOMContentLoaded", () => {
-                const form = document.getElementById("payrollForm");
+                const form = document.getElementById("createCompensationForm");
                 if (form) {
                     const steps = [
-                        { fields: ['staffId'], question: 'Select employee <span style="color: red;">*</span>:', required: true },
-                        { fields: ['periodStart', 'periodEnd', '.payroll-calc-btn'], question: 'Select payment period & calculate stats <span style="color: red;">*</span>:', required: true },
-                        { fields: ['totalHours', 'grossAmount', 'modifiers', 'netAmount'], question: 'Verify payroll hours and amounts <span style="color: red;">*</span>:', required: true },
-                        { fields: ['payDate', 'notes'], question: 'Enter optional payment date and notes:', required: false },
+                        { fields: ['payoutCategory', 'staffId'], question: 'Select payout category and employee <span style="color: red;">*</span>', required: true },
+                        { fields: ['periodStart', 'periodEnd', '.payroll-calc-btn'], question: 'Select payment period & calculate stats <span style="color: red;">*</span>', required: true, condition: (form) => form.querySelector('[name="payoutCategory"]').value === 'RegularPayroll' },
+                        { fields: ['totalHours', 'grossAmount', 'modifiers', 'netAmount'], question: 'Verify payroll hours and amounts <span style="color: red;">*</span>', required: true, condition: (form) => form.querySelector('[name="payoutCategory"]').value === 'RegularPayroll' },
+                        { fields: ['payDate'], question: 'Select payment date', required: false, condition: (form) => form.querySelector('[name="payoutCategory"]').value === 'RegularPayroll' },
+                        { fields: ['amount', 'deductFromCurrentPayroll'], question: 'Enter payment amount and options <span style="color: red;">*</span>', required: true, condition: (form) => form.querySelector('[name="payoutCategory"]').value !== 'RegularPayroll' },
+                        { fields: ['notes'], question: 'Enter payment notes', required: false },
                         { isSummary: true, question: 'Review and Finish', fields: [] }
                     ];
-                    new FormWizardComponent("payrollForm", steps);
+                    new FormWizardComponent("createCompensationForm", steps);
+                    onPayoutCategoryChanged();
                 }
             });
 
-            async function autoCalculatePayroll() {
-                let staffId = document.getElementById("payStaffId").value;
-                let start = document.getElementById("payPeriodStart").value;
-                let end = document.getElementById("payPeriodEnd").value;
+            async function autoCalculatePayrollComp() {
+                let staffId = document.getElementById("compStaffId").value;
+                let start = document.getElementById("compPeriodStart").value;
+                let end = document.getElementById("compPeriodEnd").value;
 
                 if (!staffId || !start || !end) {
                     alert("Please select Employee, Period Start, and Period End first.");
@@ -620,14 +650,14 @@
                     let result = await response.json();
 
                     if (result.success) {
-                        document.getElementById("payTotalHours").value = result.totalHours;
-                        document.getElementById("payGrossAmount").value = result.grossAmount;
+                        document.getElementById("compTotalHours").value = result.totalHours;
+                        document.getElementById("compGrossAmount").value = result.grossAmount;
                         
                         let modifierVal = result.commission - result.deductions;
-                        document.getElementById("payModifiers").value = modifierVal.toFixed(2);
-                        document.getElementById("payNetAmount").value = result.netAmount;
+                        document.getElementById("compModifiers").value = modifierVal.toFixed(2);
+                        document.getElementById("compNetAmount").value = result.netAmount;
                         
-                        document.getElementById("payNotes").value = `Includes ₱${result.commission.toFixed(2)} commissions & -₱${result.deductions.toFixed(2)} deductions`;
+                        document.getElementById("compNotes").value = `Includes ₱${result.commission.toFixed(2)} commissions & -₱${result.deductions.toFixed(2)} deductions`;
                         alert("Calculations computed! Form populated.");
                     } else {
                         alert("Failed to compute payroll stats: " + result.message);

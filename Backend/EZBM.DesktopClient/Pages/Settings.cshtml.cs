@@ -21,9 +21,9 @@ public class SettingsModel : PageModel
         public string Theme { get; set; } = "System";
         public string DateFormat { get; set; } = "yyyy-MM-dd";
         public bool SoundAlertsEnabled { get; set; } = true;
-        public string BarcodeScannerDevice { get; set; } = "Default Keyboard HID";
-        public string RfidScannerDevice { get; set; } = "Default Keyboard HID";
-        public string CashRegisterTriggerDevice { get; set; } = "Default USB Relay Trigger";
+        public string BarcodeScannerDevice { get; set; } = "None";
+        public string RfidScannerDevice { get; set; } = "None";
+        public string CashRegisterTriggerDevice { get; set; } = "None";
     }
     #endregion
 
@@ -152,7 +152,7 @@ public class SettingsModel : PageModel
         StoreSettings settings = SettingsService.LoadSettings();
         StoreName = settings.StoreName;
         Currency = settings.Currency;
-        LowStockThreshold = settings.LowStockThreshold * 100f; // display as percentage
+        LowStockThreshold = (float)Math.Round(settings.LowStockThreshold * 100f, 2); // display as percentage
         WrittenReceiptThreshold = settings.WrittenReceiptThreshold;
         StoreOpeningDate = settings.StoreOpeningDate;
 
@@ -282,7 +282,7 @@ public class SettingsModel : PageModel
             StoreSettings settings = SettingsService.LoadSettings();
             settings.StoreName = StoreName;
             settings.Currency = Currency;
-            settings.LowStockThreshold = LowStockThreshold / 100f; // save as decimal fraction
+            settings.LowStockThreshold = (float)Math.Round(LowStockThreshold / 100f, 4); // save as decimal fraction
             settings.WrittenReceiptThreshold = WrittenReceiptThreshold;
             settings.StoreOpeningDate = StoreOpeningDate;
             settings.EnableRfidLogin = EnableRfidLogin;

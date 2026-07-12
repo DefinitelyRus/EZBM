@@ -2,11 +2,11 @@
 @model EZBM.DesktopClient.Pages.SettingsModel
 @using EZBM.DesktopClient.Helpers
 @{
-    ViewData["Title"] = "System Configurations";
+    ViewData["Title"] = "Settings";
     bool hasAdminAccess = Model.IsAdmin;
 }
 
-<h2>System Configurations</h2>
+<h2>Settings</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
@@ -41,7 +41,7 @@
     
     <form method="post" asp-page-handler="SaveUserPreferences" style="margin-bottom: 30px;">
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">User UI Theme:</label>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Theme:</label>
             <select asp-for="UserTheme" style="width: 100%; padding: 5px; box-sizing: border-box;">
                 <option value="Light">Light Mode</option>
                 <option value="Dark">Dark Mode</option>
@@ -50,7 +50,7 @@
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date & Time Display Format:</label>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date and Time Format:</label>
             <select asp-for="DateFormat" style="width: 100%; padding: 5px; box-sizing: border-box;">
                 <option value="yyyy-MM-dd">YYYY-MM-DD (1999-12-31)</option>
                 <option value="MM/dd/yyyy">MM/DD/YYYY (12/31/1999)</option>
@@ -77,8 +77,10 @@
             <div style="margin-bottom: 15px; border-bottom: 1px solid #edf2f7; padding-bottom: 12px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Barcode Scanner Device (WebHID):</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" asp-for="BarcodeDevice" id="BarcodeDeviceInput" readonly style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; background-color: #f7fafc; border-radius: 4px;" />
-                    <button type="button" onclick="requestHidDevice('barcode')" class="btn" style="padding: 6px 12px;">Scan Device</button>
+                    <select asp-for="BarcodeDevice" id="BarcodeDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('barcode', this)">
+                        <option value="@Model.BarcodeDevice">@Model.BarcodeDevice</option>
+                    </select>
+                    <button type="button" onclick="requestHidDevice('barcode')" class="btn" style="padding: 6px 12px;">Select New Device</button>
                 </div>
                 <div id="barcode_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
                     <strong>Status:</strong> <span id="barcode_status" style="color: red; font-weight: bold;">Disconnected</span> | 
@@ -92,8 +94,10 @@
             <div style="margin-bottom: 15px; border-bottom: 1px solid #edf2f7; padding-bottom: 12px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">RFID Scanner Device (WebHID):</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" asp-for="RfidDevice" id="RfidDeviceInput" readonly style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; background-color: #f7fafc; border-radius: 4px;" />
-                    <button type="button" onclick="requestHidDevice('rfid')" class="btn" style="padding: 6px 12px;">Scan Device</button>
+                    <select asp-for="RfidDevice" id="RfidDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('rfid', this)">
+                        <option value="@Model.RfidDevice">@Model.RfidDevice</option>
+                    </select>
+                    <button type="button" onclick="requestHidDevice('rfid')" class="btn" style="padding: 6px 12px;">Select New Device</button>
                 </div>
                 <div id="rfid_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
                     <strong>Status:</strong> <span id="rfid_status" style="color: red; font-weight: bold;">Disconnected</span> | 
@@ -107,8 +111,10 @@
             <div style="margin-bottom: 5px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Cash Register Trigger Device (WebUSB):</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" asp-for="CashRegisterDevice" id="CashRegisterDeviceInput" readonly style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; background-color: #f7fafc; border-radius: 4px;" />
-                    <button type="button" onclick="requestUsbDevice()" class="btn" style="padding: 6px 12px;">Scan Device</button>
+                    <select asp-for="CashRegisterDevice" id="CashRegisterDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('cash', this)">
+                        <option value="@Model.CashRegisterDevice">@Model.CashRegisterDevice</option>
+                    </select>
+                    <button type="button" onclick="requestUsbDevice()" class="btn" style="padding: 6px 12px;">Select New Device</button>
                 </div>
                 <div id="cash_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
                     <strong>Status:</strong> <span id="cash_status" style="color: red; font-weight: bold;">Disconnected</span> | 
@@ -157,12 +163,12 @@
         
         <form method="post" asp-page-handler="SaveBusinessSettings">
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Name Tag:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Name:</label>
                 <input type="text" asp-for="StoreName" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency Code:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency:</label>
                 <select asp-for="Currency" style="width: 100%; padding: 5px; box-sizing: border-box;">
                     <option value="PHP">PHP - Philippine Peso (₱)</option>
                     <option value="USD">USD - US Dollar ($)</option>
@@ -172,8 +178,8 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Threshold (% of target):</label>
-                <input type="number" step="1" min="1" max="100" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Threshold:</label>
+                <input type="number" step="0.01" min="0.01" max="100" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
                 <small style="color: #666;">Warn on dashboard when items drop below this percent of target stock (e.g. 20%).</small>
             </div>
 
@@ -184,7 +190,7 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Grand Opening Date:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Opening Date:</label>
                 <input type="datetime-local" asp-for="StoreOpeningDate" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
 
@@ -197,22 +203,22 @@
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Staff Cards Expiry (Days):</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Staff Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryStaff" required style="width: 100%; padding: 5px;" />
                 </div>
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">OneTime Cards Expiry (Days):</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">One-Time Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryOneTime" required style="width: 100%; padding: 5px;" />
                 </div>
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Member Cards Expiry (Days):</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Member Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryMember" required style="width: 100%; padding: 5px;" />
                 </div>
             </div>
 
             <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Backup Settings</h4>
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Backup Target Path:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Backup Path:</label>
                 <input type="text" asp-for="BackupTargetPath" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -241,7 +247,7 @@
                 <thead>
                     <tr style="background-color: #eee;">
                         <th>Promo Code</th>
-                        <th>Discount Percentage</th>
+                        <th>How much discount should be given? (e.g. 20% off)</th>
                         <th>Expiration Date</th>
                         <th>Action</th>
                     </tr>
@@ -340,45 +346,55 @@
         row.parentNode.removeChild(row);
     }
 
-    function updateHidDeviceInfo(prefix, device) {
+    function onDeviceSelectChanged(prefix, select) {
+        const val = select.value;
+        if (!val || val === "None") {
+            updateHidOrUsbDetailsMock(prefix, null);
+            return;
+        }
+        if (val === "Default Keyboard HID" || val === "Default USB Relay Trigger" || val.includes("Feature not supported")) {
+            updateHidOrUsbDetailsMock(prefix, { productName: val, vendorId: 0, productId: 0, connected: true });
+            return;
+        }
+
+        // Parse VID/PID
+        const match = val.match(/VID:\s*0x([0-9A-Fa-f]+),\s*PID:\s*0x([0-9A-Fa-f]+)/);
+        if (match) {
+            const mockDev = {
+                vendorId: parseInt(match[1], 16),
+                productId: parseInt(match[2], 16),
+                productName: val.replace(/\s*\[VID:.*?\]\s*$/, ''),
+                connected: true
+            };
+            updateHidOrUsbDetailsMock(prefix, mockDev);
+        } else {
+            updateHidOrUsbDetailsMock(prefix, null);
+        }
+    }
+
+    function updateHidOrUsbDetailsMock(prefix, device) {
         const detailsDiv = document.getElementById(prefix + '_details');
         const statusEl = document.getElementById(prefix + '_status');
         const nameEl = document.getElementById(prefix + '_name');
         const vidEl = document.getElementById(prefix + '_vid');
         const pidEl = document.getElementById(prefix + '_pid');
 
+        if (!detailsDiv) return;
+
         if (device) {
             detailsDiv.style.display = 'block';
-            statusEl.textContent = 'Connected';
-            statusEl.style.color = 'green';
-            nameEl.textContent = device.productName || 'Unknown HID Device';
+            statusEl.textContent = device.connected ? 'Connected' : 'Disconnected';
+            statusEl.style.color = device.connected ? 'green' : 'red';
+            nameEl.textContent = device.productName || 'Unknown Device';
             vidEl.textContent = '0x' + device.vendorId.toString(16).toUpperCase().padStart(4, '0');
             pidEl.textContent = '0x' + device.productId.toString(16).toUpperCase().padStart(4, '0');
         } else {
             detailsDiv.style.display = 'block';
             statusEl.textContent = 'Disconnected';
             statusEl.style.color = 'red';
-        }
-    }
-
-    function updateUsbDeviceInfo(device) {
-        const detailsDiv = document.getElementById('cash_details');
-        const statusEl = document.getElementById('cash_status');
-        const nameEl = document.getElementById('cash_name');
-        const vidEl = document.getElementById('cash_vid');
-        const pidEl = document.getElementById('cash_pid');
-
-        if (device) {
-            detailsDiv.style.display = 'block';
-            statusEl.textContent = 'Connected';
-            statusEl.style.color = 'green';
-            nameEl.textContent = device.productName || 'Unknown USB Device';
-            vidEl.textContent = '0x' + device.vendorId.toString(16).toUpperCase().padStart(4, '0');
-            pidEl.textContent = '0x' + device.productId.toString(16).toUpperCase().padStart(4, '0');
-        } else {
-            detailsDiv.style.display = 'block';
-            statusEl.textContent = 'Disconnected';
-            statusEl.style.color = 'red';
+            nameEl.textContent = '-';
+            vidEl.textContent = '-';
+            pidEl.textContent = '-';
         }
     }
 
@@ -391,14 +407,28 @@
             const devices = await navigator.hid.requestDevice({ filters: [] });
             if (devices && devices.length > 0) {
                 const device = devices[0];
-                const deviceString = `[VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}] ${device.productName || 'Unknown HID Device'}`;
-                if (type === 'barcode') {
-                    document.getElementById('BarcodeDeviceInput').value = deviceString;
-                    updateHidDeviceInfo('barcode', device);
-                } else if (type === 'rfid') {
-                    document.getElementById('RfidDeviceInput').value = deviceString;
-                    updateHidDeviceInfo('rfid', device);
+                const deviceString = `${device.productName || 'Unknown HID Device'} [VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                
+                const selectId = type === 'barcode' ? 'BarcodeDeviceSelect' : 'RfidDeviceSelect';
+                const select = document.getElementById(selectId);
+                
+                // Add to select if not present
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === deviceString) {
+                        exists = true;
+                        select.options[i].selected = true;
+                        break;
+                    }
                 }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = deviceString;
+                    opt.textContent = deviceString;
+                    opt.selected = true;
+                    select.appendChild(opt);
+                }
+                onDeviceSelectChanged(type, select);
             }
         } catch (err) {
             alert("Failed to get HID device: " + err.message);
@@ -413,9 +443,25 @@
         try {
             const device = await navigator.usb.requestDevice({ filters: [] });
             if (device) {
-                const deviceString = `[VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}] ${device.productName || 'Unknown USB Device'}`;
-                document.getElementById('CashRegisterDeviceInput').value = deviceString;
-                updateUsbDeviceInfo(device);
+                const deviceString = `${device.productName || 'Unknown USB Device'} [VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                
+                const select = document.getElementById('CashRegisterDeviceSelect');
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === deviceString) {
+                        exists = true;
+                        select.options[i].selected = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = deviceString;
+                    opt.textContent = deviceString;
+                    opt.selected = true;
+                    select.appendChild(opt);
+                }
+                onDeviceSelectChanged('cash', select);
             }
         } catch (err) {
             alert("Failed to get USB device: " + err.message);
@@ -423,66 +469,126 @@
     }
 
     async function initializeDevices() {
-        if (navigator.hid) {
-            const hidDevices = await navigator.hid.getDevices();
-            const currentBarcode = document.getElementById('BarcodeDeviceInput').value;
-            const currentRfid = document.getElementById('RfidDeviceInput').value;
+        const barcodeSelect = document.getElementById('BarcodeDeviceSelect');
+        const rfidSelect = document.getElementById('RfidDeviceSelect');
+        const cashSelect = document.getElementById('CashRegisterDeviceSelect');
 
-            const barcodeDev = hidDevices.find(d => {
-                const vid = d.vendorId.toString(16).toUpperCase().padStart(4, '0');
-                const pid = d.productId.toString(16).toUpperCase().padStart(4, '0');
-                return currentBarcode.includes(`VID: 0x${vid}`) && currentBarcode.includes(`PID: 0x${pid}`);
+        const savedBarcode = barcodeSelect.value;
+        const savedRfid = rfidSelect.value;
+        const savedCash = cashSelect.value;
+
+        barcodeSelect.innerHTML = "";
+        rfidSelect.innerHTML = "";
+        cashSelect.innerHTML = "";
+
+        if (!navigator.hid) {
+            const opt1 = document.createElement('option');
+            opt1.value = "Feature not supported on this browser.";
+            opt1.textContent = "Feature not supported on this browser.";
+            opt1.selected = true;
+            barcodeSelect.appendChild(opt1);
+            barcodeSelect.disabled = true;
+
+            const opt2 = document.createElement('option');
+            opt2.value = "Feature not supported on this browser.";
+            opt2.textContent = "Feature not supported on this browser.";
+            opt2.selected = true;
+            rfidSelect.appendChild(opt2);
+            rfidSelect.disabled = true;
+
+            document.querySelectorAll("button[onclick^='requestHidDevice']").forEach(btn => btn.disabled = true);
+        } else {
+            const defaults = ["None"];
+            defaults.forEach(d => {
+                const optB = document.createElement('option'); optB.value = optB.textContent = d;
+                const optR = document.createElement('option'); optR.value = optR.textContent = d;
+                barcodeSelect.appendChild(optB);
+                rfidSelect.appendChild(optR);
             });
-            if (barcodeDev) {
-                updateHidDeviceInfo('barcode', barcodeDev);
-            } else if (currentBarcode && currentBarcode !== "Default Keyboard HID" && currentBarcode !== "None") {
-                const match = currentBarcode.match(/VID:\s*0x([0-9A-Fa-f]+),\s*PID:\s*0x([0-9A-Fa-f]+)/);
-                if (match) {
-                    const mockDev = { vendorId: parseInt(match[1], 16), productId: parseInt(match[2], 16), productName: currentBarcode.replace(/^\[.*?\]\s*/, '') };
-                    updateHidDeviceInfo('barcode', mockDev);
-                    document.getElementById('barcode_status').textContent = 'Disconnected';
-                    document.getElementById('barcode_status').style.color = 'red';
+
+            try {
+                const hidDevices = await navigator.hid.getDevices();
+                hidDevices.forEach(d => {
+                    const deviceString = `${d.productName || 'Unknown HID Device'} [VID: 0x${d.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${d.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                    const optB = document.createElement('option'); optB.value = optB.textContent = deviceString;
+                    const optR = document.createElement('option'); optR.value = optR.textContent = deviceString;
+                    barcodeSelect.appendChild(optB);
+                    rfidSelect.appendChild(optR);
+                });
+            } catch (e) { console.error(e); }
+
+            if (savedBarcode) {
+                let found = false;
+                for (let i = 0; i < barcodeSelect.options.length; i++) {
+                    if (barcodeSelect.options[i].value === savedBarcode) {
+                        barcodeSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedBarcode; opt.selected = true;
+                    barcodeSelect.appendChild(opt);
+                }
+            }
+            if (savedRfid) {
+                let found = false;
+                for (let i = 0; i < rfidSelect.options.length; i++) {
+                    if (rfidSelect.options[i].value === savedRfid) {
+                        rfidSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedRfid; opt.selected = true;
+                    rfidSelect.appendChild(opt);
                 }
             }
 
-            const rfidDev = hidDevices.find(d => {
-                const vid = d.vendorId.toString(16).toUpperCase().padStart(4, '0');
-                const pid = d.productId.toString(16).toUpperCase().padStart(4, '0');
-                return currentRfid.includes(`VID: 0x${vid}`) && currentRfid.includes(`PID: 0x${pid}`);
-            });
-            if (rfidDev) {
-                updateHidDeviceInfo('rfid', rfidDev);
-            } else if (currentRfid && currentRfid !== "Default Keyboard HID" && currentRfid !== "None") {
-                const match = currentRfid.match(/VID:\s*0x([0-9A-Fa-f]+),\s*PID:\s*0x([0-9A-Fa-f]+)/);
-                if (match) {
-                    const mockDev = { vendorId: parseInt(match[1], 16), productId: parseInt(match[2], 16), productName: currentRfid.replace(/^\[.*?\]\s*/, '') };
-                    updateHidDeviceInfo('rfid', mockDev);
-                    document.getElementById('rfid_status').textContent = 'Disconnected';
-                    document.getElementById('rfid_status').style.color = 'red';
-                }
-            }
+            onDeviceSelectChanged('barcode', barcodeSelect);
+            onDeviceSelectChanged('rfid', rfidSelect);
         }
 
-        if (navigator.usb) {
-            const usbDevices = await navigator.usb.getDevices();
-            const currentRegister = document.getElementById('CashRegisterDeviceInput').value;
-
-            const regDev = usbDevices.find(d => {
-                const vid = d.vendorId.toString(16).toUpperCase().padStart(4, '0');
-                const pid = d.productId.toString(16).toUpperCase().padStart(4, '0');
-                return currentRegister.includes(`VID: 0x${vid}`) && currentRegister.includes(`PID: 0x${pid}`);
+        if (!navigator.usb) {
+            const opt = document.createElement('option');
+            opt.value = "Feature not supported on this browser.";
+            opt.textContent = "Feature not supported on this browser.";
+            opt.selected = true;
+            cashSelect.appendChild(opt);
+            cashSelect.disabled = true;
+            document.querySelectorAll("button[onclick^='requestUsbDevice']").forEach(btn => btn.disabled = true);
+        } else {
+            const defaults = ["None"];
+            defaults.forEach(d => {
+                const opt = document.createElement('option'); opt.value = opt.textContent = d;
+                cashSelect.appendChild(opt);
             });
-            if (regDev) {
-                updateUsbDeviceInfo(regDev);
-            } else if (currentRegister && currentRegister !== "Default USB Relay Trigger" && currentRegister !== "None") {
-                const match = currentRegister.match(/VID:\s*0x([0-9A-Fa-f]+),\s*PID:\s*0x([0-9A-Fa-f]+)/);
-                if (match) {
-                    const mockDev = { vendorId: parseInt(match[1], 16), productId: parseInt(match[2], 16), productName: currentRegister.replace(/^\[.*?\]\s*/, '') };
-                    updateUsbDeviceInfo(mockDev);
-                    document.getElementById('cash_status').textContent = 'Disconnected';
-                    document.getElementById('cash_status').style.color = 'red';
+
+            try {
+                const usbDevices = await navigator.usb.getDevices();
+                usbDevices.forEach(d => {
+                    const deviceString = `${d.productName || 'Unknown USB Device'} [VID: 0x${d.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${d.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                    const opt = document.createElement('option'); opt.value = opt.textContent = deviceString;
+                    cashSelect.appendChild(opt);
+                });
+            } catch (e) { console.error(e); }
+
+            if (savedCash) {
+                let found = false;
+                for (let i = 0; i < cashSelect.options.length; i++) {
+                    if (cashSelect.options[i].value === savedCash) {
+                        cashSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedCash; opt.selected = true;
+                    cashSelect.appendChild(opt);
                 }
             }
+            onDeviceSelectChanged('cash', cashSelect);
         }
     }
 

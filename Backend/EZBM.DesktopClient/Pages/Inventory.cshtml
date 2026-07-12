@@ -124,119 +124,116 @@
                 <button type="button" onclick="closeAddModal()" class="btn"
                         style="border: none; font-size: 1.5em; padding: 0 5px; cursor: pointer;">&times;</button>
             </div>
+            
             <form method="post" asp-page-handler="Create" id="createItemForm">
 
                 <div style="margin-bottom: 12px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type <span
-                        style="color: red;">*</span>:</label>
-                        <select name="itemType" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;"
-                                onchange="toggleItemTypeFields(this.form)">
-                            <option value="Product" selected>Product</option>
-                            <option value="Service">Service</option>
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type <span style="color: red;">*</span></label>
+                    <select name="itemType" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" onchange="toggleItemTypeFields(this.form)">
+                        <option value="Product" selected>Product</option>
+                        <option value="Service">Service</option>
+                    </select>
+                    <small style="color: #718096; display: block; margin-top: 3px;">Select whether this is a physical product or a digital service.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Brand</label>
+                    <input type="text" name="brand" placeholder="e.g. Samsung, Nestle" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The manufacturer or brand name of this item.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name <span style="color: red;">*</span></label>
+                    <input type="text" name="name" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The primary display name of the item.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description</label>
+                    <textarea name="description" style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0;"></textarea>
+                    <small style="color: #718096; display: block; margin-top: 3px;">A brief description of this item's characteristics.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Image URL</label>
+                    <input type="text" name="imageUrl" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">A web link to a picture of the item.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" name="isForSale" value="true" checked />
+                        Available For Sale
+                    </label>
+                    <small style="color: #718096; display: block; margin-top: 3px;">Turn on to make this item purchasable at cashier checkouts.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price (@StateHelper.GetCurrencySymbol())</label>
+                    <input type="number" step="0.01" min="0" name="cost" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The cost spent to purchase or produce this item.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price (@StateHelper.GetCurrencySymbol())</label>
+                    <input type="number" step="0.01" min="0" name="salePrice" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The price customers pay to buy this item.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement</label>
+                    <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
+                        @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
+                        {
+                            <option value="@unit">@unit</option>
+                        }
+                    </select>
+                    <small style="color: #718096; display: block; margin-top: 3px;">The standard unit used to measure this item's stock.</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity <span style="color: red;">*</span></label>
+                    <input type="number" step="0.01" min="-1" name="quantity" value="0" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The current amount of this item in inventory.</small>
+                </div>
+
+                <div class="product-only-field" style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">How much stock should we aim for?</label>
+                    <input type="number" step="0.01" min="0" name="targetStock" value="0" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The ideal stock level we want to maintain in the store.</small>
+                </div>
+
+                <div class="product-only-field" style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">How much of the target quantity is considered low stock?</label>
+                    <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="0.20" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">Enter a decimal fraction representing the low stock threshold (e.g. 0.20 for 20%).</small>
+                </div>
+
+                <div style="margin-bottom: 12px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date</label>
+                    <input type="date" name="expirationDate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                    <small style="color: #718096; display: block; margin-top: 3px;">The expiration date of the item (leave blank if not applicable).</small>
+                </div>
+
+                <div class="tags-input-container" style="margin-bottom: 15px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags</label>
+                    <div id="addTagsBubbles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
+                    <div style="display: flex; gap: 8px;">
+                        <select id="addTagDropdown" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0;">
+                            <option value="">-- Select a tag --</option>
+                            @foreach (var tag in Item.DefaultTags)
+                            {
+                                <option value="@tag">@tag</option>
+                            }
                         </select>
+                        <button type="button" onclick="addTagFromDropdown('add')" class="btn" style="padding: 6px 12px;">Add</button>
                     </div>
+                    <div id="addHiddenTagsInputs"></div>
+                    <small style="color: #718096; display: block; margin-top: 3px;">Assign labels to this item for easier organization.</small>
+                </div>
 
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Brand:</label>
-                        <input type="text" name="brand" placeholder="e.g. Samsung, Nestle"
-                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                    </div>
-
-                    <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name <span
-                            style="color: red;">*</span>:</label>
-                            <input type="text" name="name" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                        </div>
-
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description:</label>
-                            <textarea name="description"
-                                      style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0;"></textarea>
-                        </div>
-
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Image URL:</label>
-                            <input type="text" name="imageUrl" placeholder="https://example.com/image.jpg"
-                                   style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                        </div>
-
-                        <div style="margin-bottom: 12px;">
-                            <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                                <input type="checkbox" name="isForSale" value="true" checked />
-                                Available For Sale
-                            </label>
-                        </div>
-
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price
-                                (@StateHelper.GetCurrencySymbol()):</label>
-                                <input type="number" step="0.01" min="0" name="cost"
-                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                            </div>
-
-                            <div style="margin-bottom: 12px;">
-                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price
-                                    (@StateHelper.GetCurrencySymbol()):</label>
-                                    <input type="number" step="0.01" min="0" name="salePrice"
-                                           style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                </div>
-
-                                <div style="margin-bottom: 12px;">
-                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity (type -1 for
-                                        unlimited) <span style="color: red;">*</span>:</label>
-                                        <input type="number" step="0.01" min="-1" name="quantity" value="0" required
-                                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                    </div>
-
-                                    <div class="product-only-field" style="margin-bottom: 12px;">
-                                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Target Stock:</label>
-                                        <input type="number" step="0.01" min="0" name="targetStock" value="0"
-                                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                    </div>
-
-                                    <div class="product-only-field" style="margin-bottom: 12px;">
-                                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Low Stock Warning Threshold
-                                            (%):</label>
-                                            <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage" value="0.20"
-                                                   style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                            <small style="color: #718096;">Enter fraction (e.g. 0.20 for 20%)</small>
-                                        </div>
-
-                                        <div style="margin-bottom: 12px;">
-                                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement:</label>
-                                            <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
-                                                @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
-                                                {
-                                                    <option value="@unit">@unit</option>
-                                                }
-                                            </select>
-                                        </div>
-
-                                        <div style="margin-bottom: 12px;">
-                                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date:</label>
-                                            <input type="date" name="expirationDate"
-                                                   style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                        </div>
-
-                                        <div class="tags-input-container" style="margin-bottom: 15px;">
-                                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags:</label>
-                                            <div id="addTagsBubbles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
-                                            <div style="display: flex; gap: 8px;">
-                                                <select id="addTagDropdown" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0;">
-                                                    <option value="">-- Select a tag --</option>
-                                                    @foreach (var tag in Item.DefaultTags)
-                                                    {
-                                                        <option value="@tag">@tag</option>
-                                                    }
-                                                </select>
-                                                <button type="button" onclick="addTagFromDropdown('add')" class="btn"
-                                                        style="padding: 6px 12px;">Add</button>
-                                            </div>
-                                            <div id="addHiddenTagsInputs"></div>
-                                        </div>
-
-                                        <button type="submit" class="btn btn-success" style="width: 100%;">Create Item</button>
-                                    </form>
+                <button type="submit" class="btn btn-success" style="width: 100%;">Create Item</button>
+            </form>
                                 </div>
                             </div>
 
@@ -245,133 +242,142 @@
                                 @section RightSidebar {
                                     <div style="width: 100%; box-sizing: border-box;">
                                         <h3 style="margin-top:0;">Edit Item (ID: @Model.EditingItem!.Id)</h3>
-                                        <form method="post" asp-page-handler="Update">
+                                        
+                                        <form method="post" asp-page-handler="Update" id="updateItemForm">
                                             <input type="hidden" name="id" value="@Model.EditingItem.Id" />
 
                                             <div style="margin-bottom: 12px;">
-                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type:</label>
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Item Type</label>
                                                 <input type="hidden" name="itemType" value="@(Model.EditingItem is Service ? "Service" : "Product")" />
                                                 <strong>@(Model.EditingItem is Service ? "Service" : "Product")</strong>
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The fundamental classification of this inventory item.</small>
                                             </div>
 
                                             <div style="margin-bottom: 12px;">
-                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Brand:</label>
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Brand</label>
                                                 <input type="text" name="brand" value="@Model.EditingItem.Brand" placeholder="e.g. Samsung, Nestle"
                                                        style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The manufacturer or brand name of this item.</small>
                                             </div>
 
                                             <div style="margin-bottom: 12px;">
-                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name <span
-                                                    style="color: red;">*</span>:</label>
-                                                    <input type="text" name="name" value="@Model.EditingItem.Name" required
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Name <span style="color: red;">*</span></label>
+                                                <input type="text" name="name" value="@Model.EditingItem.Name" required
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The primary display name of the item.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description</label>
+                                                <textarea name="description"
+                                                          style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0;">@Model.EditingItem.Description</textarea>
+                                                <small style="color: #718096; display: block; margin-top: 3px;">A brief description of this item's characteristics.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Image URL</label>
+                                                <input type="text" name="imageUrl" value="@Model.EditingItem.ImageUrl"
+                                                       placeholder="https://example.com/image.jpg"
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">A web link to a picture of the item.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                                                    <input type="checkbox" name="isForSale" value="true" @(Model.EditingItem.IsForSale ? "checked" : "") />
+                                                    Available For Sale
+                                                </label>
+                                                <small style="color: #718096; display: block; margin-top: 3px;">Turn on to make this item purchasable at cashier checkouts.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price (@StateHelper.GetCurrencySymbol())</label>
+                                                <input type="number" step="0.01" min="0" name="cost" value="@Model.EditingItem.Cost"
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The cost spent to purchase or produce this item.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price (@StateHelper.GetCurrencySymbol())</label>
+                                                <input type="number" step="0.01" min="0" name="salePrice" value="@Model.EditingItem.SalePrice"
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The price customers pay to buy this item.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement</label>
+                                                <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
+                                                    @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
+                                                    {
+                                                        bool isSel = Model.EditingItem.UnitOfMeasurement == unit;
+                                                        if (isSel)
+                                                        {
+                                                            <option value="@unit" selected>@unit</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@unit">@unit</option>
+                                                        }
+                                                    }
+                                                </select>
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The standard unit used to measure this item's stock.</small>
+                                            </div>
+
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity <span style="color: red;">*</span></label>
+                                                <input type="number" step="0.01" min="-1" name="quantity" value="@Model.EditingItem.Quantity" required
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The current amount of this item in inventory.</small>
+                                            </div>
+
+                                            @if (Model.EditingItem is Product prodEdit)
+                                            {
+                                                <div class="product-only-field" style="margin-bottom: 12px;">
+                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">How much stock should we aim for?</label>
+                                                    <input type="number" step="0.01" min="0" name="targetStock" value="@prodEdit.TargetStock"
                                                            style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                    <small style="color: #718096; display: block; margin-top: 3px;">The ideal stock level we want to maintain in the store.</small>
                                                 </div>
 
-                                                <div style="margin-bottom: 12px;">
-                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Description:</label>
-                                                    <textarea name="description"
-                                                              style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0;">@Model.EditingItem.Description</textarea>
-                                                </div>
-
-                                                <div style="margin-bottom: 12px;">
-                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Image URL:</label>
-                                                    <input type="text" name="imageUrl" value="@Model.EditingItem.ImageUrl"
-                                                           placeholder="https://example.com/image.jpg"
+                                                <div class="product-only-field" style="margin-bottom: 12px;">
+                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">How much of the target quantity is considered low stock?</label>
+                                                    <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage"
+                                                           value="@prodEdit.LowStockThresholdPercentage"
                                                            style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                    <small style="color: #718096; display: block; margin-top: 3px;">Enter a decimal fraction representing the low stock threshold (e.g. 0.20 for 20%).</small>
                                                 </div>
+                                            }
 
-                                                <div style="margin-bottom: 12px;">
-                                                    <label style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-                                                        <input type="checkbox" name="isForSale" value="true" @(Model.EditingItem.IsForSale ? "checked" : "") />
-                                                        Available For Sale
-                                                    </label>
+                                            <div style="margin-bottom: 12px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date</label>
+                                                <input type="date" name="expirationDate" value="@(Model.EditingItem.ExpirationDate?.ToString("yyyy-MM-dd"))"
+                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                                                <small style="color: #718096; display: block; margin-top: 3px;">The expiration date of the item (leave blank if not applicable).</small>
+                                            </div>
+
+                                            <div class="tags-input-container" style="margin-bottom: 15px;">
+                                                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags</label>
+                                                <div id="editTagsBubbles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
+                                                <div style="display: flex; gap: 8px;">
+                                                    <select id="editTagDropdown" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0;">
+                                                        <option value="">-- Select a tag --</option>
+                                                        @foreach (var tag in Item.DefaultTags)
+                                                        {
+                                                            <option value="@tag">@tag</option>
+                                                        }
+                                                    </select>
+                                                    <button type="button" onclick="addTagFromDropdown('edit')" class="btn"
+                                                            style="padding: 6px 12px;">Add</button>
                                                 </div>
+                                                <div id="editHiddenTagsInputs"></div>
+                                                <small style="color: #718096; display: block; margin-top: 3px;">Assign labels to this item for easier organization.</small>
+                                            </div>
 
-                                                <div style="margin-bottom: 12px;">
-                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Cost Price
-                                                        (@StateHelper.GetCurrencySymbol()):</label>
-                                                        <input type="number" step="0.01" min="0" name="cost" value="@Model.EditingItem.Cost"
-                                                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                    </div>
-
-                                                    <div style="margin-bottom: 12px;">
-                                                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Sale Price
-                                                            (@StateHelper.GetCurrencySymbol()):</label>
-                                                            <input type="number" step="0.01" min="0" name="salePrice" value="@Model.EditingItem.SalePrice"
-                                                                   style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                        </div>
-
-                                                        <div style="margin-bottom: 12px;">
-                                                            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Stock Quantity (type -1 for unlimited)
-                                                                <span style="color: red;">*</span>:</label>
-                                                                <input type="number" step="0.01" min="-1" name="quantity" value="@Model.EditingItem.Quantity" required
-                                                                       style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                            </div>
-
-                                                            @if (Model.EditingItem is Product prodEdit)
-                                                            {
-                                                                <div class="product-only-field" style="margin-bottom: 12px;">
-                                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Target Stock:</label>
-                                                                    <input type="number" step="0.01" min="0" name="targetStock" value="@prodEdit.TargetStock"
-                                                                           style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                                </div>
-
-                                                                <div class="product-only-field" style="margin-bottom: 12px;">
-                                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Low Stock Warning Threshold
-                                                                        (%):</label>
-                                                                        <input type="number" step="0.01" min="0" max="1" name="lowStockThresholdPercentage"
-                                                                               value="@prodEdit.LowStockThresholdPercentage"
-                                                                               style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                                        <small style="color: #718096;">Enter fraction (e.g. 0.20 for 20%)</small>
-                                                                    </div>
-                                                                }
-
-                                                                <div style="margin-bottom: 12px;">
-                                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Unit of Measurement:</label>
-                                                                    <select name="unitOfMeasurement" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
-                                                                        @foreach (Item.Unit unit in Enum.GetValues<Item.Unit>())
-                                                                        {
-                                                                            bool isSel = Model.EditingItem.UnitOfMeasurement == unit;
-                                                                            @if (isSel)
-                                                                            {
-                                                                                <option value="@unit" selected>@unit</option>
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                <option value="@unit">@unit</option>
-                                                                            }
-                                                                        }
-                                                                    </select>
-                                                                </div>
-
-                                                                <div style="margin-bottom: 12px;">
-                                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Expiration Date:</label>
-                                                                    <input type="date" name="expirationDate" value="@(Model.EditingItem.ExpirationDate?.ToString("yyyy-MM-dd"))"
-                                                                           style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
-                                                                </div>
-
-                                                                <div class="tags-input-container" style="margin-bottom: 15px;">
-                                                                    <label style="display: block; font-weight: bold; margin-bottom: 4px;">Tags:</label>
-                                                                    <div id="editTagsBubbles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;"></div>
-                                                                    <div style="display: flex; gap: 8px;">
-                                                                        <select id="editTagDropdown" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0;">
-                                                                            <option value="">-- Select a tag --</option>
-                                                                            @foreach (var tag in Item.DefaultTags)
-                                                                            {
-                                                                                <option value="@tag">@tag</option>
-                                                                            }
-                                                                        </select>
-                                                                        <button type="button" onclick="addTagFromDropdown('edit')" class="btn"
-                                                                                style="padding: 6px 12px;">Add</button>
-                                                                    </div>
-                                                                    <div id="editHiddenTagsInputs"></div>
-                                                                </div>
-
-                                                                <div style="display: flex; gap: 10px;">
-                                                                    <button type="submit" class="btn btn-primary" style="flex: 1;">Update Item</button>
-                                                                    <a href="/Inventory" class="btn" style="flex: 1; text-align: center;">Cancel</a>
-                                                                </div>
-                                                            </form>
+                                            <div style="display: flex; gap: 10px;">
+                                                <button type="submit" class="btn btn-primary" style="flex: 1;">Update Item</button>
+                                                <a href="/Inventory" class="btn" style="flex: 1; text-align: center;">Cancel</a>
+                                            </div>
+                                        </form>
                                                         </div>
                                                     }
                                                 }
@@ -484,10 +490,10 @@
                                                                     { fields: ['isForSale'], question: "Should this item be available for sale?", required: false },
                                                                     { fields: ['cost'], question: "What is the cost price?", required: false },
                                                                     { fields: ['salePrice'], question: "What is the sale price?", required: false },
-                                                                    { fields: ['quantity'], question: 'What is the stock quantity? (use -1 for unlimited) <span style="color: red;">*</span>:', required: true },
-                                                                    { fields: ['targetStock'], question: "What is the target stock level?", required: false, condition: (form) => form.querySelector('[name="itemType"]').value === 'Product' },
-                                                                    { fields: ['lowStockThresholdPercentage'], question: "What is the low stock threshold %?", required: false, condition: (form) => form.querySelector('[name="itemType"]').value === 'Product' },
                                                                     { fields: ['unitOfMeasurement'], question: "What is the unit of measurement?", required: true },
+                                                                    { fields: ['quantity'], question: 'What is the stock quantity? <span style="color: red;">*</span>', required: true, condition: (form) => form.querySelector('[name="unitOfMeasurement"]').value !== 'Unlimited' },
+                                                                    { fields: ['targetStock'], question: "How much stock should we aim for?", required: false, condition: (form) => form.querySelector('[name="itemType"]').value === 'Product' && form.querySelector('[name="unitOfMeasurement"]').value !== 'Unlimited' },
+                                                                    { fields: ['lowStockThresholdPercentage'], question: "How much of the target quantity is considered low stock?", required: false, condition: (form) => form.querySelector('[name="itemType"]').value === 'Product' && form.querySelector('[name="unitOfMeasurement"]').value !== 'Unlimited' },
                                                                     { fields: ['expirationDate'], question: "What is the expiration date?", required: false },
                                                                     { fields: ['.tags-input-container'], question: "Select tags for this item:", required: false },
                                                                     { isSummary: true, question: "Review and Finish", fields: [] }

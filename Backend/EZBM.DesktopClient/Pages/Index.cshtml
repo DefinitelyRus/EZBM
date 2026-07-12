@@ -184,7 +184,7 @@
                             <td style="color: #c53030; font-weight: bold;">@alert.Name</td>
                             <td style="color: #c53030; font-weight: bold;">@alert.Quantity</td>
                             <td>@alert.TargetStock</td>
-                            <td>@(alert.LowStockThresholdPercentage * 100)%</td>
+                            <td>@(EZBM.Core.Tools.Utils.FormatDecimal(alert.LowStockThresholdPercentage * 100))%</td>
                         </tr>
                     }
                 </tbody>

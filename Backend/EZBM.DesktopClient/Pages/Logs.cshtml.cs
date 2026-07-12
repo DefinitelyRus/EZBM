@@ -96,32 +96,47 @@ public class LogsModel : PageModel
     {
         if (!string.IsNullOrEmpty(tab))
             ActiveTab = tab.ToLower();
+        else
+            ActiveTab = "attendance";
 
         using AppDbContext context = new();
 
-        // Load attendance
-        Utils.RequestResult<List<Attendance>> attendanceResult = await StaffService.FindAttendanceAsync(null!);
-        AttendanceLogs = attendanceResult.Data ?? new List<Attendance>();
+        if (ActiveTab == "attendance")
+        {
+            // Load attendance
+            Utils.RequestResult<List<Attendance>> attendanceResult = await StaffService.FindAttendanceAsync(null!);
+            AttendanceLogs = attendanceResult.Data ?? new List<Attendance>();
 
-        // Load payroll
-        Utils.RequestResult<List<Payroll>> payrollResult = await StaffService.FindPayrollAsync(null!);
-        PayrollLogs = payrollResult.Data ?? new List<Payroll>();
+            // Load staff for dropdowns
+            Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
+            StaffList = staffResult.Data ?? new List<Staff>();
+        }
+        else if (ActiveTab == "ledger")
+        {
+            // Load transactions for Ledger
+            TransactionLedger = await context.Transaction
+                .Include(t => t.Staff)
+                .OrderByDescending(t => t.Timestamp)
+                .ToListAsync();
+        }
+        else if (ActiveTab == "compensation")
+        {
+            // Load payroll
+            Utils.RequestResult<List<Payroll>> payrollResult = await StaffService.FindPayrollAsync(null!);
+            PayrollLogs = payrollResult.Data ?? new List<Payroll>();
 
-        // Load adjustments
-        StaffAdjustments = await context.StaffAdjustment.OrderByDescending(a => a.Timestamp).ToListAsync();
+            // Load adjustments
+            StaffAdjustments = await context.StaffAdjustment.OrderByDescending(a => a.Timestamp).ToListAsync();
 
-        // Load staff for dropdowns
-        Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
-        StaffList = staffResult.Data ?? new List<Staff>();
-
-        // Load action logs
-        ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
-
-        // Load transactions for Ledger
-        TransactionLedger = await context.Transaction
-            .Include(t => t.Staff)
-            .OrderByDescending(t => t.Timestamp)
-            .ToListAsync();
+            // Load staff for dropdowns
+            Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
+            StaffList = staffResult.Data ?? new List<Staff>();
+        }
+        else if (ActiveTab == "actions")
+        {
+            // Load action logs
+            ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
+        }
     }
 
     /// <summary>
@@ -173,19 +188,19 @@ public class LogsModel : PageModel
         if (totalHours < 0f)
         {
             ErrorMessage = "Total hours cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         if (grossAmount < 0f)
         {
             ErrorMessage = "Gross amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         if (netAmount < 0f)
         {
             ErrorMessage = "Net paid amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         CreatePayrollRequest request = new(
@@ -207,7 +222,7 @@ public class LogsModel : PageModel
         else
             ErrorMessage = result.Message;
 
-        return RedirectToPage("/Logs", new { tab = "payroll" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     /// <summary>
@@ -243,7 +258,7 @@ public class LogsModel : PageModel
         else
             ErrorMessage = result.Message;
 
-        return RedirectToPage("/Logs", new { tab = "payroll" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     /// <summary>
@@ -285,7 +300,7 @@ public class LogsModel : PageModel
         if (amount < 0f)
         {
             ErrorMessage = "Adjustment amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "adjustments" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         try
@@ -311,7 +326,7 @@ public class LogsModel : PageModel
             ErrorMessage = $"Failed to log adjustment: {ex.Message}";
         }
 
-        return RedirectToPage("/Logs", new { tab = "adjustments" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     public async Task<IActionResult> OnPostDeleteAdjustmentAsync(
@@ -338,7 +353,7 @@ public class LogsModel : PageModel
             ErrorMessage = $"Failed to delete adjustment: {ex.Message}";
         }
 
-        return RedirectToPage("/Logs", new { tab = "adjustments" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     public async Task<IActionResult> OnPostSupervisorClockOutAsync(

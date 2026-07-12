@@ -80,7 +80,6 @@ public class StaffModel : PageModel
         string? position,
         Staff.Frequency payFrequency,
         float payRate,
-        float? commissionRate,
         List<ulong>? roleIds,
         string? rfidCardId
     )
@@ -90,8 +89,6 @@ public class StaffModel : PageModel
             ErrorMessage = "Pay rate cannot be negative.";
             return RedirectToPage("/Staff", new { tab = "directory" });
         }
-
-        float? commissionRateMultiplier = commissionRate.HasValue ? commissionRate.Value / 100f : null;
 
         CreateStaffRequest request = new(
             Username: username,
@@ -103,7 +100,6 @@ public class StaffModel : PageModel
             Position: position,
             PayFrequency: payFrequency,
             PayRate: payRate,
-            CommissionRate: commissionRateMultiplier,
             RfidCardId: rfidCardId
         );
 
@@ -141,7 +137,6 @@ public class StaffModel : PageModel
         string? position,
         Staff.Frequency payFrequency,
         float payRate,
-        float? commissionRate,
         List<ulong>? roleIds,
         string? rfidCardId
     )
@@ -151,8 +146,6 @@ public class StaffModel : PageModel
             ErrorMessage = "Pay rate cannot be negative.";
             return RedirectToPage("/Staff", new { tab = "directory" });
         }
-
-        float? commissionRateMultiplier = commissionRate.HasValue ? commissionRate.Value / 100f : null;
 
         UpdateStaffRequest request = new(
             Id: id,
@@ -165,7 +158,6 @@ public class StaffModel : PageModel
             Position: position,
             PayFrequency: payFrequency,
             PayRate: payRate,
-            CommissionRate: commissionRateMultiplier,
             RfidCardId: rfidCardId
         );
 

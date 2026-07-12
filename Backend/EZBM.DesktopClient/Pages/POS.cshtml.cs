@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using EZBM.Core.Data;
 using EZBM.Core.Entities;
@@ -143,7 +144,8 @@ public class POSModel : PageModel
         {
             JsonSerializerOptions serializeOptions = new()
             {
-                PropertyNameCaseInsensitive = true
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
             };
 
             List<CartItemDto>? cartItems = JsonSerializer.Deserialize<List<CartItemDto>>(
