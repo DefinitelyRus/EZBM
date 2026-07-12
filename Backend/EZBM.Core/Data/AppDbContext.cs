@@ -116,6 +116,13 @@ public class AppDbContext : DbContext
             .HasValue<Product>("Product")
             .HasValue<Service>("Service");
 
+        modelBuilder.Entity<Item>()
+            .Property(i => i.Tags)
+            .HasConversion(
+                v => string.Join(";", v),
+                v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+
         modelBuilder.Entity<User>()
             .Property(u => u.AccessType)
             .HasConversion<string>();
