@@ -66,6 +66,25 @@ public class LogsModel : PageModel
 
     #region Handlers
 
+    /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
     public List<Transaction> TransactionLedger { get; set; } = new();
 
     /// <summary>

@@ -3,10 +3,10 @@
 @using EZBM.Core.Entities
 @using EZBM.DesktopClient.Helpers
 @{
-    ViewData["Title"] = "POS Checkout";
+    ViewData["Title"] = "Cashier";
 }
 
-<h2>POS Checkout Terminal</h2>
+<h2>Cashier</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
@@ -24,24 +24,24 @@
 
 @if (Model.ActiveStaff is null)
 {
-    <div style="background-color: #fffaf0; border: 1px solid #feebc8; padding: 15px; margin-bottom: 20px; border-radius: 6px; color: #c05621;">
+    <div style="background-color: #fffaf0; border: 1px solid #feebc8; padding: 15px; margin-bottom: 20px; color: #c05621;">
         <strong>Warning:</strong> You must be <a href="/Login">logged in as an employee</a> to process checkouts. Sales will be recorded under your active session.
     </div>
 }
 
-<div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
+<div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap; width: 100%;">
     <!-- Catalog Side (Left) -->
-    <div style="flex: 1; min-width: 500px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+    <div style="flex: 1; min-width: 500px; background: white; border: 1px solid #e2e8f0; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
         <h3>Available Items for Sale</h3>
         
         <div style="margin-bottom: 15px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
             <div>
                 <label for="posSearchInput" style="font-weight: bold; margin-right: 5px;">Search Catalog:</label>
-                <input type="text" id="posSearchInput" placeholder="Filter item name..." onkeyup="filterPosCatalog()" style="width: 200px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                <input type="text" id="posSearchInput" placeholder="Filter item name..." onkeyup="filterPosCatalog()" style="width: 200px; padding: 6px; border: 1px solid #cbd5e0;" />
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
                 <label for="manualBarcodeInput" style="font-weight: bold;">Manual Barcode:</label>
-                <input type="text" id="manualBarcodeInput" placeholder="Type barcode..." onkeypress="handleManualBarcodeKeyPress(event)" style="width: 150px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                <input type="text" id="manualBarcodeInput" placeholder="Type barcode..." onkeypress="handleManualBarcodeKeyPress(event)" style="width: 150px; padding: 6px; border: 1px solid #cbd5e0;" />
                 <button type="button" onclick="lookupManualBarcode()" class="btn btn-secondary" style="padding: 6px 12px;">Lookup</button>
             </div>
         </div>
@@ -63,9 +63,9 @@
                         <td class="pos-item-name"><strong>@item.Name</strong></td>
                         <td>@StateHelper.FormatCurrency(item.SalePrice ?? 0f)</td>
                         <td><code class="pos-item-barcode">@(item.Barcode ?? "N/A")</code></td>
-                        <td>@item.Quantity @item.UnitOfMeasurement</td>
+                        <td>@(item.Quantity == -1f ? "unlimited" : $"{item.Quantity} {item.UnitOfMeasurement}")</td>
                         <td>
-                            @if (item.Quantity > 0 || item.UnitOfMeasurement == Item.Unit.Count)
+                            @if (item.Quantity > 0 || item.Quantity == -1f || item.UnitOfMeasurement == Item.Unit.Count)
                             {
                                 <button type="button" class="btn btn-primary" onclick="addToCart(@item.Id, '@item.Name', @(item.SalePrice ?? 0f))" style="padding: 4px 10px; font-size: 0.85em;">Add</button>
                             }
@@ -79,77 +79,17 @@
             </tbody>
         </table>
     </div>
-
-    <!-- Cart / Checkout Side (Right) -->
-    <div style="width: 400px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
-        <h3>Shopping Cart</h3>
-        
-        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-            <thead>
-                <tr style="background-color: #eee;">
-                    <th>Item</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Total</th>
-                    <th data-no-sort="true">Rem</th>
-                </tr>
-            </thead>
-            <tbody id="cartTableBody">
-                <tr>
-                    <td colspan="5" style="text-align: center; color: #a0aec0; padding: 15px;">Cart is empty</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 20px; text-align: right; border-top: 2px solid #edf2f7; padding-top: 10px;">
-            Total: <span id="cartTotalTextLabel">₱0.00</span>
-        </div>
-
-        <form method="post" id="checkoutForm" asp-page-handler="Checkout" onsubmit="return handleCheckoutSubmit(event);">
-            <input type="hidden" name="cartJson" id="cartJsonInput" value="" />
-            <input type="hidden" name="totalAmount" id="totalAmountInput" value="0" />
-            <input type="hidden" name="splitPaymentsJson" id="splitPaymentsJsonInput" value="" />
-
-            <div style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Promo Code:</label>
-                <input type="text" name="promoCode" id="promoCodeInput" placeholder="e.g. SAVE10" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;" />
-            </div>
-
-            <div style="margin-bottom: 12px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payment Method:</label>
-                <select name="paymentMethod" id="paymentMethodSelect" onchange="onPaymentMethodChanged()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
-                    @foreach (Transaction.PayMethod method in Enum.GetValues<Transaction.PayMethod>())
-                    {
-                        <option value="@method">@method</option>
-                    }
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Transaction Notes:</label>
-                <textarea name="notes" placeholder="Optional notes/comments..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px; box-sizing: border-box;"></textarea>
-            </div>
-
-            <button type="submit" id="checkoutBtn" class="btn btn-success" disabled style="width: 100%; padding: 10px; font-size: 1.05em;">
-                Complete Checkout
-            </button>
-
-            <button type="button" class="btn btn-secondary" onclick="showRfidModal()" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 1.05em;">
-                Open Cash Drawer (Override)
-            </button>
-        </form>
-    </div>
 </div>
 
 <!-- Modal 1: RFID Override Swipe -->
 <div id="rfidModal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-    <div style="background-color: white; padding: 30px; border-radius: 8px; width: 400px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+    <div style="background-color: white; padding: 30px; width: 400px; text-align: center; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
         <h3>Swipe RFID Access Card</h3>
         <p style="color: #718096; font-size: 0.95em;">Please swipe your Staff RFID card to kick/open the cash drawer.</p>
         <div style="font-size: 4em; margin: 20px 0;">💳</div>
         
         <form method="post" asp-page-handler="OpenRegister">
-            <input type="password" name="rfidCardId" id="rfidOverrideInput" placeholder="Card ID scans here..." style="width: 80%; padding: 10px; font-size: 1.2em; text-align: center; border: 1px solid #cbd5e0; border-radius: 4px;" required autocomplete="off" />
+            <input type="password" name="rfidCardId" id="rfidOverrideInput" placeholder="Card ID scans here..." style="width: 80%; padding: 10px; font-size: 1.2em; text-align: center; border: 1px solid #cbd5e0;" required autocomplete="off" />
             <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
                 <button type="button" onclick="closeRfidModal()" class="btn" style="flex:1;">Cancel</button>
                 <button type="submit" class="btn btn-primary" style="flex:1;">Verify & Open</button>
@@ -160,7 +100,7 @@
 
 <!-- Modal 2: Split Payment Editor -->
 <div id="splitPaymentModal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
-    <div style="background-color: white; padding: 25px; border-radius: 8px; width: 450px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+    <div style="background-color: white; padding: 25px; width: 450px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
         <h3>Split Payment Details</h3>
         <div style="font-size: 1.1em; margin-bottom: 12px;">
             Total Sale Cost: <strong style="color: #3182ce;"><span id="splitTotalText">0.00</span></strong>
@@ -184,7 +124,7 @@
                         <tr>
                             <td><strong>@method</strong></td>
                             <td>
-                                <input type="number" step="0.01" min="0" value="0.00" class="split-amount-input" data-method="@method" onchange="calculateSplitRemaining()" onkeyup="calculateSplitRemaining()" style="width: 100%; text-align: right; padding: 4px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                                <input type="number" step="0.01" min="0" value="0.00" class="split-amount-input" data-method="@method" onchange="calculateSplitRemaining()" onkeyup="calculateSplitRemaining()" style="width: 100%; text-align: right; padding: 4px; border: 1px solid #cbd5e0;" />
                             </td>
                         </tr>
                     }
@@ -198,6 +138,64 @@
         </div>
     </div>
 </div>
+
+@section RightSidebar {
+    <div style="width: 100%; box-sizing: border-box;">
+        <h3>Shopping Cart</h3>
+        
+        <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background-color: #eee;">
+                    <th>Item</th>
+                    <th data-numeric="true">Price</th>
+                    <th style="width: 70px;">Qty</th>
+                    <th data-no-sort="true"></th>
+                </tr>
+            </thead>
+            <tbody id="cartTableBody">
+                <!-- Cart rows injected via JS -->
+            </tbody>
+        </table>
+
+        <div style="font-size: 1.25em; font-weight: bold; margin-bottom: 20px; text-align: right; border-top: 2px solid #edf2f7; padding-top: 10px;">
+            Total: <span id="cartTotalTextLabel">₱0.00</span>
+        </div>
+
+        <form method="post" id="checkoutForm" asp-page-handler="Checkout" onsubmit="return handleCheckoutSubmit(event);">
+            <input type="hidden" name="cartJson" id="cartJsonInput" value="" />
+            <input type="hidden" name="totalAmount" id="totalAmountInput" value="0" />
+            <input type="hidden" name="splitPaymentsJson" id="splitPaymentsJsonInput" value="" />
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Promo Code:</label>
+                <input type="text" name="promoCode" id="promoCodeInput" placeholder="e.g. SAVE10" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; box-sizing: border-box;" />
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Payment Method:</label>
+                <select name="paymentMethod" id="paymentMethodSelect" onchange="onPaymentMethodChanged()" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
+                    @foreach (Transaction.PayMethod method in Enum.GetValues<Transaction.PayMethod>())
+                    {
+                        <option value="@method">@method</option>
+                    }
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Transaction Notes:</label>
+                <textarea name="notes" placeholder="Optional notes/comments..." style="width: 100%; height: 50px; padding: 6px; border: 1px solid #cbd5e0; box-sizing: border-box;"></textarea>
+            </div>
+
+            <button type="submit" id="checkoutBtn" class="btn btn-success" disabled style="width: 100%; padding: 10px; font-size: 1.05em;">
+                Complete Checkout
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="showRfidModal()" style="width: 100%; margin-top: 10px; padding: 10px; font-size: 1.05em;">
+                Open Cash Drawer (Override)
+            </button>
+        </form>
+    </div>
+}
 
 @section Scripts {
     <script>

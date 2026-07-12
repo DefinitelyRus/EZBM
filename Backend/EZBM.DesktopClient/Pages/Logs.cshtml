@@ -70,7 +70,7 @@
                                     <span style="color: #38a169; font-weight: bold;">STILL CLOCKED IN</span>
                                 }
                             </td>
-                            <td>@(totalHours.HasValue ? totalHours.Value.ToString("F2") : "N/A")</td>
+                            <td>@(totalHours.HasValue ? EZBM.Core.Tools.Utils.FormatDecimal(totalHours.Value) : "N/A")</td>
                             <td>
                                 <div class="action-buttons">
                                     @if (!log.TimeOut.HasValue)
@@ -92,7 +92,7 @@
         <!-- Add Attendance Entry -->
         <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
             <h3 style="margin-top:0;">Add Attendance Entry</h3>
-            <form method="post" asp-page-handler="CreateAttendance">
+            <form method="post" asp-page-handler="CreateAttendance" id="createAttendanceForm">
                 <div style="margin-bottom: 12px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 4px;">Employee:</label>
                     <select name="staffId" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" required>
@@ -239,7 +239,7 @@
                 </div>
 
                 <div style="margin-bottom: 15px; text-align: center;">
-                    <button type="button" onclick="autoCalculatePayroll()" class="btn btn-primary" style="width: 100%;">
+                    <button type="button" onclick="autoCalculatePayroll()" class="btn btn-primary payroll-calc-btn" style="width: 100%;">
                         ⚡ Auto-Calculate Stats
                     </button>
                 </div>
@@ -511,6 +511,19 @@
             let currentStaffId = 0;
             let supervisorExpectedCash = 0;
 
+            document.addEventListener("DOMContentLoaded", () => {
+                const form = document.getElementById("createAttendanceForm");
+                if (form) {
+                    const steps = [
+                        { fields: ['staffId'], question: 'Select employee <span style="color: red;">*</span>:', required: true },
+                        { fields: ['timeIn'], question: 'Enter clock-in date & time <span style="color: red;">*</span>:', required: true },
+                        { fields: ['timeOut'], question: 'Enter clock-out date & time (optional):', required: false },
+                        { isSummary: true, question: 'Review and Finish', fields: [] }
+                    ];
+                    new FormWizardComponent("createAttendanceForm", steps);
+                }
+            });
+
             async function promptSupervisorClockOut(attendanceId, staffId, employeeName) {
                 currentAttendanceId = attendanceId;
                 currentStaffId = staffId;
@@ -577,6 +590,20 @@
     @if (isPayroll)
     {
         <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const form = document.getElementById("payrollForm");
+                if (form) {
+                    const steps = [
+                        { fields: ['staffId'], question: 'Select employee <span style="color: red;">*</span>:', required: true },
+                        { fields: ['periodStart', 'periodEnd', '.payroll-calc-btn'], question: 'Select payment period & calculate stats <span style="color: red;">*</span>:', required: true },
+                        { fields: ['totalHours', 'grossAmount', 'modifiers', 'netAmount'], question: 'Verify payroll hours and amounts <span style="color: red;">*</span>:', required: true },
+                        { fields: ['payDate', 'notes'], question: 'Enter optional payment date and notes:', required: false },
+                        { isSummary: true, question: 'Review and Finish', fields: [] }
+                    ];
+                    new FormWizardComponent("payrollForm", steps);
+                }
+            });
+
             async function autoCalculatePayroll() {
                 let staffId = document.getElementById("payStaffId").value;
                 let start = document.getElementById("payPeriodStart").value;
