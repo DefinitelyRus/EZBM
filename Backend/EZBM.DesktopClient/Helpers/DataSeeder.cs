@@ -1,6 +1,8 @@
 using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Tools;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace EZBM.DesktopClient.Helpers;
 
@@ -22,6 +24,39 @@ public static class DataSeeder
 
         if (context.Staff.Any())
         {
+            if (!context.Staff.Any(s => s.Username == "teto"))
+            {
+                Role? adminRole = context.Role.FirstOrDefault(r => r.Name == "Admin");
+
+                if (adminRole is null)
+                {
+                    adminRole = new Role(
+                        id: Utils.GenerateEntityId(),
+                        name: "Admin",
+                        permissionsJson: "{\"Checkout\":1,\"ApplyDiscounts\":1,\"Refunds\":1,\"ViewInventory\":1,\"ModifyInventory\":1,\"ViewSensitiveInventoryCost\":1,\"ViewStaffInfo\":1,\"ManageStaff\":1,\"ManageAccess\":1,\"ManagePayroll\":1,\"ViewLogs\":1,\"DeleteLogs\":1,\"ManageSettings\":1}"
+                    );
+                    context.Role.Add(adminRole);
+                    context.SaveChanges();
+                }
+
+                Staff teto = new(
+                    id: Utils.GenerateEntityId(),
+                    username: "teto",
+                    payFrequency: Staff.Frequency.Hourly,
+                    payRate: 25.00f,
+                    password: EZBM.Core.Services.AuthenticationService.HashPassword("teto41"),
+                    firstName: "Teto",
+                    lastName: "Kasane",
+                    email: "teto@ezbm.com",
+                    phoneNumber: "555-0401",
+                    position: "Testing Specialist"
+                );
+                teto.RfidCardId = "2853591044";
+                teto.Roles.Add(adminRole);
+                context.Staff.Add(teto);
+                context.SaveChanges();
+            }
+
             return;
         }
 
