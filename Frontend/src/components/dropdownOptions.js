@@ -14,4 +14,13 @@ export const dropdownOptions = {
     "Credit",
     "Other",
   ],
+
+  payFrequency: [
+    "Hourly",
+    "Daily",
+    "Weekly",
+    "Biweekly",
+    "Monthly",
+    "Invalid"
+  ],
 };
