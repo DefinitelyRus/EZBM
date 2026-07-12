@@ -1,0 +1,46 @@
+{
+  "AdminSettings": {
+    "StoreName": "EZBM Store",
+    "Currency": "PHP",
+    "LowStockThreshold": 0.20,
+    "WrittenReceiptThreshold": 1000.0,
+    "StoreOpeningDate": "2026-07-10T14:48:44Z",
+    "BackupTargetPath": "",
+    "BackupAutosaveInterval": "Daily",
+    "BackupRetentionCount": 10,
+    "BackupRotationEnabled": true,
+    "EnableRfidLogin": false,
+    "CardExpirationOffsets": {
+      "Staff": 365,
+      "OneTime": 1,
+      "Member": 30
+    },
+    "MembershipCommissions": {
+      "Silver Upgrade": 10.0,
+      "Gold Upgrade": 25.0,
+      "Platinum Upgrade": 50.0,
+      "Dog Grooming - Small": 20.0,
+      "Dog Grooming - Medium": 30.0,
+      "Dog Grooming - Large": 40.0,
+      "Cat Grooming": 25.0
+    },
+    "PromoCodes": {
+      "FREEWEEK": {
+        "DiscountPercentage": 100.0,
+        "ExpirationDate": "2026-12-31T00:00:00"
+      },
+      "EZBM10": {
+        "DiscountPercentage": 10.0,
+        "ExpirationDate": "2026-12-31T00:00:00"
+      }
+    }
+  },
+  "UserSettings": {
+    "Theme": "System",
+    "DateFormat": "yyyy-MM-dd",
+    "SoundAlertsEnabled": true,
+    "BarcodeScannerDevice": "Default Keyboard HID",
+    "RfidScannerDevice": "Default Keyboard HID",
+    "CashRegisterTriggerDevice": "Default USB Relay Trigger"
+  }
+}

@@ -79,6 +79,26 @@ app.MapPost("/api/staff/find", StaffController.FindStaff);
 app.MapPost("/api/staff/update", StaffController.UpdateStaff);
 app.MapPost("/api/staff/delete", StaffController.DeleteStaff);
 
+// Staff Adjustment Endpoints
+app.MapPost("/api/staff/adjustments/create", StaffAdjustmentController.CreateStaffAdjustment);
+app.MapPost("/api/staff/adjustments/get", StaffAdjustmentController.GetStaffAdjustment);
+app.MapPost("/api/staff/adjustments/find", StaffAdjustmentController.FindStaffAdjustments);
+app.MapPost("/api/staff/adjustments/delete", StaffAdjustmentController.DeleteStaffAdjustment);
+
+// Customer Endpoints
+app.MapPost("/api/customers/create", CustomerController.CreateCustomer);
+app.MapPost("/api/customers/get", CustomerController.GetCustomer);
+app.MapPost("/api/customers/find", CustomerController.FindCustomers);
+app.MapPost("/api/customers/update", CustomerController.UpdateCustomer);
+app.MapPost("/api/customers/delete", CustomerController.DeleteCustomer);
+
+// Role Endpoints
+app.MapPost("/api/roles/create", RoleController.CreateRole);
+app.MapPost("/api/roles/get", RoleController.GetRole);
+app.MapPost("/api/roles/find", RoleController.FindRoles);
+app.MapPost("/api/roles/update", RoleController.UpdateRole);
+app.MapPost("/api/roles/delete", RoleController.DeleteRole);
+
 // Attendance Endpoints
 app.MapPost("/api/attendance", StaffController.LogAttendance);
 app.MapPost("/api/attendance/create", StaffController.CreateAttendance);
@@ -96,6 +116,16 @@ app.MapGet("/api/payroll/calculate", StaffController.CalculatePayroll);
 
 // Action Audit Logs Endpoint
 app.MapGet("/api/logs", LogsController.GetActionLogs);
+
+// Enums Endpoints
+app.MapGet("/api/enums", EnumsController.GetEnums);
+app.MapGet("/api/enums/units", EnumsController.GetUnits);
+app.MapGet("/api/enums/tags", EnumsController.GetTags);
+app.MapGet("/api/enums/access-cards", EnumsController.GetAccessCardTypes);
+app.MapGet("/api/enums/frequencies", EnumsController.GetPayFrequencies);
+app.MapGet("/api/enums/stock-transaction-types", EnumsController.GetStockTransactionTypes);
+app.MapGet("/api/enums/transaction-types", EnumsController.GetTransactionTypes);
+app.MapGet("/api/enums/payment-methods", EnumsController.GetPaymentMethods);
 
 // Settings Endpoints
 app.MapGet("/api/settings", SettingsController.GetSettings);
