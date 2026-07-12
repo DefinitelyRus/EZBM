@@ -57,6 +57,12 @@ public class StoreSettings
     public bool BackupRotationEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether logging in with an RFID card is enabled globally.
+    /// </summary>
+    public bool EnableRfidLogin { get; set; } = false;
+
+
+    /// <summary>
     /// The default validity period in days for access card profiles.
     /// </summary>
     public Dictionary<string, int> CardExpirationOffsets { get; set; } = new()

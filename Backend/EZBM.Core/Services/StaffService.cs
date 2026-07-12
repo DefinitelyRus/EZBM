@@ -75,7 +75,18 @@ public static class StaffService
                 phoneNumber: request.PhoneNumber,
                 position: request.Position,
                 commissionRate: request.CommissionRate
-            );
+            )
+            {
+                RfidCardId = request.RfidCardId,
+                Permissions = request.Permissions ?? new(),
+                PermissionsAfterExpiry = request.PermissionsAfterExpiry ?? new(),
+                ExpirationDate = request.ExpirationDate
+            };
+
+            if (request.RoleIds is not null && request.RoleIds.Count > 0)
+            {
+                staff.Roles = await context.Role.Where(r => request.RoleIds.Contains(r.Id)).ToListAsync();
+            }
 
             context.Staff.Add(staff);
             await context.SaveChangesAsync();
@@ -248,7 +259,7 @@ public static class StaffService
         try
         {
             using AppDbContext context = new();
-            Staff? staff = await context.Staff.FindAsync(request.Id);
+            Staff? staff = await context.Staff.Include(s => s.Roles).FirstOrDefaultAsync(s => s.Id == request.Id);
 
             if (staff is null)
             {
@@ -271,6 +282,15 @@ public static class StaffService
             staff.PayFrequency = request.PayFrequency ?? staff.PayFrequency;
             staff.PayRate = request.PayRate ?? staff.PayRate;
             staff.CommissionRate = request.CommissionRate ?? staff.CommissionRate;
+            staff.RfidCardId = request.RfidCardId ?? staff.RfidCardId;
+            staff.Permissions = request.Permissions ?? staff.Permissions;
+            staff.PermissionsAfterExpiry = request.PermissionsAfterExpiry ?? staff.PermissionsAfterExpiry;
+            staff.ExpirationDate = request.ExpirationDate ?? staff.ExpirationDate;
+
+            if (request.RoleIds is not null)
+            {
+                staff.Roles = await context.Role.Where(r => request.RoleIds.Contains(r.Id)).ToListAsync();
+            }
 
             await context.SaveChangesAsync();
 

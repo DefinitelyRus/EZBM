@@ -127,5 +127,54 @@ public static class AuthenticationService
         }
     }
 
+    /// <summary>
+    /// Validates login by RFID card and returns a request result with the staff ID.
+    /// </summary>
+    public static async Task<Utils.RequestResult<string>> LoginByRfidAsync(
+        string rfidCardId
+    )
+    {
+        string message;
+
+        try
+        {
+            using AppDbContext context = new();
+
+            Staff? staff = await context.Staff.FirstOrDefaultAsync(
+                s => s.RfidCardId == rfidCardId
+            );
+
+            if (staff is null)
+            {
+                message = $"Staff with RFID card '{rfidCardId}' not found.";
+                Log.Me(message);
+                Utils.RequestResult<string> failResult = new(
+                    Utils.Result.Failed_NoResults, message, null
+                );
+
+                return failResult;
+            }
+
+            message = $"Staff '{staff.Username}' logged in successfully via RFID.";
+            Log.Me(message);
+            Utils.RequestResult<string> successResult = new(
+                Utils.Result.Success, message, staff.Id.ToString()
+            );
+
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when logging in via RFID: {ex.Message}";
+            Log.Me(message);
+            Utils.RequestResult<string> errorResult = new(
+                Utils.Result.Failed_UnhandledException, message, null
+            );
+
+            return errorResult;
+        }
+    }
+
     #endregion
-}
+}

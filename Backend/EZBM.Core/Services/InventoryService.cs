@@ -131,9 +131,10 @@ public static class InventoryService
                         item => item.ExpirationDate >= request.MinExpirationDate
                     );
 
-                if (request.MaxExpirationDate is not null)
+                if (!string.IsNullOrEmpty(request.Barcode))
                     query = query.Where(
-                        item => item.ExpirationDate <= request.MaxExpirationDate
+                        item => item.Barcode != null &&
+                        item.Barcode.Contains(request.Barcode)
                     );
             }
 
@@ -206,6 +207,9 @@ public static class InventoryService
             item.UnitOfMeasurement = request.UnitOfMeasurement;
             item.ExpirationDate = request.ExpirationDate ?? item.ExpirationDate;
             item.Tags = request.Tags ?? item.Tags;
+            item.Brand = request.Brand ?? item.Brand;
+            item.ImageUrl = request.ImageUrl ?? item.ImageUrl;
+            item.Barcode = request.Barcode ?? item.Barcode;
             if (item is Product prod)
             {
                 prod.TargetStock = request.TargetStock ?? prod.TargetStock;
@@ -253,7 +257,8 @@ public static class InventoryService
                     request.Quantity,
                     request.ExpirationDate,
                     request.Cost,
-                    request.ImageUrl
+                    request.ImageUrl,
+                    request.Barcode
                 );
             }
             else
@@ -270,9 +275,10 @@ public static class InventoryService
                     request.ExpirationDate,
                     request.Cost,
                     request.ImageUrl,
-                    null,
+                    request.Barcode,
                     request.TargetStock ?? 0f,
-                    request.LowStockThresholdPercentage ?? 0.20f
+                    request.LowStockThresholdPercentage ?? 0.20f,
+                    request.Brand
                 );
             }
 

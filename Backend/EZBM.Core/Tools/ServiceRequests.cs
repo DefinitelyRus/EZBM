@@ -25,7 +25,9 @@ public record FindItemRequest(
     Unit? UnitOfMeasurement,
     DateTime? MinExpirationDate,
     DateTime? MaxExpirationDate,
-    List<Tag>? Tags,
+    List<string>? Tags,
+    string? Brand = null,
+    string? Barcode = null,
     int? Limit = null,
     int? Offset = null,
     string? SortBy = null,
@@ -42,9 +44,12 @@ public record UpdateItemRequest(
     [Required] float Quantity,
     [Required] Unit UnitOfMeasurement,
     DateTime? ExpirationDate,
-    List<Tag>? Tags,
+    List<string>? Tags,
     float? TargetStock = null,
-    float? LowStockThresholdPercentage = null
+    float? LowStockThresholdPercentage = null,
+    string? Brand = null,
+    string? ImageUrl = null,
+    string? Barcode = null
 );
 
 public record CreateItemRequest(
@@ -56,11 +61,13 @@ public record CreateItemRequest(
     [Required] float Quantity,
     [Required] Unit UnitOfMeasurement,
     DateTime? ExpirationDate,
-    List<Tag>? Tags,
+    List<string>? Tags,
     string? ImageUrl,
     string? ItemType = "Product",
     float? TargetStock = null,
-    float? LowStockThresholdPercentage = null
+    float? LowStockThresholdPercentage = null,
+    string? Brand = null,
+    string? Barcode = null
 );
 
 public record DeleteItemRequest(
@@ -136,7 +143,8 @@ public record CreateSaleRequest(
     string? Notes,
     [Required] List<SaleItemRequest> Items,
     List<SplitPaymentRequest>? SplitPayments = null,
-    string? PromoCode = null
+    string? PromoCode = null,
+    ulong? CustomerId = null
 );
 
 public record FindSaleRequest(
@@ -148,6 +156,7 @@ public record FindSaleRequest(
     Transaction.PayMethod? PaymentMethod,
     float? MinAmount,
     float? MaxAmount,
+    ulong? CustomerId = null,
     int? Limit = null,
     int? Offset = null,
     string? SortBy = null,
@@ -206,7 +215,12 @@ public record CreateStaffRequest(
     string? Position,
     [Required] Staff.Frequency PayFrequency,
     [Required] float PayRate,
-    float? CommissionRate = null
+    float? CommissionRate = null,
+    string? RfidCardId = null,
+    List<string>? Permissions = null,
+    List<string>? PermissionsAfterExpiry = null,
+    DateTime? ExpirationDate = null,
+    List<ulong>? RoleIds = null
 );
 
 public record GetStaffRequest(
@@ -237,7 +251,12 @@ public record UpdateStaffRequest(
     string? Position,
     Staff.Frequency? PayFrequency,
     float? PayRate,
-    float? CommissionRate = null
+    float? CommissionRate = null,
+    string? RfidCardId = null,
+    List<string>? Permissions = null,
+    List<string>? PermissionsAfterExpiry = null,
+    DateTime? ExpirationDate = null,
+    List<ulong>? RoleIds = null
 );
 
 public record DeleteStaffRequest(
@@ -333,6 +352,120 @@ public record LogAttendanceRequest(
 public record LoginRequest(
     [Required] string Username,
     [Required] string Password
+);
+
+#endregion
+
+#region Customer
+
+public record CreateCustomerRequest(
+    string? FirstName,
+    string? LastName,
+    string? PhoneNumber,
+    string? Email,
+    string? RfidCardId,
+    List<string>? Permissions,
+    List<string>? PermissionsAfterExpiry,
+    DateTime? ExpirationDate
+);
+
+public record GetCustomerRequest(
+    [Required] ulong Id
+);
+
+public record FindCustomerRequest(
+    ulong? Id,
+    string? FirstName,
+    string? LastName,
+    string? PhoneNumber,
+    string? Email,
+    string? RfidCardId,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
+);
+
+public record UpdateCustomerRequest(
+    [Required] ulong Id,
+    string? FirstName,
+    string? LastName,
+    string? PhoneNumber,
+    string? Email,
+    string? RfidCardId,
+    List<string>? Permissions,
+    List<string>? PermissionsAfterExpiry,
+    DateTime? ExpirationDate
+);
+
+public record DeleteCustomerRequest(
+    [Required] ulong Id
+);
+
+#endregion
+
+#region Role
+
+public record CreateRoleRequest(
+    [Required] string Name,
+    string PermissionsJson
+);
+
+public record GetRoleRequest(
+    [Required] ulong Id
+);
+
+public record FindRoleRequest(
+    ulong? Id,
+    string? Name,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
+);
+
+public record UpdateRoleRequest(
+    [Required] ulong Id,
+    string? Name,
+    string? PermissionsJson
+);
+
+public record DeleteRoleRequest(
+    [Required] ulong Id
+);
+
+#endregion
+
+#region StaffAdjustment
+
+public record CreateStaffAdjustmentRequest(
+    [Required] ulong StaffId,
+    [Required] string AdjustmentType,
+    [Required] float Amount,
+    [Required] bool DeductFromCurrentPayroll,
+    [Required] bool IsPaid,
+    DateTime? Timestamp,
+    string? Notes
+);
+
+public record GetStaffAdjustmentRequest(
+    [Required] ulong Id
+);
+
+public record FindStaffAdjustmentRequest(
+    ulong? Id,
+    ulong? StaffId,
+    string? AdjustmentType,
+    bool? DeductFromCurrentPayroll,
+    bool? IsPaid,
+    int? Limit = null,
+    int? Offset = null,
+    string? SortBy = null,
+    string? SortOrder = null
+);
+
+public record DeleteStaffAdjustmentRequest(
+    [Required] ulong Id
 );
 
 #endregion

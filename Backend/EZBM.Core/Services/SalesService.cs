@@ -101,6 +101,19 @@ public static class SalesService
                 }
             }
 
+            Customer? customer = null;
+            if (request.CustomerId is not null && request.CustomerId > 0)
+            {
+                customer = await context.Customer.FindAsync(request.CustomerId.Value);
+                if (customer is null)
+                {
+                    message = $"Customer with ID {request.CustomerId} not found.";
+                    Log.Me(message);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_NoResults, message, 0);
+                    return failResult;
+                }
+            }
+
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
 
@@ -112,7 +125,10 @@ public static class SalesService
                 staff: staff,
                 timestamp: serverTime,
                 notes: request.Notes
-            );
+            )
+            {
+                Customer = customer
+            };
 
             context.Sale.Add(sale);
 
@@ -132,6 +148,7 @@ public static class SalesService
                         notes: $"Split payment component of Invoice {sale.InvoiceId}"
                     );
                     childTx.ParentTransactionId = sale.Id;
+                    childTx.Customer = customer;
                     context.Transaction.Add(childTx);
                 }
             }
@@ -164,7 +181,7 @@ public static class SalesService
 
                 context.SaleEntry.Add(entry);
 
-                if (item is Product)
+                if (item is Product && item.Quantity != -1f)
                 {
                     item.Quantity -= itemReq.Quantity;
                 }
@@ -246,6 +263,7 @@ public static class SalesService
             using AppDbContext context = new();
             Sale? sale = await context.Sale
                 .Include(s => s.Staff)
+                .Include(s => s.Customer)
                 .FirstOrDefaultAsync(
                     s => s.Id == request.Id
                 );
@@ -294,7 +312,9 @@ public static class SalesService
         try
         {
             using AppDbContext context = new();
-            IQueryable<Sale> query = context.Sale.Include(s => s.Staff);
+            IQueryable<Sale> query = context.Sale
+                .Include(s => s.Staff)
+                .Include(s => s.Customer);
 
             if (request is not null)
             {
@@ -339,6 +359,11 @@ public static class SalesService
                 if (request.MaxAmount is not null)
                     query = query.Where(
                         s => s.Amount <= request.MaxAmount
+                    );
+
+                if (request.CustomerId is not null)
+                    query = query.Where(
+                        s => s.Customer != null && s.Customer.Id == request.CustomerId
                     );
             }
 
