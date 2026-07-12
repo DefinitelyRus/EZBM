@@ -31,6 +31,7 @@
     }
 }
 
+
 #add-items-container {
     max-height: fit-content;
     width: 370px;
@@ -93,6 +94,7 @@
 
     transform: scaleX(-1);
 }
+
 .search-bar-container {
     padding-bottom: 20px;
 }
@@ -413,7 +415,7 @@
 
 }
 
-/* Button */
+/* Add Items - Buttons */
 #add-items-container .item-btn-group {
     padding-top: 25px;
 }
@@ -466,10 +468,4 @@
 #inventory-content-left .delete {
     background-color: transparent;
     border: none;
-}
-
-.inventory-table tbody .edit,
-.inventory-table tbody .delete {
-    opacity: 0;
-    transition: opacity 0.2s ease;
 }

@@ -59,24 +59,24 @@ function Dashboard() {
   };
 
   /* Search Bar */
- useEffect(() => {
-    const timeout = setTimeout(async () => {
-      try {
-        const data =
-          search.trim() === ""
-            ? await InventoryAPI.getAll()
-            : await InventoryAPI.find({
-                name: search.trim(),
-              });
+useEffect(() => {
+  const timeout = setTimeout(async () => {
+    try {
+      const data =
+        search.trim() === ""
+          ? await InventoryAPI.getAll()
+          : await InventoryAPI.find({
+              name: search.trim(),
+            });
 
-        setInventoryItems(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }, 300);
+      setInventoryItems(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, 300);
 
-    return () => clearTimeout(timeout);
-  }, [search]);
+  return () => clearTimeout(timeout);
+}, [search]);
 
   /* Clear Button */
   const initialForm = {
@@ -190,7 +190,6 @@ function Dashboard() {
             <h2>Inventory Management</h2>
             <h5>Keep track of your products and stock levels.</h5>
           </div>
-
           
           <div className="input-group flex-direction row">
             <div className="search-bar-container">
@@ -227,214 +226,213 @@ function Dashboard() {
           </div>
       </div>
 
-        <div 
-          id="add-items-container" 
-          className={`card ${showAddItem ? "panel-open" : "panel-closed"}`}
-          >
-          <div className="card-body">
-            <div className="d-flex flex-direction col gap-3 panel-header">
-              <div className="flex-direction row">
-                <h4>Add New Item</h4>
-                <p>Create a new inventory item.</p>
-              </div>
+      <div 
+        id="add-items-container" 
+        className={`card ${showAddItem ? "panel-open" : "panel-closed"}`}
+        >
+        <div className="card-body">
+          <div className="d-flex flex-direction col gap-3 panel-header">
+            <div className="flex-direction row">
+              <h4>Add New Item</h4>
+              <p>Create a new inventory item.</p>
+            </div>
 
-              <div>
-                <button 
-                  className="close-btn"
-                  type="button"
-                  onClick={() => setShowAddItem(false)}
-                >
-                  <CloseMenu />
-                </button>
-              </div>
-                
-          </div>
+            <div>
+              <button 
+                className="close-btn"
+                type="button"
+                onClick={() => setShowAddItem(false)}
+              >
+                <CloseMenu />
+              </button>
+            </div>
+        </div>
 
-          <form id="item-form">
-            <div id="item-inputs">
-              <div className="mb-3">
-                <label className="form-label">Name</label>
-                <input
-                  type="text"
-                  className="form-control usr-input"
-                  value={formData.name}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        name: e.target.value,
-                      })
-                    }
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Description</label>
-                <textarea
-                  className="form-control usr-input"
-                  rows={2}
-                  style={{ resize: "none", overflow: "hidden" }}
-                  value={formData.description}
-                  onChange={(e) => {
-                    e.target.style.height = "auto";
-                    e.target.style.height = `${e.target.scrollHeight}px`;
-
-                    setFormData({
-                      ...formData,
-                      description: e.target.value,
-                    });
-                  }}
-                />
-              </div>
-
-              <div className="form-check">
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="flexCheckDefault"
-                  checked={formData.isForSale}
+        <form id="item-form">
+          <div id="item-inputs">
+            <div className="mb-3">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                className="form-control usr-input"
+                value={formData.name}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      isForSale: e.target.checked,
+                      name: e.target.value,
                     })
-                  }
-                />
-                <label
-                  className="form-check-label"
-                  htmlFor="flexCheckDefault"
-                >
-                  Available for Sale
-                </label>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Cost Price</label>
-                <div className="input-group">
-                  <span className="input-group-text currency-span">₱</span>
-                  <input
-                    type="text"
-                    className="form-control usr-input"
-                    value={formData.cost}
-                    onChange={(e) => handlePriceChange("cost", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Sale Price</label>
-                <div className="input-group">
-                  <span className="input-group-text currency-span">₱</span>
-                  <input
-                    type="text"
-                    className="form-control usr-input"
-                    value={formData.salePrice}
-                    onChange={(e) => handlePriceChange("salePrice", e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Quantity</label>
-                <input
-                  type="text"
-                  className="form-control usr-input w-70"
-                  value={formData.quantity}
-                  onChange={(e) => handleQuantityChange(e.target.value)}
-                  inputMode="decimal"
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Unit of Measurement</label>
-                <Dropdown
-                  title="Select Unit"
-                  options={dropdownOptions.unitOfMeasurement}
-                  value={formData.unitOfMeasurement}
-                  onSelect={(value) =>
-                      setFormData({
-                          ...formData,
-                          unitOfMeasurement: value,
-                      })
                   }
               />
-              </div>
+            </div>
 
-              <div className="mb-3">
-                <label className="form-label">
-                  Expiry Date
-                </label>
+            <div className="mb-3">
+              <label className="form-label">Description</label>
+              <textarea
+                className="form-control usr-input"
+                rows={2}
+                style={{ resize: "none", overflow: "hidden" }}
+                value={formData.description}
+                onChange={(e) => {
+                  e.target.style.height = "auto";
+                  e.target.style.height = `${e.target.scrollHeight}px`;
 
-                <DatePicker
-                  className="form-control usr-input date-picker"
-                  calendarClassName="md-calendar"
-                  dateFormat="MM/dd/yyyy"
-                  placeholderText="mm/dd/yyyy"
-                  isClearable
+                  setFormData({
+                    ...formData,
+                    description: e.target.value,
+                  });
+                }}
+              />
+            </div>
 
-                  selected={formData.expirationDate}
-                  onChange={(date) =>
-                    setFormData({
-                      ...formData,
-                      expirationDate: date,
-                    })
-                  }
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                id="flexCheckDefault"
+                checked={formData.isForSale}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    isForSale: e.target.checked,
+                  })
+                }
+              />
+              <label
+                className="form-check-label"
+                htmlFor="flexCheckDefault"
+              >
+                Available for Sale
+              </label>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Cost Price</label>
+              <div className="input-group">
+                <span className="input-group-text currency-span">₱</span>
+                <input
+                  type="text"
+                  className="form-control usr-input"
+                  value={formData.cost}
+                  onChange={(e) => handlePriceChange("cost", e.target.value)}
                 />
               </div>
+            </div>
 
-              <div className="mb-2 d-flex flex-direction row">
-                  <label className="form-label">Tags</label>
-                  <div className="d-flex flex-wrap gap-2">
-                    {[
-                      "Beverage",
-                      "Food",
-                      "Ingredient",
-                      "Dairy",
-                      "Supplies",
-                      "Hygiene",
-                    ].map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        className={`tag-btn ${
-                          formData.tags.includes(tag) ? "selected" : ""
-                        }`}
-                        onClick={() => toggleTag(tag)}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
+            <div className="mb-3">
+              <label className="form-label">Sale Price</label>
+              <div className="input-group">
+                <span className="input-group-text currency-span">₱</span>
+                <input
+                  type="text"
+                  className="form-control usr-input"
+                  value={formData.salePrice}
+                  onChange={(e) => handlePriceChange("salePrice", e.target.value)}
+                />
               </div>
             </div>
-          </form>
-            <div className="d-flex justify-content-center gap-3 item-btn-group">
-                <button
-                  id="create-item"
-                  className="btn btn-light align-self-center"
-                >
-                  Create Item
-                </button>
-                <button
-                  id="clear-item"
-                  className="btn btn-light align-self-center"
-                  type="button"
-                  onClick={handleClear}
-                >
-                  Clear
-              </button>
+
+            <div className="mb-3">
+              <label className="form-label">Quantity</label>
+              <input
+                type="text"
+                className="form-control usr-input w-70"
+                value={formData.quantity}
+                onChange={(e) => handleQuantityChange(e.target.value)}
+                inputMode="decimal"
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Unit of Measurement</label>
+              <Dropdown
+                title="Select Unit"
+                options={dropdownOptions.unitOfMeasurement}
+                value={formData.unitOfMeasurement}
+                onSelect={(value) =>
+                    setFormData({
+                        ...formData,
+                        unitOfMeasurement: value,
+                    })
+                }
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">
+                Expiry Date
+              </label>
+
+              <DatePicker
+                className="form-control usr-input date-picker"
+                calendarClassName="md-calendar"
+                dateFormat="MM/dd/yyyy"
+                placeholderText="mm/dd/yyyy"
+                isClearable
+
+                selected={formData.expirationDate}
+                onChange={(date) =>
+                  setFormData({
+                    ...formData,
+                    expirationDate: date,
+                  })
+                }
+              />
+            </div>
+
+            <div className="mb-2 d-flex flex-direction row">
+                <label className="form-label">Tags</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {[
+                    "Beverage",
+                    "Food",
+                    "Ingredient",
+                    "Dairy",
+                    "Supplies",
+                    "Hygiene",
+                  ].map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`tag-btn ${
+                        formData.tags.includes(tag) ? "selected" : ""
+                      }`}
+                      onClick={() => toggleTag(tag)}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
             </div>
           </div>
+        </form>
+          <div className="d-flex justify-content-center gap-3 item-btn-group">
+              <button
+                id="create-item"
+                className="btn btn-light align-self-center"
+              >
+                Create Item
+              </button>
+              <button
+                id="clear-item"
+                className="btn btn-light align-self-center"
+                type="button"
+                onClick={handleClear}
+              >
+                Clear
+            </button>
+          </div>
         </div>
-         <button
-            className={`floating-add-btn ${
-              showAddItem ? "btn-hidden" : "btn-visible"
-            }`}
-            type="button"
-            onClick={() => setShowAddItem(true)}
-          >
-            <img src={AddIcon} alt="" />
-            <span>Add New Item</span>
-          </button>
+      </div>
+        <button
+          className={`floating-add-btn ${
+            showAddItem ? "btn-hidden" : "btn-visible"
+          }`}
+          type="button"
+          onClick={() => setShowAddItem(true)}
+        >
+          <img src={AddIcon} alt="" />
+          <span>Add New Item</span>
+        </button>
     </>
   );
 }
