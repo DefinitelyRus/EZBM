@@ -22,6 +22,8 @@ public class SettingsModel : PageModel
         public string DateFormat { get; set; } = "yyyy-MM-dd";
         public bool SoundAlertsEnabled { get; set; } = true;
         public string BarcodeScannerDevice { get; set; } = "Default Keyboard HID";
+        public string RfidScannerDevice { get; set; } = "Default Keyboard HID";
+        public string CashRegisterTriggerDevice { get; set; } = "Default USB Relay Trigger";
     }
     #endregion
 
@@ -61,6 +63,9 @@ public class SettingsModel : PageModel
 
     [BindProperty]
     public bool BackupRotationEnabled { get; set; } = true;
+
+    [BindProperty]
+    public bool EnableRfidLogin { get; set; } = false;
     #endregion
 
     #region User Settings Properties
@@ -75,6 +80,12 @@ public class SettingsModel : PageModel
 
     [BindProperty]
     public string BarcodeDevice { get; set; } = "Default Keyboard HID";
+
+    [BindProperty]
+    public string RfidDevice { get; set; } = "Default Keyboard HID";
+
+    [BindProperty]
+    public string CashRegisterDevice { get; set; } = "Default USB Relay Trigger";
 
     [BindProperty]
     public string? CurrentPassword { get; set; }
@@ -106,6 +117,27 @@ public class SettingsModel : PageModel
     public Dictionary<string, StoreSettings.PromoCodeInfo> PromoCodesList { get; set; } = new();
     #endregion
 
+    #region Handlers
+
+    /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
     public async Task OnGetAsync()
     {
         ActiveStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
@@ -131,6 +163,7 @@ public class SettingsModel : PageModel
         BackupAutosaveInterval = settings.BackupAutosaveInterval;
         BackupRetentionCount = settings.BackupRetentionCount;
         BackupRotationEnabled = settings.BackupRotationEnabled;
+        EnableRfidLogin = settings.EnableRfidLogin;
         PromoCodesList = settings.PromoCodes ?? new();
 
         // Load available backup files
@@ -157,6 +190,8 @@ public class SettingsModel : PageModel
                 DateFormat = userPrefs.DateFormat;
                 SoundAlerts = userPrefs.SoundAlertsEnabled;
                 BarcodeDevice = userPrefs.BarcodeScannerDevice;
+                RfidDevice = userPrefs.RfidScannerDevice ?? "Default Keyboard HID";
+                CashRegisterDevice = userPrefs.CashRegisterTriggerDevice ?? "Default USB Relay Trigger";
             }
             catch
             {
@@ -179,7 +214,9 @@ public class SettingsModel : PageModel
             Theme = UserTheme,
             DateFormat = DateFormat,
             SoundAlertsEnabled = SoundAlerts,
-            BarcodeScannerDevice = BarcodeDevice
+            BarcodeScannerDevice = BarcodeDevice,
+            RfidScannerDevice = RfidDevice,
+            CashRegisterTriggerDevice = CashRegisterDevice
         };
 
         string json = JsonSerializer.Serialize(prefs);
@@ -248,6 +285,7 @@ public class SettingsModel : PageModel
             settings.LowStockThreshold = LowStockThreshold / 100f; // save as decimal fraction
             settings.WrittenReceiptThreshold = WrittenReceiptThreshold;
             settings.StoreOpeningDate = StoreOpeningDate;
+            settings.EnableRfidLogin = EnableRfidLogin;
 
             settings.CardExpirationOffsets["Staff"] = CardExpiryStaff;
             settings.CardExpirationOffsets["OneTime"] = CardExpiryOneTime;
@@ -339,4 +377,5 @@ public class SettingsModel : PageModel
         }
         return RedirectToPage();
     }
+    #endregion
 }

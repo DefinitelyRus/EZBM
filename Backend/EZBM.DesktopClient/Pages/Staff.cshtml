@@ -2,50 +2,78 @@
 @model EZBM.DesktopClient.Pages.StaffModel
 @using EZBM.DesktopClient.Helpers
 @{
-    ViewData["Title"] = "Staff Directory & Roles Matrix";
+    ViewData["Title"] = "Staff Management";
     bool isDirectory = Model.ActiveTab == "directory" || string.IsNullOrEmpty(Model.ActiveTab);
     bool isRoles = Model.ActiveTab == "roles";
+    bool isEditing = Model.EditingStaff is not null;
 }
 
-<h2>Staff Management & Security Roles</h2>
+@functions {
+    public static string GetFriendlyPermissionName(string name)
+    {
+        return name switch
+        {
+            "ApplyDiscounts" => "Apply Discounts",
+            "ViewInventory" => "View Inventory",
+            "ModifyInventory" => "Modify Inventory",
+            "ViewSensitiveInventoryCost" => "View Sensitive Inventory Cost",
+            "ViewStaffInfo" => "View Staff Info",
+            "ManageStaff" => "Manage Staff",
+            "ManageAccess" => "Manage Access",
+            "ManagePayroll" => "Manage Payroll",
+            "ViewLogs" => "View Logs",
+            "DeleteLogs" => "Delete Logs",
+            "ManageSettings" => "Manage Settings",
+            _ => name
+        };
+    }
+}
+
+<h2>Staff Management</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px;">
         <strong>Error:</strong> @Model.ErrorMessage
     </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px; border-radius: 6px;">
+    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px;">
         <strong>Success:</strong> @Model.SuccessMessage
     </div>
 }
 
 <!-- Google Docs Style Subtabs -->
 <div class="subtabs-container">
-    <a href="/Staff?tab=directory" class="subtab-item @(isDirectory ? "active" : "")">Staff Directory</a>
-    <a href="/Staff?tab=roles" class="subtab-item @(isRoles ? "active" : "")">Security Roles Matrix</a>
+    <a href="/Staff?tab=directory" class="subtab-item @(isDirectory ? "active" : "")">Staff</a>
+    <a href="/Staff?tab=roles" class="subtab-item @(isRoles ? "active" : "")">Roles</a>
 </div>
 
 <div style="display: flex; gap: 40px; align-items: flex-start; flex-wrap: wrap;">
     @if (isDirectory)
     {
-        <!-- Tab 1: Staff Directory -->
+        <!-- Tab 1: Staff Directory List -->
         <div style="flex-grow: 1; min-width: 600px;">
-            <h3>Active Staff Profiles</h3>
+            <h3>Active Employee Accounts</h3>
+            <div style="margin-bottom: 15px; display: flex; align-items: center;">
+                <label for="staffSearchInput" style="font-weight: bold; margin-right: 10px;">Search Staff:</label>
+                <input type="text" id="staffSearchInput" placeholder="Filter username, name, RFID..." onkeyup="filterStaffTable()" style="width: 250px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+            </div>
             <table border="1" cellpadding="5" cellspacing="0" id="staffTable" style="width: 100%; border-collapse: collapse;">
                 <thead>
                     <tr style="background-color: #eee;">
                         <th data-hide-default="true">ID</th>
+                        <th>Username</th>
                         <th>Name</th>
-                        <th>Position / Access Type</th>
-                        <th data-hide-default="true">Email</th>
-                        <th data-hide-default="true">Phone</th>
-                        <th>Assigned Roles</th>
-                        <th data-numeric="true" data-hide-default="true">Pay Rate</th>
-                        <th data-numeric="true" data-hide-default="true">Comm. Override</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Position</th>
+                        <th>Pay Rate</th>
+                        <th>Commission Override</th>
+                        <th>RFID Card ID</th>
+                        <th>Assigned Access Levels</th>
                         <th data-no-sort="true">Actions</th>
                     </tr>
                 </thead>
@@ -54,26 +82,24 @@
                     {
                         <tr>
                             <td>@staff.Id</td>
-                            <td><strong>@staff.FirstName @staff.LastName</strong> (@staff.Username)</td>
-                            <td>@(staff.Position ?? "Staff") / @staff.AccessType</td>
+                            <td><strong>@staff.Username</strong></td>
+                            <td>@staff.FirstName @staff.LastName</td>
                             <td>@staff.Email</td>
                             <td>@staff.PhoneNumber</td>
+                            <td>@(staff.Position ?? "Staff")</td>
+                            <td>@StateHelper.FormatCurrency(staff.PayRate) / @staff.PayFrequency</td>
+                            <td>@(staff.CommissionRate.HasValue ? $"{(staff.CommissionRate.Value * 100):F0}%" : "100%")</td>
+                            <td><code>@(staff.RfidCardId ?? "None")</code></td>
                             <td>
-                                @if (staff.Roles.Count == 0)
+                                @foreach (var r in staff.Roles)
                                 {
-                                    <span style="color: #a0aec0; font-style: italic;">None Assigned</span>
-                                }
-                                else
-                                {
-                                    @string.Join(", ", staff.Roles.Select(r => r.Name))
+                                    <span style="background-color: #ebf8ff; color: #2b6cb0; padding: 2px 6px; font-size: 0.85em; font-weight: bold; margin-right: 4px; border: 1px solid #bee3f8;">@r.Name</span>
                                 }
                             </td>
-                            <td>@StateHelper.FormatCurrency(staff.PayRate) (@staff.PayFrequency)</td>
-                            <td>@(staff.CommissionRate.HasValue ? staff.CommissionRate.Value.ToString("F2") : "1.00 (Default)")</td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="/Staff?action=edit&id=@staff.Id&tab=directory" class="btn" style="padding: 2px 6px; font-size: 0.85em;">Edit</a>
-                                    <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this staff member?');">
+                                    <a href="/Staff?tab=directory&action=edit&id=@staff.Id" class="btn" style="padding: 2px 6px; font-size: 0.85em;">Edit</a>
+                                    <form method="post" asp-page-handler="Delete" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete @staff.Username?');">
                                         <input type="hidden" name="id" value="@staff.Id" />
                                         <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.85em;">Delete</button>
                                     </form>
@@ -85,55 +111,56 @@
             </table>
         </div>
 
-        <!-- Add or Edit Side Panel -->
-        <div style="width: 350px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
-            @if (Model.EditingStaff is not null)
+        <!-- Add / Edit Staff Sidebar -->
+        <div style="width: 350px; border: 1px solid #e2e8f0; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
+            @if (isEditing && Model.EditingStaff is not null)
             {
                 <h3 style="margin-top:0;">Edit Employee Profile</h3>
-                <form method="post" asp-page-handler="Update">
+                <form method="post" asp-page-handler="Update" id="updateStaffForm">
                     <input type="hidden" name="id" value="@Model.EditingStaff.Id" />
-                    
+
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username:</label>
-                        <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username <span style="color: red;">*</span>:</label>
+                        <input type="text" name="username" value="@Model.EditingStaff.Username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Password (blank to keep same):</label>
-                        <input type="password" name="password" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" placeholder="••••••••" />
+                        <input type="password" name="password" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="••••••••" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">First Name:</label>
-                        <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="firstName" value="@Model.EditingStaff.FirstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Last Name:</label>
-                        <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="lastName" value="@Model.EditingStaff.LastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Email:</label>
-                        <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="email" name="email" value="@Model.EditingStaff.Email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Phone:</label>
-                        <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="phoneNumber" value="@Model.EditingStaff.PhoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Position/Title:</label>
-                        <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="position" value="@Model.EditingStaff.Position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Frequency:</label>
-                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
                             @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
-                                @if (Model.EditingStaff.PayFrequency == freq)
+                                bool isSel = Model.EditingStaff.PayFrequency == freq;
+                                @if (isSel)
                                 {
                                     <option value="@freq" selected>@freq</option>
                                 }
@@ -146,19 +173,27 @@
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()):</label>
-                        <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()) <span style="color: red;">*</span>:</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="@Model.EditingStaff.PayRate" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate:</label>
-                        <input type="number" step="0.01" min="0" name="commissionRate" value="@Model.EditingStaff.CommissionRate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                        <small style="color: #718096; display: block; margin-top: 2px;">Leave blank for default (1.0)</small>
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate (%):</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" value="@(Model.EditingStaff.CommissionRate.HasValue ? (Model.EditingStaff.CommissionRate.Value * 100f).ToString("F2") : "")" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                        <small style="color: #718096; display: block; margin-top: 2px;">Enter percentage (e.g. 150 for 150%). Leave blank for default (100%).</small>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">RFID Card ID:</label>
+                        <input type="text" name="rfidCardId" value="@Model.EditingStaff.RfidCardId" placeholder="Swipe card or enter ID" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Security Roles (Hold Ctrl to multi-select):</label>
-                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label style="font-weight: bold; margin: 0;">Access Levels (Hold Ctrl to multi-select):</label>
+                            <button type="button" onclick="createCustomRoleFromForm('updateStaffForm')" class="btn" style="padding: 2px 6px; font-size: 0.75em; background-color: #3182ce; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Custom Role</button>
+                        </div>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0;">
                             @foreach (var role in Model.RolesList)
                             {
                                 bool isAssigned = Model.EditingStaff.Roles.Any(r => r.Id == role.Id);
@@ -183,45 +218,45 @@
             else
             {
                 <h3 style="margin-top:0;">Add New Employee</h3>
-                <form method="post" asp-page-handler="Create">
+                <form method="post" asp-page-handler="Create" id="createStaffForm">
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username:</label>
-                        <input type="text" name="username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Username <span style="color: red;">*</span>:</label>
+                        <input type="text" name="username" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Password:</label>
-                        <input type="password" name="password" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Password <span style="color: red;">*</span>:</label>
+                        <input type="password" name="password" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
                     
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">First Name:</label>
-                        <input type="text" name="firstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="firstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Last Name:</label>
-                        <input type="text" name="lastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="lastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Email:</label>
-                        <input type="email" name="email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="email" name="email" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Phone Number:</label>
-                        <input type="text" name="phoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="phoneNumber" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Position/Title:</label>
-                        <input type="text" name="position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <input type="text" name="position" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
                         <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Frequency:</label>
-                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        <select name="payFrequency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
                             @foreach (EZBM.Core.Entities.Staff.Frequency freq in Enum.GetValues<EZBM.Core.Entities.Staff.Frequency>())
                             {
                                 <option value="@freq">@freq</option>
@@ -230,19 +265,27 @@
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()):</label>
-                        <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Pay Rate (@StateHelper.GetCurrencySymbol()) <span style="color: red;">*</span>:</label>
+                        <input type="number" step="0.01" min="0" name="payRate" value="0.00" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 12px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate:</label>
-                        <input type="number" step="0.01" min="0" name="commissionRate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                        <small style="color: #718096; display: block; margin-top: 2px;">Leave blank for default multiplier (1.0)</small>
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Commission Override Rate (%):</label>
+                        <input type="number" step="0.01" min="0" name="commissionRate" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
+                        <small style="color: #718096; display: block; margin-top: 2px;">Enter percentage (e.g. 150 for 150%). Leave blank for default (100%).</small>
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">RFID Card ID:</label>
+                        <input type="text" name="rfidCardId" placeholder="Swipe card or enter ID" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" />
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; font-weight: bold; margin-bottom: 4px;">Security Roles (Hold Ctrl to multi-select):</label>
-                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label style="font-weight: bold; margin: 0;">Access Levels (Hold Ctrl to multi-select):</label>
+                            <button type="button" onclick="createCustomRoleFromForm('createStaffForm')" class="btn" style="padding: 2px 6px; font-size: 0.75em; background-color: #3182ce; color: white; border: none; border-radius: 4px; cursor: pointer;">Create Custom Role</button>
+                        </div>
+                        <select name="roleIds" multiple style="width: 100%; height: 80px; padding: 6px; border: 1px solid #cbd5e0;">
                             @foreach (var role in Model.RolesList)
                             {
                                 <option value="@role.Id">@role.Name</option>
@@ -257,91 +300,146 @@
     }
     else if (isRoles)
     {
-        <!-- Tab 2: Security Roles Matrix -->
-        <div style="flex-grow: 1; min-width: 600px;">
-            <h3>Granular Role Permissions Matrix</h3>
-            
+        <style>
+            .switch input:checked + .slider {
+                background-color: #48bb78;
+            }
+            .switch input:checked + .slider:before {
+                transform: translateX(26px);
+            }
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 16px;
+                width: 16px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+            .role-list-item.active {
+                background-color: #ebf8ff;
+                color: #2b6cb0;
+                border-left: 4px solid #3182ce;
+            }
+        </style>
+
+        <!-- Left Column: Role Selection (Width: 250px) -->
+        <div style="width: 250px; display: flex; flex-direction: column; gap: 15px;">
+            <h3>Access Roles</h3>
+            <div id="rolesListContainer" style="display: flex; flex-direction: column; border: 1px solid #cbd5e0; border-radius: 6px; overflow: hidden; background: white;">
+                @foreach (var role in Model.RolesList)
+                {
+                    <div class="role-list-item" id="role-item-@role.Id" onclick="selectRole('@role.Id')" style="padding: 12px 15px; border-bottom: 1px solid #e2e8f0; cursor: pointer; font-weight: bold; transition: all 0.2s;" data-role-name="@role.Name">
+                        🔑 @role.Name
+                    </div>
+                }
+            </div>
+
+            <!-- Create Custom Role Button / Input -->
+            <div style="background: #f7fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 0.95em;">New Custom Role</h4>
+                <form method="post" asp-page-handler="CreateRole">
+                    <input type="text" name="roleName" placeholder="e.g. Supervisor" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; margin-bottom: 10px; border-radius: 4px;" />
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Create Role</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right Column: Permissions Matrix for Active Role (Flex-grow) -->
+        <div style="flex-grow: 1; min-width: 400px; display: flex; flex-direction: column; gap: 20px;">
             @if (Model.RolesList.Count == 0)
             {
-                <div style="background-color: #fffaf0; padding: 15px; border: 1px solid #feebc8; margin-bottom: 20px; border-radius: 6px; color: #c05621;">
-                    <strong>Notice:</strong> No security roles have been created yet. Add your first role using the form on the right.
+                <div style="background-color: #fffaf0; padding: 15px; border: 1px solid #feebc8; margin-bottom: 20px; color: #c05621; border-radius: 6px;">
+                    <strong>Notice:</strong> No access levels have been created yet. Add your first level using the form on the left.
                 </div>
             }
             else
             {
-                <form method="post" asp-page-handler="SaveRolePermissions">
-                    <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background-color: #eee;">
-                                <th>System Action / Permission</th>
-                                @foreach (var role in Model.RolesList)
-                                {
-                                    <th style="text-align: center;">
-                                        @role.Name
-                                        <div style="margin-top: 6px; font-weight: normal;">
-                                            <button type="submit" class="btn btn-danger" style="padding: 2px 6px; font-size: 0.8em;" asp-page-handler="DeleteRole" asp-route-id="@role.Id" onclick="return confirm('Are you sure you want to delete role @role.Name?');">Delete Role</button>
-                                        </div>
-                                    </th>
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @{
-                                var permissions = new List<string> { "Checkout", "DeleteLogs", "ModifyInventory", "ManagePayroll", "ManageSettings" };
-                            }
-                            @foreach (var perm in permissions)
-                            {
-                                <tr>
-                                    <td><strong>@perm</strong></td>
-                                    @foreach (var role in Model.RolesList)
-                                    {
-                                        var permMap = new Dictionary<string, int>();
-                                        try
-                                        {
-                                            permMap = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(role.PermissionsJson) ?? new Dictionary<string, int>();
-                                        }
-                                        catch { }
-                                        int curVal = permMap.GetValueOrDefault(perm, 0);
-                                        
-                                        <td style="text-align: center;">
-                                            <div style="display: inline-flex; gap: 8px; justify-content: center; align-items: center;">
-                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
-                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="1" @(curVal == 1 ? "checked" : "") /> Allow
-                                                </label>
-                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
-                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="0" @(curVal == 0 ? "checked" : "") /> Inherit
-                                                </label>
-                                                <label style="font-size: 0.85em; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 3px;">
-                                                    <input type="radio" name="perm_@(role.Id)_@(perm)" value="-1" @(curVal == -1 ? "checked" : "") /> Deny
-                                                </label>
-                                            </div>
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                <form method="post" asp-page-handler="SaveRolePermissions" id="savePermissionsForm">
+                    @foreach (var role in Model.RolesList)
+                    {
+                        var permMap = new Dictionary<string, int>();
+                        try
+                        {
+                            permMap = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, int>>(role.PermissionsJson) ?? new Dictionary<string, int>();
+                        }
+                        catch { }
 
-                    <button type="submit" class="btn btn-primary" style="margin-top: 15px;">
-                        Save Permissions Matrix
-                    </button>
+                        var permRows = new List<(string Label, string ViewKey, string? EditKey)>
+                        {
+                            ("Checkout",                 "Checkout",                   null),
+                            ("Apply Discounts",          "ApplyDiscounts",             null),
+                            ("Refunds",                  "Refunds",                    null),
+                            ("Access Inventory",         "ViewInventory",              "ModifyInventory"),
+                            ("View Sensitive Cost Info", "ViewSensitiveInventoryCost", null),
+                            ("Access Staff Info",        "ViewStaffInfo",              "ManageStaff"),
+                            ("Manage Access Levels",     "ManageAccess",               null),
+                            ("Manage Payroll",           "ManagePayroll",              null),
+                            ("Access Logs",              "ViewLogs",                   "DeleteLogs"),
+                            ("Manage Settings",          "ManageSettings",             null),
+                        };
+
+                        <div class="role-permissions-panel" id="role-panel-@role.Id" style="display: none; background: white; border: 1px solid #cbd5e0; border-radius: 6px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 12px; margin-bottom: 15px;">
+                                <h3 style="margin: 0; color: #2b6cb0;">🔑 @role.Name</h3>
+                                <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.9em;" asp-page-handler="DeleteRole" asp-route-id="@role.Id" onclick="return confirm('Are you sure you want to delete role @role.Name?');">Delete Role</button>
+                            </div>
+             
+                            <!-- Flat 2-column permissions table -->
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                    <tr style="background: #f7fafc; border-bottom: 2px solid #edf2f7;">
+                                        <th style="text-align: left; padding: 10px 12px; font-size: 0.9em; color: #4a5568;">Permission</th>
+                                        <th style="text-align: center; padding: 10px 12px; font-size: 0.9em; color: #4a5568; width: 160px;">Access</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in permRows)
+                                    {
+                                        <tr style="border-bottom: 1px solid #edf2f7;">
+                                            <td style="padding: 10px 12px; font-weight: 500; color: #2d3748;">@row.Label</td>
+                                            <td style="padding: 10px 12px; text-align: center;">
+                                                @if (row.EditKey != null)
+                                                {
+                                                    <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+                                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+                                                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                                                <input type="checkbox" name="perm_@(role.Id)_@(row.ViewKey)" value="1" @(permMap.GetValueOrDefault(row.ViewKey, 0) == 1 ? "checked" : "") style="opacity: 0; width: 0; height: 0;" />
+                                                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 24px;"></span>
+                                                            </label>
+                                                            <span style="font-size: 0.7em; color: #718096;">View</span>
+                                                        </div>
+                                                        <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+                                                            <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                                                <input type="checkbox" name="perm_@(role.Id)_@(row.EditKey)" value="1" @(permMap.GetValueOrDefault(row.EditKey, 0) == 1 ? "checked" : "") style="opacity: 0; width: 0; height: 0;" />
+                                                                <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 24px;"></span>
+                                                            </label>
+                                                            <span style="font-size: 0.7em; color: #718096;">Edit</span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <label class="switch" style="position: relative; display: inline-block; width: 50px; height: 24px;">
+                                                        <input type="checkbox" name="perm_@(role.Id)_@(row.ViewKey)" value="1" @(permMap.GetValueOrDefault(row.ViewKey, 0) == 1 ? "checked" : "") style="opacity: 0; width: 0; height: 0;" />
+                                                        <span class="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e0; transition: .4s; border-radius: 24px;"></span>
+                                                    </label>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+
+                            <button type="submit" class="btn btn-primary" style="margin-top: 15px; width: 100%;">
+                                Save Role Permissions
+                            </button>
+                        </div>
+                    }
                 </form>
             }
-        </div>
-
-        <!-- Add Custom Role Panel -->
-        <div style="width: 320px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: white; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); box-sizing: border-box;">
-            <h3 style="margin-top:0;">Create Security Role</h3>
-            <form method="post" asp-page-handler="CreateRole">
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px;">Role Name:</label>
-                    <input type="text" name="roleName" required placeholder="e.g. Cashier, Supervisor" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" />
-                </div>
-                
-                <button type="submit" class="btn btn-success" style="width: 100%;">
-                    Create Role
-                </button>
-            </form>
         </div>
     }
 </div>
@@ -353,6 +451,133 @@
             if (table) {
                 initCommonTable(table);
             }
+
+            const addStaffForm = document.getElementById("createStaffForm");
+            if (addStaffForm) {
+                const addStaffSteps = [
+                    { fields: ['username', 'password'], question: 'Set account username and password <span style="color: red;">*</span>:', required: true },
+                    { fields: ['firstName', 'lastName'], question: 'What is the employee\'s name?', required: false },
+                    { fields: ['email', 'phoneNumber'], question: 'What is the contact information?', required: false },
+                    { fields: ['position', 'rfidCardId'], question: 'Set position/title and RFID card ID:', required: false },
+                    { fields: ['payFrequency', 'payRate', 'commissionRate'], question: 'Configure payroll frequency and rates <span style="color: red;">*</span>:', required: true },
+                    { fields: ['roleIds'], question: 'Assign access levels / roles:', required: false },
+                    { isSummary: true, question: 'Review and Finish', fields: [] }
+                ];
+                new FormWizardComponent("createStaffForm", addStaffSteps);
+            }
+            
+            // If in roles tab, select the first role by default
+            @if (isRoles && Model.RolesList.Count > 0)
+            {
+                <text>
+                const savedRoleId = localStorage.getItem("active_role_id") || "@Model.RolesList[0].Id";
+                selectRole(savedRoleId);
+                </text>
+            }
         });
+
+        let activeRoleId = null;
+        function selectRole(roleId) {
+            document.querySelectorAll(".role-list-item").forEach(el => {
+                el.classList.remove("active");
+            });
+
+            const selectedItem = document.getElementById("role-item-" + roleId);
+            if (selectedItem) {
+                selectedItem.classList.add("active");
+            }
+
+            document.querySelectorAll(".role-permissions-panel").forEach(el => {
+                el.style.display = "none";
+            });
+
+            const activePanel = document.getElementById("role-panel-" + roleId);
+            if (activePanel) {
+                activePanel.style.display = "block";
+            }
+            activeRoleId = roleId;
+            localStorage.setItem("active_role_id", roleId);
+        }
+
+        function toggleAccordion(id) {
+            const body = document.getElementById("body-" + id);
+            const arrow = document.getElementById("arrow-" + id);
+            if (body.style.display === "none") {
+                body.style.display = "block";
+                arrow.textContent = "▼";
+            } else {
+                body.style.display = "none";
+                arrow.textContent = "▲";
+            }
+        }
+        async function createCustomRoleFromForm(formId) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            const usernameInput = form.querySelector('input[name="username"]');
+            if (!usernameInput || !usernameInput.value.trim()) {
+                alert("Please enter a username first. The custom role will be named after the username.");
+                return;
+            }
+            
+            const roleName = usernameInput.value.trim();
+            const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+            const token = tokenInput ? tokenInput.value : '';
+            
+            const formData = new FormData();
+            formData.append("roleName", roleName);
+            formData.append("__RequestVerificationToken", token);
+            
+            try {
+                const response = await fetch('/Staff?handler=CreateRoleJson', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.success) {
+                    const selects = document.querySelectorAll('select[name="roleIds"]');
+                    selects.forEach(select => {
+                        let exists = false;
+                        for (let i = 0; i < select.options.length; i++) {
+                            if (select.options[i].value === result.roleId) {
+                                exists = true;
+                                select.options[i].selected = true;
+                                break;
+                            }
+                        }
+                        if (!exists) {
+                            const opt = document.createElement('option');
+                            opt.value = result.roleId;
+                            opt.textContent = result.roleName;
+                            opt.selected = true;
+                            select.appendChild(opt);
+                        }
+                    });
+                    alert(`Custom role '${result.roleName}' created and assigned successfully.`);
+                } else {
+                    alert("Error: " + result.message);
+                }
+            } catch (err) {
+                alert("Failed to create custom role: " + err.message);
+            }
+        }
+
+        function filterStaffTable() {
+            var input = document.getElementById("staffSearchInput");
+            var filter = input.value.toLowerCase();
+            var table = document.getElementById("staffTable");
+            var trs = table.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+
+            for (var i = 0; i < trs.length; i++) {
+                var text = trs[i].textContent || trs[i].innerText;
+                if (text.toLowerCase().indexOf(filter) > -1) {
+                    trs[i].style.display = "";
+                    trs[i].removeAttribute("data-filtered");
+                } else {
+                    trs[i].style.display = "none";
+                    trs[i].setAttribute("data-filtered", "true");
+                }
+            }
+            table.dispatchEvent(new Event("filterRefreshed"));
+        }
     </script>
 }
