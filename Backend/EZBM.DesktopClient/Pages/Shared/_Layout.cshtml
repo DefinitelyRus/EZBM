@@ -26,9 +26,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EZBM Testing Platform</title>
     <style>
-        /* Force rectangular shapes globally */
+        /* Force rectangular shapes globally and box-sizing */
         * {
             border-radius: 0 !important;
+            box-sizing: border-box;
         }
 
         /* Modern font & body resets */
@@ -40,6 +41,9 @@
             padding: 0;
             line-height: 1.5;
             overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         /* Fixed header style */
@@ -74,6 +78,11 @@
         @@media (min-width: 1600px) {
             .layout-container {
                 max-width: 100%;
+                padding-left: 260px; /* 240px sidebar + 20px spacing */
+                transition: padding-left 0.3s ease;
+            }
+            .layout-container.sidebar-collapsed {
+                padding-left: 90px; /* 70px collapsed sidebar + 20px spacing */
             }
             .mobile-only {
                 display: none !important;
@@ -82,22 +91,27 @@
                 display: block !important;
             }
             nav.main-nav {
-                width: 220px;
-                flex-shrink: 0;
+                position: fixed;
+                top: 60px;
+                left: 0;
+                bottom: 0;
+                width: 240px;
                 border-right: 1px solid #e2e8f0;
-                padding-right: 20px;
-                margin-right: 25px;
-                transition: margin-left 0.3s ease, opacity 0.3s ease, width 0.3s ease, padding-right 0.3s ease, margin-right 0.3s ease;
+                background-color: #fff;
+                padding: 20px;
+                box-sizing: border-box;
+                z-index: 1000;
+                overflow-y: auto;
+                overflow-x: hidden;
+                transition: width 0.3s ease, padding 0.3s ease;
                 display: block;
             }
             .layout-container.sidebar-collapsed nav.main-nav {
-                width: 0;
-                margin-left: -265px;
-                margin-right: 0;
-                padding-right: 0;
-                border-right: none;
-                opacity: 0;
-                pointer-events: none;
+                width: 70px;
+                padding: 20px 10px;
+            }
+            .layout-container.sidebar-collapsed .nav-text {
+                display: none !important;
             }
             .right-sidebar {
                 width: 380px;
@@ -162,26 +176,55 @@
                 display: block;
             }
             .right-sidebar {
+                position: fixed !important;
+                top: 60px;
+                right: 0;
+                bottom: 0;
+                width: 340px;
+                background-color: #fff;
+                border-left: 1px solid #e2e8f0;
+                padding: 20px;
+                box-sizing: border-box;
+                z-index: 1020;
+                box-shadow: -4px 0 12px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+                display: block !important;
+                overflow-y: auto !important;
+                max-height: calc(100vh - 60px) !important;
+            }
+            .layout-container.right-sidebar-collapsed .right-sidebar {
+                transform: translateX(100%);
+            }
+            .layout-container main {
                 width: 100%;
-                border-left: none;
-                border-top: 1px solid #e2e8f0;
-                padding-left: 0;
-                margin-left: 0;
-                margin-top: 25px;
             }
         }
 
         /* Pull tab buttons */
-        #leftSidebarPullTab, #rightSidebarPullTab {
+        #rightSidebarPullTab {
             display: none;
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1010;
+            padding: 12px 6px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            right: 0;
+            border-right: none;
         }
-        @@media (min-width: 1600px) {
-            .layout-container.sidebar-collapsed #leftSidebarPullTab {
-                display: block;
-            }
-            .layout-container.right-sidebar-collapsed #rightSidebarPullTab {
-                display: block;
-            }
+        .layout-container.right-sidebar-collapsed #rightSidebarPullTab {
+            display: block;
+        }
+
+        /* Sidebar toggle icon styles */
+        .sidebar-toggle-icon::before {
+            content: "◀";
+        }
+        .layout-container.sidebar-collapsed .sidebar-toggle-icon::before {
+            content: "▶";
         }
 
         /* Shared Button & Link Styling */
@@ -302,6 +345,12 @@
             overflow-y: auto;
         }
 
+        /* De-emphasize actual field label inside wizard mode */
+        .wizard-fields-container label {
+            font-weight: normal !important;
+            color: #718096 !important;
+        }
+
         /* Base table updates */
         table {
             width: 100%;
@@ -334,10 +383,6 @@
     <header class="fixed-header">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
             <div style="display: flex; align-items: center;">
-                @if (ViewData["Title"]?.ToString() != "Login")
-                {
-                    <button type="button" id="mobileSidebarToggleBtn" onclick="toggleMobileSidebar()" class="btn mobile-only" style="margin-right: 15px;">☰ Menu</button>
-                }
                 <strong style="font-size: 1.2em; color: #2b6cb0;">@(EZBM.Core.Services.SettingsService.LoadSettings().StoreName) Platform</strong>
             </div>
             <div>
@@ -384,19 +429,21 @@
 
     <div class="layout-container" id="layoutContainer">
         <div class="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
-        <nav class="main-nav sticky-nav">
-            <h3 style="margin-top: 0; color: #4a5568; font-size: 1.1em; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;">Navigation</h3>
+        <nav class="main-nav">
+            <h3 style="margin-top: 0; color: #4a5568; font-size: 1.1em; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;" class="nav-text">Navigation</h3>
             <ul style="list-style-type: none; padding-left: 0; margin: 0;">
-                <li style="margin-bottom: 10px;"><a href="/" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📊 Dashboard</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Inventory" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📦 Inventory</a></li>
-                <li style="margin-bottom: 10px;"><a href="/POS" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">🛒 Cashier</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Staff" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">👥 Staff Management</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Logs" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">📄 Logs & Ledger</a></li>
-                <li style="margin-bottom: 10px;"><a href="/Settings" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal;">⚙ Settings</a></li>
+                <li style="margin-bottom: 10px;" class="desktop-only">
+                    <button type="button" onclick="toggleDesktopSidebar()" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">
+                        <span class="sidebar-toggle-icon"></span> <span class="nav-text" style="margin-left: 8px;">Collapse</span>
+                    </button>
+                </li>
+                <li style="margin-bottom: 10px;"><a href="/" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📊 <span class="nav-text" style="margin-left: 8px;">Dashboard</span></a></li>
+                <li style="margin-bottom: 10px;"><a href="/Inventory" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📦 <span class="nav-text" style="margin-left: 8px;">Inventory</span></a></li>
+                <li style="margin-bottom: 10px;"><a href="/POS" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">🛒 <span class="nav-text" style="margin-left: 8px;">Cashier</span></a></li>
+                <li style="margin-bottom: 10px;"><a href="/Staff" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">👥 <span class="nav-text" style="margin-left: 8px;">Staff Management</span></a></li>
+                <li style="margin-bottom: 10px;"><a href="/Logs" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📄 <span class="nav-text" style="margin-left: 8px;">Log Records</span></a></li>
+                <li style="margin-bottom: 10px;"><a href="/Settings" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">⚙ <span class="nav-text" style="margin-left: 8px;">Settings</span></a></li>
             </ul>
-            <div style="margin-top: 20px;" class="desktop-only">
-                <button type="button" onclick="toggleDesktopSidebar()" id="desktopSidebarToggleBtn" style="width: 100%; font-size: 0.8em;">⛶ Toggle Width</button>
-            </div>
         </nav>
 
         <main style="flex-grow: 1; min-width: 0;">
@@ -407,14 +454,13 @@
         {
             <aside class="right-sidebar sticky-nav" id="rightSidebar">
                 @RenderSection("RightSidebar")
-                <div style="margin-top: 20px;" class="desktop-only">
+                <div style="margin-top: 20px;">
                     <button type="button" onclick="toggleRightSidebar()" id="rightSidebarToggleBtn" style="width: 100%; font-size: 0.8em;">⛶ Collapse Sidebar</button>
                 </div>
             </aside>
         }
 
         <!-- Pull tabs for sidebars -->
-        <button type="button" id="leftSidebarPullTab" onclick="toggleDesktopSidebar()" title="Show Left Sidebar">▶</button>
         <button type="button" id="rightSidebarPullTab" onclick="toggleRightSidebar()" title="Show Right Sidebar">◀</button>
     </div>
 
@@ -449,7 +495,7 @@
         </div>
     </div>
 
-    <footer style="background-color: #fff; border-top: 1px solid #e2e8f0; margin-top: 40px; padding: 16px; font-size: 0.85em; text-align: center; color: #718096;">
+    <footer style="background-color: #fff; border-top: 1px solid #e2e8f0; margin-top: auto; padding: 16px; font-size: 0.85em; text-align: center; color: #718096;">
         <p>&copy; 2026 - EZBM Testing Platform. Integrated with C# Backend.</p>
     </footer>
 
@@ -899,12 +945,21 @@
         }
 
         class FormWizardComponent {
-            constructor(formId, steps, onModeToggle) {
+            constructor(formId, steps, options = {}) {
                 this.form = document.getElementById(formId);
                 this.steps = steps;
                 this.currentStep = 0;
-                this.isWizard = true;
-                this.onModeToggle = onModeToggle;
+
+                // Handle backward compatibility (when third param is onModeToggle callback function)
+                if (typeof options === "function") {
+                    this.onModeToggle = options;
+                    this.hideModeToggle = false;
+                    this.isWizard = true;
+                } else {
+                    this.onModeToggle = options.onModeToggle;
+                    this.hideModeToggle = options.hideModeToggle || false;
+                    this.isWizard = options.defaultToForm ? false : true;
+                }
 
                 this.setupUI();
             }
@@ -920,6 +975,7 @@
 
                 this.fieldsContainer = document.createElement("div");
                 this.fieldsContainer.id = this.form.id + "-fields-container";
+                this.fieldsContainer.className = "wizard-fields-container";
                 this.wizardContainer.appendChild(this.fieldsContainer);
 
                 this.controlsContainer = document.createElement("div");
@@ -966,14 +1022,27 @@
                 this.form.addEventListener("change", () => this.validateCurrentStep());
 
                 this.bottomToggleContainer = document.createElement("div");
-                this.bottomToggleContainer.style.cssText = "margin-top: 15px; border-top: 1px solid #edf2f7; padding-top: 12px;";
+                this.bottomToggleContainer.style.cssText = "display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #edf2f7; padding-top: 12px;";
+                
                 this.bottomModeBtn = document.createElement("button");
                 this.bottomModeBtn.type = "button";
                 this.bottomModeBtn.className = "btn";
-                this.bottomModeBtn.style.cssText = "width: 100%; padding: 8px; font-weight: bold; background-color: #ebf8ff; color: #2b6cb0; border-color: #bee3f8;";
+                this.bottomModeBtn.style.cssText = "padding: 6px 12px; font-size: 0.9em; background-color: #ebf8ff; color: #2b6cb0; border-color: #bee3f8;";
                 this.bottomModeBtn.textContent = "Use Wizard Instead";
                 this.bottomModeBtn.addEventListener("click", () => this.toggleMode());
+                
                 this.bottomToggleContainer.appendChild(this.bottomModeBtn);
+
+                const submitBtn = this.form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    this.bottomToggleContainer.appendChild(submitBtn);
+                }
+
+                if (this.hideModeToggle) {
+                    this.modeBtn.style.display = "none";
+                    this.bottomModeBtn.style.display = "none";
+                }
+
                 this.form.appendChild(this.bottomToggleContainer);
 
                 this.updateMode();
@@ -986,29 +1055,25 @@
             }
 
             updateMode() {
-                const formGroups = Array.from(this.form.querySelectorAll("div")).filter(div => {
-                    return !this.wizardContainer.contains(div) && !this.bottomToggleContainer.contains(div) && 
-                           (div.querySelector("input") || div.querySelector("select") || div.querySelector("textarea") || div.classList.contains("product-only-field") || div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
-                });
-
                 const submitBtn = this.form.querySelector('button[type="submit"]');
 
                 if (this.isWizard) {
                     this.wizardContainer.style.display = "block";
                     this.bottomToggleContainer.style.display = "none";
                     if (submitBtn) submitBtn.style.display = "none";
-                    
-                    formGroups.forEach(g => {
-                        g.style.display = "none";
-                    });
-
                     this.showStep();
                 } else {
                     this.wizardContainer.style.display = "none";
-                    this.bottomToggleContainer.style.display = "block";
+                    this.bottomToggleContainer.style.display = "flex";
                     if (submitBtn) submitBtn.style.display = "block";
-                    
-                    formGroups.forEach(g => {
+
+                    // Show all form groups
+                    const allFormGroups = Array.from(this.form.querySelectorAll("div")).filter(div => {
+                        return !this.wizardContainer.contains(div) && !this.bottomToggleContainer.contains(div) && 
+                               (div.querySelector("input") || div.querySelector("select") || div.querySelector("textarea") || div.classList.contains("product-only-field") || div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
+                    });
+
+                    allFormGroups.forEach(g => {
                         if (g.classList.contains("product-only-field")) {
                             const select = this.form.querySelector('[name="itemType"]');
                             g.style.display = (select && select.value === 'Product') ? 'block' : 'none';
@@ -1036,23 +1101,32 @@
                 }
                 if (this.currentStep < 0) this.currentStep = 0;
 
+                // Hide all form groups first
+                const allFormGroups = Array.from(this.form.querySelectorAll("div")).filter(div => {
+                    return !this.wizardContainer.contains(div) && !this.bottomToggleContainer.contains(div) && 
+                           (div.querySelector("input") || div.querySelector("select") || div.querySelector("textarea") || div.classList.contains("product-only-field") || div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
+                });
+                allFormGroups.forEach(g => {
+                    g.style.display = "none";
+                });
+
                 const step = visibleSteps[this.currentStep];
                 this.questionEl.innerHTML = step.question;
-
                 this.fieldsContainer.innerHTML = "";
 
                 if (step.isSummary) {
+                    this.fieldsContainer.style.display = "block";
                     this.renderSummary(visibleSteps);
                 } else {
+                    this.fieldsContainer.style.display = "none";
                     step.fields.forEach(fieldSelector => {
                         let el = this.form.querySelector(`[name="${fieldSelector}"]`);
                         if (!el) el = this.form.querySelector(fieldSelector);
                         
                         if (el) {
                             let group = el.closest("div");
-                            if (group && !this.wizardContainer.contains(group)) {
+                            if (group) {
                                 group.style.display = "block";
-                                this.fieldsContainer.appendChild(group);
                             }
                         }
                     });
@@ -1085,21 +1159,37 @@
                 const step = visibleSteps[this.currentStep];
                 
                 let isValid = true;
-                if (step && step.required && !step.isSummary) {
+                let hasValue = false;
+                if (step && !step.isSummary) {
                     step.fields.forEach(fieldSelector => {
                         let el = this.form.querySelector(`[name="${fieldSelector}"]`);
                         if (!el) el = this.form.querySelector(fieldSelector);
                         if (el) {
                             if (el.type === "checkbox") {
-                                // fine
+                                if (el.checked) hasValue = true;
                             } else if (el.value === "") {
-                                isValid = false;
+                                if (step.required && el.hasAttribute("required")) isValid = false;
+                            } else {
+                                hasValue = true;
                             }
                         }
                     });
                 }
 
                 this.nextBtn.disabled = !isValid;
+
+                if (step) {
+                    if (this.currentStep === visibleSteps.length - 1) {
+                        this.nextBtn.textContent = "Finish";
+                    } else {
+                        const isOptional = !step.required;
+                        if (isOptional && !hasValue) {
+                            this.nextBtn.textContent = "Skip";
+                        } else {
+                            this.nextBtn.textContent = "Next";
+                        }
+                    }
+                }
             }
 
             nextStep() {
@@ -1162,6 +1252,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const tables = document.querySelectorAll("table");
             tables.forEach(table => {
+                if (table.hasAttribute("data-no-common-table")) return;
                 if (table.querySelector("tbody")) {
                     initCommonTable(table);
                 }

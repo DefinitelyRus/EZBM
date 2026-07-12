@@ -110,6 +110,32 @@ public static class StateHelper
     }
 
     /// <summary>
+    /// Formats the staff pay rate cleanly into a natural frequency string.
+    /// </summary>
+    /// <param name="payRate">The numeric pay rate.</param>
+    /// <param name="frequency">The frequency at which they are paid.</param>
+    /// <returns>A friendly natural readable string.</returns>
+    public static string FormatPayRate(
+        float payRate,
+        Staff.Frequency frequency
+    )
+    {
+        string freqStr = frequency switch
+        {
+            Staff.Frequency.Hourly => "every hour",
+            Staff.Frequency.Daily => "every day",
+            Staff.Frequency.Weekly => "every week",
+            Staff.Frequency.Biweekly => "every two weeks",
+            Staff.Frequency.Monthly => "every month",
+            _ => $"every {frequency.ToString().ToLower()}"
+        };
+
+        string formattedRate = FormatCurrency(payRate);
+        string result = $"{formattedRate} {freqStr}";
+        return result;
+    }
+
+    /// <summary>
     /// Formats a quantity value cleanly according to display rules.
     /// </summary>
     public static string FormatQuantity(float quantity, Item.Unit unit, float? targetStock = null)
@@ -119,7 +145,19 @@ public static class StateHelper
             return "Unlimited";
         }
         string qtyStr = EZBM.Core.Tools.Utils.FormatDecimal(quantity);
-        string unitStr = unit == Item.Unit.Count ? "" : $" {unit}";
+        string unitStr = unit switch
+        {
+            Item.Unit.Count => "",
+            Item.Unit.Milligrams => " mg",
+            Item.Unit.Grams => " g",
+            Item.Unit.Kilograms => " kg",
+            Item.Unit.Ounces => " oz",
+            Item.Unit.Pounds => " lb",
+            Item.Unit.Milliliters => " ml",
+            Item.Unit.Liters => " L",
+            Item.Unit.Gallons => " gal",
+            _ => ""
+        };
         
         if (targetStock.HasValue)
         {
@@ -127,6 +165,27 @@ public static class StateHelper
             return $"{qtyStr}{unitStr} / {targetStr}{unitStr}";
         }
         return $"{qtyStr}{unitStr}";
+    }
+
+    /// <summary>
+    /// Gets a user-friendly string description of a Unit enum value.
+    /// </summary>
+    public static string GetFriendlyUnitName(Item.Unit unit)
+    {
+        return unit switch
+        {
+            Item.Unit.Count => "Count",
+            Item.Unit.Milligrams => "Milligram (mg)",
+            Item.Unit.Grams => "Gram (g)",
+            Item.Unit.Kilograms => "Kilogram (kg)",
+            Item.Unit.Ounces => "Ounce (oz)",
+            Item.Unit.Pounds => "Pound (lb)",
+            Item.Unit.Milliliters => "Milliliter (ml)",
+            Item.Unit.Liters => "Liter (L)",
+            Item.Unit.Gallons => "Gallon (gal)",
+            Item.Unit.Unlimited => "Unlimited",
+            _ => unit.ToString()
+        };
     }
 
     /// <summary>
@@ -153,13 +212,25 @@ public static class StateHelper
                 activeStaff = GetActiveStaffAsync(httpContext).GetAwaiter().GetResult();
             }
 
-            if (activeStaff != null)
+            if (activeStaff is not null)
             {
-                string userSettingsJson = SettingsService.LoadUserSettings(activeStaff.Id);
-                var userPrefs = JsonSerializer.Deserialize<EZBM.DesktopClient.Pages.SettingsModel.UserPreferences>(userSettingsJson);
-                if (userPrefs != null && !string.IsNullOrEmpty(userPrefs.DateFormat))
+                string cacheKey = "UserDateFormat_" + activeStaff.Id;
+                if (httpContext is not null && httpContext.Items.TryGetValue(cacheKey, out object? cachedFormat) && cachedFormat is string formatStr)
                 {
-                    format = userPrefs.DateFormat;
+                    format = formatStr;
+                }
+                else
+                {
+                    string userSettingsJson = SettingsService.LoadUserSettings(activeStaff.Id);
+                    EZBM.DesktopClient.Pages.SettingsModel.UserPreferences? userPrefs = JsonSerializer.Deserialize<EZBM.DesktopClient.Pages.SettingsModel.UserPreferences>(userSettingsJson);
+                    if (userPrefs is not null && !string.IsNullOrEmpty(userPrefs.DateFormat))
+                    {
+                        format = userPrefs.DateFormat;
+                    }
+                    if (httpContext is not null)
+                    {
+                        httpContext.Items[cacheKey] = format;
+                    }
                 }
             }
         }

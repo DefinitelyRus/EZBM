@@ -17,14 +17,17 @@ public static class DataSeeder
     /// </summary>
     public static void Seed()
     {
+        using AppDbContext context = new();
+        context.Database.EnsureCreated();
+
+        if (context.Staff.Any())
+        {
+            return;
+        }
+
         Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
         GC.Collect();
         GC.WaitForPendingFinalizers();
-
-        using AppDbContext context = new();
-
-        context.Database.EnsureDeleted();
-        context.Database.EnsureCreated();
 
         List<Staff> staffMembers =
         [
