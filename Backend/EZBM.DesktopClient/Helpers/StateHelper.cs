@@ -106,7 +106,27 @@ public static class StateHelper
     public static string FormatCurrency(float? amount)
     {
         if (!amount.HasValue) return "N/A";
-        return $"{GetCurrencySymbol()}{amount.Value:F2}";
+        return $"{GetCurrencySymbol()}{EZBM.Core.Tools.Utils.FormatDecimal(amount.Value)}";
+    }
+
+    /// <summary>
+    /// Formats a quantity value cleanly according to display rules.
+    /// </summary>
+    public static string FormatQuantity(float quantity, Item.Unit unit, float? targetStock = null)
+    {
+        if (quantity == -1f || unit == Item.Unit.Unlimited || quantity >= 9990f)
+        {
+            return "Unlimited";
+        }
+        string qtyStr = EZBM.Core.Tools.Utils.FormatDecimal(quantity);
+        string unitStr = unit == Item.Unit.Count ? "" : $" {unit}";
+        
+        if (targetStock.HasValue)
+        {
+            string targetStr = EZBM.Core.Tools.Utils.FormatDecimal(targetStock.Value);
+            return $"{qtyStr}{unitStr} / {targetStr}{unitStr}";
+        }
+        return $"{qtyStr}{unitStr}";
     }
 
     /// <summary>
