@@ -183,16 +183,17 @@ public static class Utils
     /// <summary>
     /// Safely gets a list of Item tags from a JsonElement array.
     /// </summary>
-    public static List<Item.Tag>? GetAsTagsList(object? obj)
+    public static List<string>? GetAsTagsList(object? obj)
     {
         if (obj is JsonElement element && element.ValueKind == JsonValueKind.Array)
         {
-            List<Item.Tag> list = [];
+            List<string> list = [];
             foreach (JsonElement item in element.EnumerateArray())
             {
                 if (item.ValueKind == JsonValueKind.String)
                 {
-                    if (Enum.TryParse<Item.Tag>(item.GetString(), true, out Item.Tag tag))
+                    string? tag = item.GetString();
+                    if (!string.IsNullOrEmpty(tag))
                     {
                         list.Add(tag);
                     }
@@ -203,6 +204,48 @@ public static class Utils
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Formats a float value to hide decimals if it rounds to an integer, otherwise rounding to 2 decimal places.
+    /// </summary>
+    public static string FormatDecimal(float? value)
+    {
+        if (!value.HasValue) return string.Empty;
+        double rounded = Math.Round(value.Value, 2);
+        if (Math.Abs(rounded - Math.Round(rounded)) < 0.001)
+        {
+            return rounded.ToString("0");
+        }
+        return rounded.ToString("0.##");
+    }
+
+    /// <summary>
+    /// Formats a double value to hide decimals if it rounds to an integer, otherwise rounding to 2 decimal places.
+    /// </summary>
+    public static string FormatDecimal(double? value)
+    {
+        if (!value.HasValue) return string.Empty;
+        double rounded = Math.Round(value.Value, 2);
+        if (Math.Abs(rounded - Math.Round(rounded)) < 0.001)
+        {
+            return rounded.ToString("0");
+        }
+        return rounded.ToString("0.##");
+    }
+
+    /// <summary>
+    /// Formats a decimal value to hide decimals if it rounds to an integer, otherwise rounding to 2 decimal places.
+    /// </summary>
+    public static string FormatDecimal(decimal? value)
+    {
+        if (!value.HasValue) return string.Empty;
+        decimal rounded = Math.Round(value.Value, 2);
+        if (Math.Abs(rounded - Math.Round(rounded)) < 0.001m)
+        {
+            return rounded.ToString("0");
+        }
+        return rounded.ToString("0.##");
     }
 
     #endregion
