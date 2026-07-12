@@ -41,11 +41,6 @@ public class Staff : User
     /// </summary>
     public float PayRate { get; set; }
 
-    /// <summary>
-    /// Per-staff commission percentage overrides.
-    /// </summary>
-    public float? CommissionRate { get; set; }
-
     #endregion
 
     #region Constructors
@@ -70,7 +65,6 @@ public class Staff : User
     /// <param name="email">The staff's email address.</param>
     /// <param name="phoneNumber">The staff's phone number.</param>
     /// <param name="position">The staff's job position.</param>
-    /// <param name="commissionRate">The custom commission percentage rate.</param>
     public Staff(
         ulong id,
         string username,
@@ -81,8 +75,7 @@ public class Staff : User
         string? lastName = null,
         string? email = null,
         string? phoneNumber = null,
-        string? position = null,
-        float? commissionRate = null)
+        string? position = null)
     {
         Id = id;
 
@@ -98,7 +91,6 @@ public class Staff : User
 
         PayFrequency = payFrequency;
         PayRate = payRate;
-        CommissionRate = commissionRate;
         AccessType = AccessCardType.Staff;
     }
 

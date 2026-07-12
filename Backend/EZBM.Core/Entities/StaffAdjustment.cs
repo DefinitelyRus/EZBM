@@ -43,6 +43,11 @@ public class StaffAdjustment : Entity
     public string? Notes { get; set; }
 
     /// <summary>
+    /// The parent payroll invoice ID if this adjustment has been processed.
+    /// </summary>
+    public ulong? PayrollId { get; set; }
+
+    /// <summary>
     /// Parameterless constructor for EF Core.
     /// </summary>
     protected StaffAdjustment() : base() { }
