@@ -1,7 +1,5 @@
 # EZBM (Easy Business Manager) - Prototype
 
-> *Author(s): DefinitelyRus, Google Gemini*
-
 EZBM is a lightweight, local, desktop-first store management app designed for micro-SMEs (sari-sari stores, milk tea shops, etc.) to track sales, inventory, and attendance faster and more reliably than a paper notebook.
 
 This repository contains both the .NET back-end solutions/services and the React front-end. All parts run locally on the same host machine.

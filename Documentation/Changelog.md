@@ -27,6 +27,37 @@ Changes:
 
 ## Logs
 
+### 07/11/2026
+
+Implemented security roles permissions layout updates and default access configuration presets. Refactored the unit test suite to compile cleanly with the updated string-based item tags schema.
+
+Changes:
+
+- Redesigned the Roles permission matrix tab under Staff Management to use a flat 2-column table layout, combining paired View/Modify options into single "Access" rows with separate View and Edit toggle switches.
+- Displayed the active role name directly in the permissions header and repositioned the "Delete Role" button to the far right.
+- Seeded a default "Logistics" role and renamed the "Administrator" role to "Admin" in the data seeder.
+- Fixed compilation errors in the endpoint tests project by updating legacy tag enum references to string tags.
+
+### 07/10/2026
+
+Implemented comprehensive backend and Razor Pages frontend updates including rectangular visual design overrides, fixed layout panels, collapsible sidebar pull-tabs, dropdown options for peripheral USB devices, global page authentication middleware, optional RFID login workflows, a modern scrolling feed analytics dashboard, unlimited stock support, modal-based inventory item creation, hierarchical staff access configuration checklists with indeterminate states, percentage-based commission overrides, and expanded date/time display configurations.
+
+Changes:
+
+- Reverted Razor Page styling to minimal CSS, forcing rectangular inputs, buttons, and panels via a global `* { border-radius: 0 !important; }` layout override.
+- Locked page headers to fixed top screen positions and set sidebars (navigation and right workspaces) as sticky-scrolling panels.
+- Configured collapsibility for the left and right sidebars on wide screens (>=1600px) and built clickable pull-tabs to restore hidden sidebars.
+- Built a global auto-initializer on page load in `_Layout.cshtml` to setup common tables and short-circuit double initialization.
+- Added dropdown lists populated with USB HID presets for the RFID Scanner and Cash Register Trigger configurations on the User Preferences settings screen.
+- Implemented global page authentication logic via `OnPageHandlerExecutionAsync` in all core page models, redirecting unauthenticated users to the Login page.
+- Added a store-wide `EnableRfidLogin` preference option in business settings and integrated optional RFID scanning credentials login directly on the Login page.
+- Redesigned the home dashboard into a single-column scrolling feed with custom widgets for statistics, SVG sales trends, transaction entries with purchase lists, low stock alerts, popular products, and cashiers performance.
+- Displayed stock levels of `-1` as "unlimited" and updated checkout services to skip decrementing unlimited stocks.
+- Moved the inventory catalog item addition form into a popup modal triggered by a button next to the catalog search input.
+- Refactored security roles matrix to be categorized with nested checkboxes supporting indeterminate state checkboxes in staff access.
+- Divide and display commission override input rate as a percentage value instead of raw decimal multiplier.
+- Added support for expanded date & time formats in personal user configurations.
+
 ### 07/06/2026
 
 Implemented comprehensive Razor Pages UI updates including responsive design, shared button/link styling, universal currency/date formatting, interactive pagination/sorting, inventory columns consolidation, inline subtabs navigation, staff permissions radio matrix, and POS checkout term updates.
