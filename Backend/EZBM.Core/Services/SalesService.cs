@@ -186,27 +186,6 @@ public static class SalesService
                     item.Quantity -= itemReq.Quantity;
                 }
 
-                if (item is Service && (item.Name.Contains("Upgrade", StringComparison.OrdinalIgnoreCase) || item.Name.Contains("Grooming", StringComparison.OrdinalIgnoreCase)))
-                {
-                    StoreSettings storeSettings = SettingsService.LoadSettings();
-                    float commissionRate = staff.CommissionRate ?? 1.0f;
-                    if (storeSettings.MembershipCommissions.TryGetValue(item.Name, out float baseCommission))
-                    {
-                        float finalCommission = baseCommission * commissionRate;
-                        StaffAdjustment adjustment = new(
-                            id: Utils.GenerateEntityId(),
-                            staffId: staff.Id,
-                            adjustmentType: "Commission",
-                            amount: finalCommission,
-                            deductFromCurrentPayroll: false,
-                            isPaid: false,
-                            timestamp: serverTime,
-                            notes: $"Commission earned from {item.Name} sold in Invoice {sale.InvoiceId}"
-                        );
-                        context.StaffAdjustment.Add(adjustment);
-                    }
-                }
-
                 ItemTransaction itemTransaction = new(
                     item: item,
                     transactionType: ItemTransaction.Type.Sale,

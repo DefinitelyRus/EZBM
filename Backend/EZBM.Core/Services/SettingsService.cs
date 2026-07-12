@@ -72,19 +72,6 @@ public class StoreSettings
         { "Member", 30 }
     };
 
-    /// <summary>
-    /// The standard commission rates earned for membership registration or upgrades.
-    /// </summary>
-    public Dictionary<string, float> MembershipCommissions { get; set; } = new()
-    {
-        { "Silver Upgrade", 10f },
-        { "Gold Upgrade", 25f },
-        { "Platinum Upgrade", 50f },
-        { "Dog Grooming - Small", 20f },
-        { "Dog Grooming - Medium", 30f },
-        { "Dog Grooming - Large", 40f },
-        { "Cat Grooming", 25f }
-    };
 
     /// <summary>
     /// Represents info about a promotional discount code.

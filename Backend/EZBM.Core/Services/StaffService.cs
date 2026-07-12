@@ -73,8 +73,7 @@ public static class StaffService
                 lastName: request.LastName,
                 email: request.Email,
                 phoneNumber: request.PhoneNumber,
-                position: request.Position,
-                commissionRate: request.CommissionRate
+                position: request.Position
             )
             {
                 RfidCardId = request.RfidCardId,
@@ -281,7 +280,6 @@ public static class StaffService
             staff.Position = request.Position ?? staff.Position;
             staff.PayFrequency = request.PayFrequency ?? staff.PayFrequency;
             staff.PayRate = request.PayRate ?? staff.PayRate;
-            staff.CommissionRate = request.CommissionRate ?? staff.CommissionRate;
             staff.RfidCardId = request.RfidCardId ?? staff.RfidCardId;
             staff.Permissions = request.Permissions ?? staff.Permissions;
             staff.PermissionsAfterExpiry = request.PermissionsAfterExpiry ?? staff.PermissionsAfterExpiry;
@@ -846,13 +844,14 @@ public static class StaffService
                 notes: request.Notes
             );
 
-            // Mark unpaid adjustments as paid
-            var unpaidAdjustments = await context.StaffAdjustment
+            // Mark unpaid adjustments as paid and link to payroll
+            List<StaffAdjustment> unpaidAdjustments = await context.StaffAdjustment
                 .Where(sa => sa.StaffId == request.StaffId && sa.IsPaid == false && sa.Timestamp <= request.PeriodEnd)
                 .ToListAsync();
-            foreach (var sa in unpaidAdjustments)
+            foreach (StaffAdjustment sa in unpaidAdjustments)
             {
                 sa.IsPaid = true;
+                sa.PayrollId = payroll.Id;
             }
 
             context.Payroll.Add(payroll);
@@ -1048,6 +1047,15 @@ public static class StaffService
                 );
 
                 return noResults;
+            }
+
+            List<StaffAdjustment> adjustments = await context.StaffAdjustment
+                .Where(sa => sa.PayrollId == request.Id)
+                .ToListAsync();
+            foreach (StaffAdjustment sa in adjustments)
+            {
+                sa.IsPaid = false;
+                sa.PayrollId = null;
             }
 
             context.Payroll.Remove(payroll);
