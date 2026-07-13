@@ -2,6 +2,7 @@ using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
+using EZBM.DesktopClient.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,25 @@ public class StaffModel : PageModel
     #endregion
 
     #region Handlers
+
+    /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
     public async Task OnGetAsync(string? action, ulong? id, string? tab)
     {
         if (!string.IsNullOrEmpty(tab))
@@ -60,8 +80,8 @@ public class StaffModel : PageModel
         string? position,
         Staff.Frequency payFrequency,
         float payRate,
-        float? commissionRate,
-        List<ulong>? roleIds
+        List<ulong>? roleIds,
+        string? rfidCardId
     )
     {
         if (payRate < 0f)
@@ -80,7 +100,7 @@ public class StaffModel : PageModel
             Position: position,
             PayFrequency: payFrequency,
             PayRate: payRate,
-            CommissionRate: commissionRate
+            RfidCardId: rfidCardId
         );
 
         Utils.RequestResult result = await StaffService.CreateStaffAsync(request);
@@ -117,8 +137,8 @@ public class StaffModel : PageModel
         string? position,
         Staff.Frequency payFrequency,
         float payRate,
-        float? commissionRate,
-        List<ulong>? roleIds
+        List<ulong>? roleIds,
+        string? rfidCardId
     )
     {
         if (payRate < 0f)
@@ -138,7 +158,7 @@ public class StaffModel : PageModel
             Position: position,
             PayFrequency: payFrequency,
             PayRate: payRate,
-            CommissionRate: commissionRate
+            RfidCardId: rfidCardId
         );
 
         Utils.RequestResult result = await StaffService.UpdateStaffAsync(request);
@@ -208,13 +228,50 @@ public class StaffModel : PageModel
         return RedirectToPage("/Staff", new { tab = "roles" });
     }
 
+    public async Task<IActionResult> OnPostCreateRoleJsonAsync(string roleName)
+    {
+        if (string.IsNullOrWhiteSpace(roleName))
+        {
+            return new JsonResult(new { success = false, message = "Role name cannot be empty." });
+        }
+        try
+        {
+            using AppDbContext context = new();
+            var existing = await context.Role.FirstOrDefaultAsync(r => r.Name.ToLower() == roleName.ToLower());
+            if (existing != null)
+            {
+                return new JsonResult(new { success = true, roleId = existing.Id.ToString(), roleName = existing.Name });
+            }
+
+            Role role = new(
+                id: Utils.GenerateEntityId(),
+                name: roleName,
+                permissionsJson: "{}"
+            );
+            context.Role.Add(role);
+            await context.SaveChangesAsync();
+            return new JsonResult(new { success = true, roleId = role.Id.ToString(), roleName = role.Name });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { success = false, message = ex.Message });
+        }
+    }
+
+
     public async Task<IActionResult> OnPostSaveRolePermissionsAsync()
     {
         try
         {
             using AppDbContext context = new();
             var roles = await context.Role.ToListAsync();
-            var permissionKeys = new List<string> { "Checkout", "DeleteLogs", "ModifyInventory", "ManagePayroll", "ManageSettings" };
+            var permissionKeys = new List<string>
+            {
+                "Checkout", "ApplyDiscounts", "Refunds",
+                "ViewInventory", "ModifyInventory", "ViewSensitiveInventoryCost",
+                "ViewStaffInfo", "ManageStaff", "ManageAccess", "ManagePayroll",
+                "ViewLogs", "DeleteLogs", "ManageSettings"
+            };
 
             foreach (var role in roles)
             {

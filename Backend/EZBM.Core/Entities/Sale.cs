@@ -47,5 +47,10 @@ public class Sale : Transaction
     {
     }
 
+    /// <summary>
+    /// The individual sale entries representing items sold in this transaction.
+    /// </summary>
+    public virtual ICollection<SaleEntry> SaleEntries { get; set; } = new List<SaleEntry>();
+
     #endregion
 }

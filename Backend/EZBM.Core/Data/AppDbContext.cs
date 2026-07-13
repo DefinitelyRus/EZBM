@@ -116,6 +116,13 @@ public class AppDbContext : DbContext
             .HasValue<Product>("Product")
             .HasValue<Service>("Service");
 
+        modelBuilder.Entity<Item>()
+            .Property(i => i.Tags)
+            .HasConversion(
+                v => string.Join(";", v),
+                v => v.Split(';', StringSplitOptions.RemoveEmptyEntries).ToList()
+            );
+
         modelBuilder.Entity<User>()
             .Property(u => u.AccessType)
             .HasConversion<string>();
@@ -163,7 +170,8 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.ParentTransaction)
             .WithMany(t => t.ChildTransactions)
-            .HasForeignKey(t => t.ParentTransactionId);
+            .HasForeignKey(t => t.ParentTransactionId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Transaction>()
             .HasOne(t => t.Customer)
@@ -193,17 +201,25 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<ItemTransaction>()
             .HasOne(it => it.SaleEntry)
             .WithMany()
-            .HasForeignKey("SaleEntryId");
+            .HasForeignKey("SaleEntryId")
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<SaleEntry>()
             .HasOne(se => se.Sale)
-            .WithMany()
-            .HasForeignKey("SaleId");
+            .WithMany(s => s.SaleEntries)
+            .HasForeignKey("SaleId")
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<SaleEntry>()
             .HasOne(se => se.Item)
             .WithMany()
             .HasForeignKey("ItemId");
+
+        modelBuilder.Entity<StaffAdjustment>()
+            .HasOne<Payroll>()
+            .WithMany()
+            .HasForeignKey(sa => sa.PayrollId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 
     /// <summary>

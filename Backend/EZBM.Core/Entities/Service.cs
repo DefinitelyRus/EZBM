@@ -23,13 +23,13 @@ public class Service : Item
         float? price = null,
         string? name = null,
         string? description = null,
-        List<Tag>? tags = null,
+        List<string>? tags = null,
         float quantity = 9999f,
         DateTime? expirationDate = null,
         float? cost = null,
         string? imageUrl = null,
         string? barcode = null)
-        : base(id, unitOfMeasurement, isForSale, price, name, description, tags, quantity, expirationDate, cost, imageUrl, barcode)
+        : base(id, unitOfMeasurement, isForSale, price, name, description, tags, quantity, expirationDate, cost, imageUrl, barcode, null)
     {
     }
 }

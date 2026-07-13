@@ -36,6 +36,17 @@ public class LoginModel : PageModel
     /// </summary>
     public string? SuccessMessage { get; set; }
 
+    /// <summary>
+    /// The RFID card ID scanned by the user.
+    /// </summary>
+    [BindProperty]
+    public string RfidCardId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether RFID login is enabled globally in the store settings.
+    /// </summary>
+    public bool EnableRfidLogin { get; set; }
+
     #endregion
 
     #region Handlers
@@ -51,6 +62,9 @@ public class LoginModel : PageModel
             return RedirectToPage("/Setup");
         }
 
+        StoreSettings settings = SettingsService.LoadSettings();
+        EnableRfidLogin = settings.EnableRfidLogin;
+
         if (TempData.TryGetValue("SuccessMessage", out var val) && val is string msg)
         {
             SuccessMessage = msg;
@@ -65,6 +79,33 @@ public class LoginModel : PageModel
     /// </summary>
     public async Task<IActionResult> OnPostAsync()
     {
+        StoreSettings settings = SettingsService.LoadSettings();
+        EnableRfidLogin = settings.EnableRfidLogin;
+
+        if (EnableRfidLogin && !string.IsNullOrWhiteSpace(RfidCardId))
+        {
+            Utils.RequestResult<string> loginResult = await AuthenticationService.LoginByRfidAsync(RfidCardId);
+
+            if (loginResult.Type != Utils.Result.Success)
+            {
+                ErrorMessage = loginResult.Message;
+                return Page();
+            }
+
+            string? staffId = loginResult.Data;
+            if (staffId is not null)
+            {
+                Response.Cookies.Append("ActiveStaffId", staffId, new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddDays(7),
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.Strict
+                });
+            }
+
+            return RedirectToPage("/Index");
+        }
+
         if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
         {
             ErrorMessage = "Username and Password are required fields.";
@@ -76,18 +117,18 @@ public class LoginModel : PageModel
             Password: Password
         );
 
-        Utils.RequestResult<string> loginResult = await AuthenticationService.LoginAsync(loginRequest);
+        Utils.RequestResult<string> loginResultNormal = await AuthenticationService.LoginAsync(loginRequest);
 
-        if (loginResult.Type != Utils.Result.Success)
+        if (loginResultNormal.Type != Utils.Result.Success)
         {
-            ErrorMessage = loginResult.Message;
+            ErrorMessage = loginResultNormal.Message;
             return Page();
         }
 
-        string? staffId = loginResult.Data;
-        if (staffId is not null)
+        string? staffIdNormal = loginResultNormal.Data;
+        if (staffIdNormal is not null)
         {
-            Response.Cookies.Append("ActiveStaffId", staffId, new CookieOptions
+            Response.Cookies.Append("ActiveStaffId", staffIdNormal, new CookieOptions
             {
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 HttpOnly = true,

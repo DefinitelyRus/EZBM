@@ -22,6 +22,7 @@ internal class Program
 
     static async Task Main(string[] args)
     {
+        DbManager.ConfigureFromArgs(args);
         Console.WriteLine("Starting Endpoint Tests...");
         resultsBuilder.AppendLine("# EZBM Endpoints Test Results");
         resultsBuilder.AppendLine();
@@ -449,7 +450,7 @@ internal class Program
             SalePrice: 120f,
             Name: "Burger Combo",
             Description: "Burger with regular fries and drink",
-            Tags: new() { Item.Tag.Food },
+            Tags: new() { "Food" },
             Quantity: 10f,
             ExpirationDate: null,
             Cost: 80f,
@@ -669,7 +670,7 @@ internal class Program
             SalePrice: 120f,
             Name: "Burger Combo",
             Description: "Burger with regular fries and drink",
-            Tags: new() { Item.Tag.Food },
+            Tags: new() { "Food" },
             Quantity: 10f,
             ExpirationDate: null,
             Cost: 80f,

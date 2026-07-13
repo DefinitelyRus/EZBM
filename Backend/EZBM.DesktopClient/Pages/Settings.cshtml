@@ -1,32 +1,33 @@
 @page
 @model EZBM.DesktopClient.Pages.SettingsModel
+@using EZBM.DesktopClient.Helpers
 @{
-    ViewData["Title"] = "Store & User Settings";
+    ViewData["Title"] = "Settings";
+    bool hasAdminAccess = Model.IsAdmin;
 }
 
-<h2>Page 6: Settings Management</h2>
+<h2>Settings</h2>
 
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div style="background-color: #ffcccc; color: #cc0000; border: 1px solid #cc0000; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px;">
         <strong>Error:</strong> @Model.ErrorMessage
     </div>
 }
 
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div style="background-color: #ccffcc; color: #008800; border: 1px solid #008800; padding: 10px; margin-bottom: 20px;">
+    <div style="background-color: #f0fff4; color: #38a169; border: 1px solid #c6f6d5; padding: 12px; margin-bottom: 20px;">
         <strong>Success:</strong> @Model.SuccessMessage
     </div>
 }
 
-<!-- Tab Headers -->
-<div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
-    <button type="button" id="tabUserBtn" onclick="switchTab('user')" style="padding: 10px 15px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background-color: #eee;">
-        User Preferences
+<!-- Tab selectors -->
+<div style="display: flex; border-bottom: 1px solid #ccc; margin-bottom: 20px;">
+    <button type="button" id="tabUserBtn" onclick="switchTab('user')" style="padding: 10px 15px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; border-bottom: none; background-color: #eee;">
+        My Preferences
     </button>
-    
-    @if (Model.IsAdmin)
+    @if (hasAdminAccess)
     {
         <button type="button" id="tabBusinessBtn" onclick="switchTab('business')" style="padding: 10px 15px; font-weight: bold; cursor: pointer; border: 1px solid #ccc; background-color: #fff; border-bottom: 1px solid #fff;">
             Business & Policies
@@ -40,7 +41,7 @@
     
     <form method="post" asp-page-handler="SaveUserPreferences" style="margin-bottom: 30px;">
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">User UI Theme:</label>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Theme:</label>
             <select asp-for="UserTheme" style="width: 100%; padding: 5px; box-sizing: border-box;">
                 <option value="Light">Light Mode</option>
                 <option value="Dark">Dark Mode</option>
@@ -49,11 +50,16 @@
         </div>
 
         <div style="margin-bottom: 15px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date & Time Display Format:</label>
+            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Date and Time Format:</label>
             <select asp-for="DateFormat" style="width: 100%; padding: 5px; box-sizing: border-box;">
-                <option value="yyyy-MM-dd">YYYY-MM-DD (e.g. 2026-07-05)</option>
-                <option value="MM/dd/yyyy">MM/DD/YYYY (e.g. 07/05/2026)</option>
-                <option value="dd/MM/yyyy">DD/MM/YYYY (e.g. 05/07/2026)</option>
+                <option value="yyyy-MM-dd">YYYY-MM-DD (1999-12-31)</option>
+                <option value="MM/dd/yyyy">MM/DD/YYYY (12/31/1999)</option>
+                <option value="dd/MM/yyyy">DD/MM/YYYY (31/12/1999)</option>
+                <option value="MMMM dd, yyyy">December 31, 1999</option>
+                <option value="MMM. dd, yyyy">Dec. 31, 1999</option>
+                <option value="MMM. dd">Short date (Dec. 31)</option>
+                <option value="MM-dd">MM-DD (12-31)</option>
+                <option value="MM/dd">MM/DD (12/31)</option>
             </select>
         </div>
 
@@ -64,54 +70,105 @@
             </label>
         </div>
 
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Active Barcode Scanner Device:</label>
-            <input type="text" asp-for="BarcodeDevice" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
-            <small style="color: #666;">Provide local barcode reader HID profile tag.</small>
+        <div style="margin-bottom: 20px; background: #fff; padding: 15px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            <h4 style="margin-top:0; color: #2b6cb0;">Peripheral Hardware Configuration</h4>
+            
+            <!-- Barcode Scanner -->
+            <div style="margin-bottom: 15px; border-bottom: 1px solid #edf2f7; padding-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Barcode Scanner Device (WebHID):</label>
+                <div style="display: flex; gap: 8px;">
+                    <select asp-for="BarcodeDevice" id="BarcodeDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('barcode', this)">
+                        <option value="@Model.BarcodeDevice">@Model.BarcodeDevice</option>
+                    </select>
+                    <button type="button" onclick="requestHidDevice('barcode')" class="btn" style="padding: 6px 12px;">Select New Device</button>
+                </div>
+                <div id="barcode_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
+                    <strong>Status:</strong> <span id="barcode_status" style="color: red; font-weight: bold;">Disconnected</span> | 
+                    <strong>Name:</strong> <span id="barcode_name">-</span> | 
+                    <strong>VID:</strong> <span id="barcode_vid">-</span> | 
+                    <strong>PID:</strong> <span id="barcode_pid">-</span>
+                </div>
+            </div>
+
+            <!-- RFID Scanner -->
+            <div style="margin-bottom: 15px; border-bottom: 1px solid #edf2f7; padding-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">RFID Scanner Device (WebHID):</label>
+                <div style="display: flex; gap: 8px;">
+                    <select asp-for="RfidDevice" id="RfidDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('rfid', this)">
+                        <option value="@Model.RfidDevice">@Model.RfidDevice</option>
+                    </select>
+                    <button type="button" onclick="requestHidDevice('rfid')" class="btn" style="padding: 6px 12px;">Select New Device</button>
+                </div>
+                <div id="rfid_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
+                    <strong>Status:</strong> <span id="rfid_status" style="color: red; font-weight: bold;">Disconnected</span> | 
+                    <strong>Name:</strong> <span id="rfid_name">-</span> | 
+                    <strong>VID:</strong> <span id="rfid_vid">-</span> | 
+                    <strong>PID:</strong> <span id="rfid_pid">-</span>
+                </div>
+            </div>
+
+            <!-- Cash Register Trigger -->
+            <div style="margin-bottom: 5px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Cash Register Trigger Device (WebUSB):</label>
+                <div style="display: flex; gap: 8px;">
+                    <select asp-for="CashRegisterDevice" id="CashRegisterDeviceSelect" style="flex-grow: 1; padding: 6px; border: 1px solid #cbd5e0; border-radius: 4px;" onchange="onDeviceSelectChanged('cash', this)">
+                        <option value="@Model.CashRegisterDevice">@Model.CashRegisterDevice</option>
+                    </select>
+                    <button type="button" onclick="requestUsbDevice()" class="btn" style="padding: 6px 12px;">Select New Device</button>
+                </div>
+                <div id="cash_details" style="font-size: 0.85em; color: #4a5568; margin-top: 6px; display: none;">
+                    <strong>Status:</strong> <span id="cash_status" style="color: red; font-weight: bold;">Disconnected</span> | 
+                    <strong>Name:</strong> <span id="cash_name">-</span> | 
+                    <strong>VID:</strong> <span id="cash_vid">-</span> | 
+                    <strong>PID:</strong> <span id="cash_pid">-</span>
+                </div>
+            </div>
+            
+            <!-- Hardware scanner warning notes -->
+            <div style="font-size: 0.85em; color: #718096; margin-top: 15px; line-height: 1.5; border-top: 1px solid #edf2f7; padding-top: 10px;">
+                <p style="margin: 0 0 8px 0;"><strong>Note #1:</strong> Setting these devices here is not required for them to work! But, this prevents us from helping smoothing out your workflow. For example, you must first select the "Barcode" input field before scanning with your barcode scanner. Otherwise, the code might go somewhere it shouldn't. With these devices selected here, we can receive their inputs directly even when the field is not selected.</p>
+                <p style="margin: 0;"><strong>Note #2:</strong> These settings won't work on Firefox and Safari.</p>
+            </div>
         </div>
 
-        <button type="submit" style="background-color: green; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-            Save Preferences
-        </button>
+        <button type="submit" class="btn btn-primary">Save Preferences</button>
     </form>
 
-    <hr />
+    <hr style="margin: 25px 0; border: none; border-top: 1px solid #ccc;" />
 
-    <h3 style="margin-top: 20px;">Change Password</h3>
+    <h3>Update My Password</h3>
     <form method="post" asp-page-handler="ChangePassword">
-        <div style="margin-bottom: 10px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Current Password:</label>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Current Password:</label>
             <input type="password" name="CurrentPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
         </div>
-        <div style="margin-bottom: 10px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">New Password:</label>
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 4px;">New Password:</label>
             <input type="password" name="NewPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
         </div>
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; font-weight: bold; margin-bottom: 5px;">Confirm New Password:</label>
+        <div style="margin-bottom: 15px;">
+            <label style="display: block; font-weight: bold; margin-bottom: 4px;">Confirm New Password:</label>
             <input type="password" name="ConfirmPassword" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
         </div>
 
-        <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-            Change Password
-        </button>
+        <button type="submit" class="btn btn-secondary">Update Password</button>
     </form>
 </div>
 
-<!-- 2. Business & Policies Tab Pane -->
-@if (Model.IsAdmin)
+<!-- 2. Business Settings Tab Pane -->
+@if (hasAdminAccess)
 {
-    <div id="paneBusiness" style="display: none; max-width: 600px; border: 1px solid #000; padding: 20px; background-color: #fcfcfc; margin-bottom: 20px;">
-        <h3>Business configurations & Rules</h3>
+    <div id="paneBusiness" style="display: none; max-width: 650px; border: 1px solid #000; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;">
+        <h3>Global Store Configurations</h3>
         
-        <form method="post" asp-page-handler="SaveBusinessSettings" style="margin-bottom: 30px;">
+        <form method="post" asp-page-handler="SaveBusinessSettings">
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Name:</label>
                 <input type="text" asp-for="StoreName" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency Code:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Currency:</label>
                 <select asp-for="Currency" style="width: 100%; padding: 5px; box-sizing: border-box;">
                     <option value="PHP">PHP - Philippine Peso (₱)</option>
                     <option value="USD">USD - US Dollar ($)</option>
@@ -121,8 +178,8 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Threshold (% of target):</label>
-                <input type="number" step="1" min="1" max="100" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Low Stock Threshold:</label>
+                <input type="number" step="0.01" min="0.01" max="100" asp-for="LowStockThreshold" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
                 <small style="color: #666;">Warn on dashboard when items drop below this percent of target stock (e.g. 20%).</small>
             </div>
 
@@ -133,29 +190,35 @@
             </div>
 
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Grand Opening Date:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Store Opening Date:</label>
                 <input type="datetime-local" asp-for="StoreOpeningDate" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
 
-            <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Card Expiration Offsets (Days)</h4>
+            <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">RFID Access & Security</h4>
+            <div style="margin-bottom: 15px;">
+                <label style="font-weight: bold;">
+                    <input type="checkbox" asp-for="EnableRfidLogin" />
+                    Enable Employee Login via RFID Card
+                </label>
+            </div>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Staff Cards:</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Staff Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryStaff" required style="width: 100%; padding: 5px;" />
                 </div>
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">OneTime Cards:</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">One-Time Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryOneTime" required style="width: 100%; padding: 5px;" />
                 </div>
                 <div style="flex: 1;">
-                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Member Cards:</label>
+                    <label style="display: block; font-size: 0.85em; font-weight: bold;">Member Expiry (Days):</label>
                     <input type="number" asp-for="CardExpiryMember" required style="width: 100%; padding: 5px;" />
                 </div>
             </div>
 
             <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Backup Settings</h4>
             <div style="margin-bottom: 15px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Backup Target Path:</label>
+                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Backup Path:</label>
                 <input type="text" asp-for="BackupTargetPath" required style="width: 100%; padding: 5px; box-sizing: border-box;" />
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -179,69 +242,357 @@
                 </label>
             </div>
 
-            <button type="submit" style="background-color: blue; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-                Save Business Settings
-            </button>
-        </form>
-
-        <hr />
-
-        <h3 style="margin-top: 20px;">Database Backup & Sync</h3>
-        
-        <form method="post" asp-page-handler="TriggerBackup" style="display: inline-block; margin-right: 10px;">
-            <button type="submit" style="background-color: purple; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-                Trigger DB Backup
-            </button>
-        </form>
-
-        <form method="post" asp-page-handler="TriggerRestore" style="display: inline-block; margin-top: 15px;">
-            <div style="margin-bottom: 10px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 5px;">Available Backup Files:</label>
-                <select name="BackupFileToRestore" style="width: 100%; padding: 5px;">
-                    <option value="">-- Select a Backup File to Restore --</option>
-                    @foreach (var file in Model.AvailableBackups)
+            <h4 style="margin: 20px 0 10px 0; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Promo Codes Management</h4>
+            <table border="1" cellpadding="5" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;" id="promoCodesTable">
+                <thead>
+                    <tr style="background-color: #eee;">
+                        <th>Promo Code</th>
+                        <th>How much discount should be given? (e.g. 20% off)</th>
+                        <th>Expiration Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var promo in Model.PromoCodesList)
                     {
-                        <option value="@file">@System.IO.Path.GetFileName(file)</option>
+                        <tr>
+                            <td><input type="text" name="promo_code[]" value="@promo.Key" style="width:90%;" required /></td>
+                            <td><input type="number" min="0" max="100" name="promo_discount[]" value="@(promo.Value.DiscountPercentage > 1f ? (int)promo.Value.DiscountPercentage : (int)(promo.Value.DiscountPercentage * 100))" style="width:70%;" required />%</td>
+                            <td><input type="date" name="promo_expiry[]" value="@promo.Value.ExpirationDate.ToString("yyyy-MM-dd")" style="width:90%;" required /></td>
+                            <td><button type="button" class="btn btn-danger" onclick="removePromoCodeRow(this)">Remove</button></td>
+                        </tr>
                     }
-                </select>
-            </div>
-            <button type="submit" onclick="return confirm('WARNING: This will overwrite the current database. Proceed?');" style="background-color: darkred; color: white; border: none; padding: 10px 15px; font-weight: bold; cursor: pointer; border-radius: 3px;">
-                Restore Database
-            </button>
+                </tbody>
+            </table>
+            <button type="button" class="btn" style="margin-bottom: 20px;" onclick="addPromoCodeRow()">+ Add Promo Code Option</button>
+
+            <button type="submit" class="btn btn-primary" style="display: block; width: 100%;">Save Global Store Configs</button>
         </form>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ccc;" />
+
+        <h3>Manual Store Database Operations</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <form method="post" asp-page-handler="TriggerBackup" style="flex: 1;">
+                <button type="submit" class="btn btn-success" style="width: 100%;">Backup SQLite Database Now</button>
+            </form>
+        </div>
+
+        @if (Model.AvailableBackups.Count > 0)
+        {
+            <h4 style="margin-top: 20px;">Available Database Restore Points:</h4>
+            <form method="post" asp-page-handler="RestoreBackup">
+                <div style="margin-bottom: 12px; display: flex; gap: 10px;">
+                    <select name="BackupFileToRestore" required style="flex: 1; padding: 5px;">
+                        <option value="">-- Choose Backup File to Restore --</option>
+                        @foreach (var backup in Model.AvailableBackups)
+                        {
+                            <option value="@backup">@System.IO.Path.GetFileName(backup)</option>
+                        }
+                    </select>
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('WARNING: This will overwrite the current active store database. Proceed?')">Restore Backup</button>
+                </div>
+            </form>
+        }
     </div>
 }
 
-@section Scripts {
-    <script>
-        function switchTab(tab) {
-            var paneUser = document.getElementById("paneUser");
-            var paneBusiness = document.getElementById("paneBusiness");
-            var tabUserBtn = document.getElementById("tabUserBtn");
-            var tabBusinessBtn = document.getElementById("tabBusinessBtn");
+<script>
+    function switchTab(tab) {
+        var userBtn = document.getElementById("tabUserBtn");
+        var businessBtn = document.getElementById("tabBusinessBtn");
+        
+        var userPane = document.getElementById("paneUser");
+        var businessPane = document.getElementById("paneBusiness");
 
-            if (tab === 'user') {
-                paneUser.style.display = 'block';
-                if (paneBusiness) paneBusiness.style.display = 'none';
-                tabUserBtn.style.backgroundColor = '#eee';
-                tabUserBtn.style.borderBottom = '1px solid #ccc';
-                if (tabBusinessBtn) {
-                    tabBusinessBtn.style.backgroundColor = '#fff';
-                    tabBusinessBtn.style.borderBottom = '1px solid #fff';
+        if (tab === 'user') {
+            userBtn.style.backgroundColor = '#eee';
+            userBtn.style.borderBottom = 'none';
+            if (businessBtn) {
+                businessBtn.style.backgroundColor = '#fff';
+                businessBtn.style.borderBottom = '1px solid #ccc';
+            }
+            userPane.style.display = 'block';
+            if (businessPane) businessPane.style.display = 'none';
+        } else {
+            userBtn.style.backgroundColor = '#fff';
+            userBtn.style.borderBottom = '1px solid #ccc';
+            if (businessBtn) {
+                businessBtn.style.backgroundColor = '#eee';
+                businessBtn.style.borderBottom = 'none';
+            }
+            userPane.style.display = 'none';
+            if (businessPane) businessPane.style.display = 'block';
+        }
+    }
+
+    function addPromoCodeRow() {
+        var table = document.getElementById("promoCodesTable").getElementsByTagName("tbody")[0];
+        var row = table.insertRow();
+        
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        var cell3 = row.insertCell(2);
+        var cell4 = row.insertCell(3);
+
+        cell1.innerHTML = '<input type="text" name="promo_code[]" placeholder="NEWCODE" style="width:90%;" required />';
+        cell2.innerHTML = '<input type="number" min="0" max="100" name="promo_discount[]" value="10" style="width:70%;" required />%';
+        cell3.innerHTML = '<input type="date" name="promo_expiry[]" value="' + new Date(Date.now() + 86400000 * 30).toISOString().split('T')[0] + '" style="width:90%;" required />';
+        cell4.innerHTML = '<button type="button" class="btn btn-danger" onclick="removePromoCodeRow(this)">Remove</button>';
+    }
+
+    function removePromoCodeRow(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+
+    function onDeviceSelectChanged(prefix, select) {
+        const val = select.value;
+        if (!val || val === "None") {
+            updateHidOrUsbDetailsMock(prefix, null);
+            return;
+        }
+        if (val === "Default Keyboard HID" || val === "Default USB Relay Trigger" || val.includes("Feature not supported")) {
+            updateHidOrUsbDetailsMock(prefix, { productName: val, vendorId: 0, productId: 0, connected: true });
+            return;
+        }
+
+        // Parse VID/PID
+        const match = val.match(/VID:\s*0x([0-9A-Fa-f]+),\s*PID:\s*0x([0-9A-Fa-f]+)/);
+        if (match) {
+            const mockDev = {
+                vendorId: parseInt(match[1], 16),
+                productId: parseInt(match[2], 16),
+                productName: val.replace(/\s*\[VID:.*?\]\s*$/, ''),
+                connected: true
+            };
+            updateHidOrUsbDetailsMock(prefix, mockDev);
+        } else {
+            updateHidOrUsbDetailsMock(prefix, null);
+        }
+    }
+
+    function updateHidOrUsbDetailsMock(prefix, device) {
+        const detailsDiv = document.getElementById(prefix + '_details');
+        const statusEl = document.getElementById(prefix + '_status');
+        const nameEl = document.getElementById(prefix + '_name');
+        const vidEl = document.getElementById(prefix + '_vid');
+        const pidEl = document.getElementById(prefix + '_pid');
+
+        if (!detailsDiv) return;
+
+        if (device) {
+            detailsDiv.style.display = 'block';
+            statusEl.textContent = device.connected ? 'Connected' : 'Disconnected';
+            statusEl.style.color = device.connected ? 'green' : 'red';
+            nameEl.textContent = device.productName || 'Unknown Device';
+            vidEl.textContent = '0x' + device.vendorId.toString(16).toUpperCase().padStart(4, '0');
+            pidEl.textContent = '0x' + device.productId.toString(16).toUpperCase().padStart(4, '0');
+        } else {
+            detailsDiv.style.display = 'block';
+            statusEl.textContent = 'Disconnected';
+            statusEl.style.color = 'red';
+            nameEl.textContent = '-';
+            vidEl.textContent = '-';
+            pidEl.textContent = '-';
+        }
+    }
+
+    async function requestHidDevice(type) {
+        if (!navigator.hid) {
+            alert("WebHID API is not supported in this browser.");
+            return;
+        }
+        try {
+            const devices = await navigator.hid.requestDevice({ filters: [] });
+            if (devices && devices.length > 0) {
+                const device = devices[0];
+                const deviceString = `${device.productName || 'Unknown HID Device'} [VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                
+                const selectId = type === 'barcode' ? 'BarcodeDeviceSelect' : 'RfidDeviceSelect';
+                const select = document.getElementById(selectId);
+                
+                // Add to select if not present
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === deviceString) {
+                        exists = true;
+                        select.options[i].selected = true;
+                        break;
+                    }
                 }
-            } else {
-                paneUser.style.display = 'none';
-                if (paneBusiness) paneBusiness.style.display = 'block';
-                tabUserBtn.style.backgroundColor = '#fff';
-                tabUserBtn.style.borderBottom = '1px solid #fff';
-                if (tabBusinessBtn) {
-                    tabBusinessBtn.style.backgroundColor = '#eee';
-                    tabBusinessBtn.style.borderBottom = '1px solid #ccc';
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = deviceString;
+                    opt.textContent = deviceString;
+                    opt.selected = true;
+                    select.appendChild(opt);
+                }
+                onDeviceSelectChanged(type, select);
+            }
+        } catch (err) {
+            alert("Failed to get HID device: " + err.message);
+        }
+    }
+
+    async function requestUsbDevice() {
+        if (!navigator.usb) {
+            alert("WebUSB API is not supported in this browser.");
+            return;
+        }
+        try {
+            const device = await navigator.usb.requestDevice({ filters: [] });
+            if (device) {
+                const deviceString = `${device.productName || 'Unknown USB Device'} [VID: 0x${device.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${device.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                
+                const select = document.getElementById('CashRegisterDeviceSelect');
+                let exists = false;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === deviceString) {
+                        exists = true;
+                        select.options[i].selected = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement('option');
+                    opt.value = deviceString;
+                    opt.textContent = deviceString;
+                    opt.selected = true;
+                    select.appendChild(opt);
+                }
+                onDeviceSelectChanged('cash', select);
+            }
+        } catch (err) {
+            alert("Failed to get USB device: " + err.message);
+        }
+    }
+
+    async function initializeDevices() {
+        const barcodeSelect = document.getElementById('BarcodeDeviceSelect');
+        const rfidSelect = document.getElementById('RfidDeviceSelect');
+        const cashSelect = document.getElementById('CashRegisterDeviceSelect');
+
+        const savedBarcode = barcodeSelect.value;
+        const savedRfid = rfidSelect.value;
+        const savedCash = cashSelect.value;
+
+        barcodeSelect.innerHTML = "";
+        rfidSelect.innerHTML = "";
+        cashSelect.innerHTML = "";
+
+        if (!navigator.hid) {
+            const opt1 = document.createElement('option');
+            opt1.value = "Feature not supported on this browser.";
+            opt1.textContent = "Feature not supported on this browser.";
+            opt1.selected = true;
+            barcodeSelect.appendChild(opt1);
+            barcodeSelect.disabled = true;
+
+            const opt2 = document.createElement('option');
+            opt2.value = "Feature not supported on this browser.";
+            opt2.textContent = "Feature not supported on this browser.";
+            opt2.selected = true;
+            rfidSelect.appendChild(opt2);
+            rfidSelect.disabled = true;
+
+            document.querySelectorAll("button[onclick^='requestHidDevice']").forEach(btn => btn.disabled = true);
+        } else {
+            const defaults = ["None"];
+            defaults.forEach(d => {
+                const optB = document.createElement('option'); optB.value = optB.textContent = d;
+                const optR = document.createElement('option'); optR.value = optR.textContent = d;
+                barcodeSelect.appendChild(optB);
+                rfidSelect.appendChild(optR);
+            });
+
+            try {
+                const hidDevices = await navigator.hid.getDevices();
+                hidDevices.forEach(d => {
+                    const deviceString = `${d.productName || 'Unknown HID Device'} [VID: 0x${d.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${d.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                    const optB = document.createElement('option'); optB.value = optB.textContent = deviceString;
+                    const optR = document.createElement('option'); optR.value = optR.textContent = deviceString;
+                    barcodeSelect.appendChild(optB);
+                    rfidSelect.appendChild(optR);
+                });
+            } catch (e) { console.error(e); }
+
+            if (savedBarcode) {
+                let found = false;
+                for (let i = 0; i < barcodeSelect.options.length; i++) {
+                    if (barcodeSelect.options[i].value === savedBarcode) {
+                        barcodeSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedBarcode; opt.selected = true;
+                    barcodeSelect.appendChild(opt);
                 }
             }
+            if (savedRfid) {
+                let found = false;
+                for (let i = 0; i < rfidSelect.options.length; i++) {
+                    if (rfidSelect.options[i].value === savedRfid) {
+                        rfidSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedRfid; opt.selected = true;
+                    rfidSelect.appendChild(opt);
+                }
+            }
+
+            onDeviceSelectChanged('barcode', barcodeSelect);
+            onDeviceSelectChanged('rfid', rfidSelect);
         }
-        
-        // Default to user tab active
-        switchTab('user');
-    </script>
-}
+
+        if (!navigator.usb) {
+            const opt = document.createElement('option');
+            opt.value = "Feature not supported on this browser.";
+            opt.textContent = "Feature not supported on this browser.";
+            opt.selected = true;
+            cashSelect.appendChild(opt);
+            cashSelect.disabled = true;
+            document.querySelectorAll("button[onclick^='requestUsbDevice']").forEach(btn => btn.disabled = true);
+        } else {
+            const defaults = ["None"];
+            defaults.forEach(d => {
+                const opt = document.createElement('option'); opt.value = opt.textContent = d;
+                cashSelect.appendChild(opt);
+            });
+
+            try {
+                const usbDevices = await navigator.usb.getDevices();
+                usbDevices.forEach(d => {
+                    const deviceString = `${d.productName || 'Unknown USB Device'} [VID: 0x${d.vendorId.toString(16).toUpperCase().padStart(4, '0')}, PID: 0x${d.productId.toString(16).toUpperCase().padStart(4, '0')}]`;
+                    const opt = document.createElement('option'); opt.value = opt.textContent = deviceString;
+                    cashSelect.appendChild(opt);
+                });
+            } catch (e) { console.error(e); }
+
+            if (savedCash) {
+                let found = false;
+                for (let i = 0; i < cashSelect.options.length; i++) {
+                    if (cashSelect.options[i].value === savedCash) {
+                        cashSelect.options[i].selected = true;
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    const opt = document.createElement('option'); opt.value = opt.textContent = savedCash; opt.selected = true;
+                    cashSelect.appendChild(opt);
+                }
+            }
+            onDeviceSelectChanged('cash', cashSelect);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeDevices();
+    });
+</script>

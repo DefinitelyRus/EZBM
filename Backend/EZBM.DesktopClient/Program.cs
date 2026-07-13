@@ -9,12 +9,10 @@ builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core
 
 WebApplication app = builder.Build();
 
+DbManager.ConfigureFromArgs(args);
 DbManager.Initialize();
 
-using (AppDbContext context = new())
-{
-    DataSeeder.Seed();
-}
+DataSeeder.Seed();
 
 if (!app.Environment.IsDevelopment())
 {

@@ -36,6 +36,25 @@ public class IndexModel : PageModel
 
     #region Handlers
 
+    /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
     public async Task OnGetAsync()
     {
         using AppDbContext context = new();
@@ -108,7 +127,7 @@ public class IndexModel : PageModel
 
         // 7. Low Stock Alerts (TPH Check)
         LowStockAlerts = await context.Product
-            .Where(p => p.Quantity < p.TargetStock * p.LowStockThresholdPercentage)
+            .Where(p => p.Quantity != -1f && p.Quantity < p.TargetStock * p.LowStockThresholdPercentage)
             .Select(p => new LowStockAlertDto(
                 Id: p.Id,
                 Name: p.Name,
@@ -120,9 +139,20 @@ public class IndexModel : PageModel
 
         RecentSales = await context.Sale
             .Include(s => s.Staff)
+            .Include(s => s.SaleEntries)
+                .ThenInclude(e => e.Item)
             .OrderByDescending(s => s.Timestamp)
             .Take(10)
             .ToListAsync();
+    }
+
+    public async Task<IActionResult> OnGetGetShiftCashAsync()
+    {
+        var activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+        if (activeStaff == null) return new JsonResult(new { success = false, message = "Not logged in" });
+
+        float expectedCash = await StateHelper.CalculateExpectedShiftCashAsync(activeStaff.Id);
+        return new JsonResult(new { success = true, expectedCash });
     }
 
     /// <summary>
@@ -130,7 +160,10 @@ public class IndexModel : PageModel
     /// </summary>
     public async Task<IActionResult> OnPostToggleAttendanceAsync(
         ulong staffId,
-        string? returnUrl
+        string? returnUrl,
+        float? expectedCash,
+        float? actualCash,
+        string? reconciliationNotes
     )
     {
         bool clockedIn = await StateHelper.IsClockedInAsync(staffId);
@@ -141,7 +174,35 @@ public class IndexModel : PageModel
             ActionType: actionType
         );
 
-        await StaffService.LogAttendanceAsync(request);
+        var result = await StaffService.LogAttendanceAsync(request);
+
+        if (result.Type == Utils.Result.Success && clockedIn)
+        {
+            // Log discrepancy in ActionLog!
+            using AppDbContext db = new();
+            var staff = await db.Staff.FindAsync(staffId);
+            string staffName = staff != null ? $"{staff.FirstName} {staff.LastName}" : "Unknown Staff";
+            
+            float expectedVal = expectedCash ?? 0f;
+            float actualVal = actualCash ?? 0f;
+            float discrepancy = actualVal - expectedVal;
+            
+            string details = $"Shift reconciliation for {staffName} ({staff?.Username}). " +
+                             $"Expected Cash: {StateHelper.FormatCurrency(expectedVal)}, " +
+                             $"Actual Cash: {StateHelper.FormatCurrency(actualVal)}, " +
+                             $"Discrepancy: {StateHelper.FormatCurrency(discrepancy)}. " +
+                             $"Notes: {(string.IsNullOrEmpty(reconciliationNotes) ? "None" : reconciliationNotes)}";
+
+            ActionLog log = new(
+                id: Utils.GenerateEntityId(),
+                actionType: "Reconciliation",
+                operatorUsername: staff?.Username ?? "System",
+                details: details,
+                timestamp: DateTime.UtcNow
+            );
+            db.ActionLog.Add(log);
+            await db.SaveChangesAsync();
+        }
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             return Redirect(returnUrl);

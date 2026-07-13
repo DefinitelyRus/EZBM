@@ -4,9 +4,8 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
 
 ## Structure
 
-* The `Helpers/` folder provides core helper tools:
-  * `DataSeeder.cs` seeds exactly 10 mock records for all entities if the database is empty on startup.
-  * `StateHelper.cs` handles operator authentication sessions.
+* The `Helpers/` folder provides helper tools:
+  * `StateHelper.cs` handles operator authentication sessions and caching preferences.
 * The `Pages/` folder holds the Razor Pages views for each module:
   * `Login.cshtml` checks credentials to manage user login sessions.
   * `Index.cshtml` displays the main dashboard with business summary cards.
@@ -22,7 +21,7 @@ This is an ASP.NET Core Razor Pages web application serving as an integrated tes
 On application startup, the entry point performs the following operations:
 
 1. Automatically runs `DbManager.Initialize()` to ensure the SQLite schema is active.
-2. Invokes `DataSeeder.Seed()` to populate the database with exactly 10 distinct mock records for each entity if they are not already present.
+2. Invokes `DataSeeder.Seed()` (from `EZBM.Core`) to populate the database with randomized mock records if it is empty.
 
 ### Default Test Credentials
 
@@ -30,6 +29,7 @@ For testing and verification purposes, the database is seeded with a default tes
 
 * **Username:** `teto`
 * **Password:** `teto41`
+* **RFID Card ID:** `2853591044`
 
 ## How to Run
 
@@ -40,3 +40,17 @@ dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj
 ```
 
 Once running, open a web browser and navigate to the local host address printed in the terminal (typically `http://localhost:5000` or `https://localhost:5001`).
+
+### Running with Test Data Flags
+
+* **`-t` or `--use_test_data`:** Uses the separate `test_data.db` file instead of production database.
+
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj -- --use_test_data
+  ```
+
+* **`-g` or `--generate_test_data`:** Re-seeds and populates fresh randomized test data under `test_data.db`.
+
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopClient/EZBM.DesktopClient.csproj -- --generate_test_data
+  ```

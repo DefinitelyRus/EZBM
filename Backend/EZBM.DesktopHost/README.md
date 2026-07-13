@@ -80,6 +80,22 @@ dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj
 The server runs on HTTP/HTTPS local host ports defined in `appsettings.json` and `Properties/launchSettings.json`.
 You can access the auto-generated Swagger/OpenAPI documentation (in development mode) at `http://localhost:<port>/openapi/v1.json` or by examining the mapped endpoints list in `Program.cs`.
 
+### Running with Test Data Flags
+
+The application supports command line flags to load or generate randomized test data:
+
+* **`-t` or `--use_test_data`:** Uses the separate `test_data.db` file instead of production database.
+
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --use_test_data
+  ```
+
+* **`-g` or `--generate_test_data`:** Re-seeds and populates fresh randomized test data under `test_data.db`.
+
+  ```bash
+  dotnet run --project Backend/EZBM.DesktopHost/EZBM.DesktopHost.csproj -- --generate_test_data
+  ```
+
 ## How to Consume the API
 
 The frontend consumes these endpoints by sending standard HTTP requests to `localhost`.
@@ -225,7 +241,9 @@ Searches for items matching query parameters.
     "unitOfMeasurement": "Count",
     "minExpirationDate": "2026-01-01T00:00:00Z",
     "maxExpirationDate": "2026-12-31T23:59:59Z",
-    "tags": ["Food"]
+    "tags": ["Food"],
+    "brand": "Coca-Cola",
+    "barcode": "4801234567890"
   }
   ```
 
@@ -249,7 +267,12 @@ Adds a new product or service.
     "unitOfMeasurement": "Count",
     "expirationDate": "2026-10-15T00:00:00Z",
     "tags": ["Food"],
-    "imageUrl": "http://example.com/noodles.png"
+    "imageUrl": "http://example.com/noodles.png",
+    "itemType": "Product",
+    "barcode": "4801234567890",
+    "targetStock": 50.0,
+    "lowStockThresholdPercentage": 0.20,
+    "brand": "NoodleBrand"
   }
   ```
 
@@ -386,7 +409,8 @@ Processes checkout for an order. Supports single payments, split/mixed payments,
         "amount": 60.0
       }
     ],
-    "promoCode": "WELCOME10"
+    "promoCode": "WELCOME10",
+    "customerId": 5
   }
   ```
 
@@ -427,7 +451,8 @@ Searches for sale records.
     "staffId": 1,
     "paymentMethod": "Cash",
     "minAmount": 50.0,
-    "maxAmount": 500.0
+    "maxAmount": 500.0,
+    "customerId": 5
   }
   ```
 
@@ -537,7 +562,12 @@ Adds a new employee profile.
     "phoneNumber": "09123456789",
     "position": "Cashier",
     "payFrequency": "Daily", // Hourly, Daily, Weekly, Biweekly, Monthly, Invalid
-    "payRate": 150.0
+    "payRate": 150.0,
+    "rfidCardId": "RFID-123456",
+    "permissions": ["OpenRegister", "ApplyDiscount"],
+    "permissionsAfterExpiry": ["ClockIn"],
+    "expirationDate": "2027-12-31T23:59:59Z",
+    "roleIds": [1, 2]
   }
   ```
 
@@ -588,7 +618,12 @@ Updates an employee's details.
     "id": 1,
     "username": "teto_new",
     "position": "Senior Cashier",
-    "payRate": 180.0
+    "payRate": 180.0,
+    "rfidCardId": "RFID-123456-NEW",
+    "permissions": ["OpenRegister", "ApplyDiscount", "ManageStaff"],
+    "permissionsAfterExpiry": ["ClockIn"],
+    "expirationDate": "2028-12-31T23:59:59Z",
+    "roleIds": [1, 3]
   }
   ```
 
@@ -788,6 +823,249 @@ Deletes a payroll record.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
+### Customer Profiles
+
+#### `POST /api/customers/create`
+
+Adds a new customer profile.
+
+* **Request Body:**
+
+  ```json
+  {
+    "firstName": "Teto",
+    "lastName": "Kasane",
+    "email": "teto@example.com",
+    "phoneNumber": "09123456789",
+    "rfidCardId": "RFID-MEMBER-123",
+    "permissions": ["DiscountEligible"],
+    "permissionsAfterExpiry": [],
+    "expirationDate": "2027-12-31T23:59:59Z"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the newly created customer object.
+
+#### `POST /api/customers/get`
+
+Retrieves details of a customer by ID.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the customer profile object.
+
+#### `POST /api/customers/find`
+
+Searches for customer profiles.
+
+* **Request Body:** (all fields are optional)
+
+  ```json
+  {
+    "id": 1,
+    "firstName": "Teto",
+    "lastName": "Kasane",
+    "phoneNumber": "09123456789",
+    "email": "teto@example.com",
+    "rfidCardId": "RFID-MEMBER-123"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns an array of matching customer profiles.
+
+#### `POST /api/customers/update`
+
+Updates a customer's details.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "firstName": "Teto New",
+    "email": "tetonew@example.com"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns `{"success": true}`.
+
+#### `POST /api/customers/delete`
+
+Deletes a customer profile.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns `{"success": true}`.
+
+### Permissions Roles
+
+#### `POST /api/roles/create`
+
+Creates a new permissions role.
+
+* **Request Body:**
+
+  ```json
+  {
+    "name": "Cashier",
+    "permissionsJson": "{\"ApplyDiscount\":1,\"OpenRegister\":1}"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the newly created role object.
+
+#### `POST /api/roles/get`
+
+Retrieves role details by ID.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the role object.
+
+#### `POST /api/roles/find`
+
+Searches for roles.
+
+* **Request Body:** (all fields are optional)
+
+  ```json
+  {
+    "id": 1,
+    "name": "Cashier"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns an array of matching role objects.
+
+#### `POST /api/roles/update`
+
+Updates a role's configurations.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "name": "Senior Cashier",
+    "permissionsJson": "{\"ApplyDiscount\":1,\"OpenRegister\":1,\"Refund\":1}"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns `{"success": true}`.
+
+#### `POST /api/roles/delete`
+
+Deletes a permissions role.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns `{"success": true}`.
+
+### Staff Adjustments
+
+#### `POST /api/staff/adjustments/create`
+
+Adds a payroll adjustment (bonus or salary advance) for a staff member.
+
+* **Request Body:**
+
+  ```json
+  {
+    "staffId": 1,
+    "adjustmentType": "Bonus",
+    "amount": 250.0,
+    "deductFromCurrentPayroll": false,
+    "isPaid": false,
+    "notes": "Excellent cashier performance bonus"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the newly created staff adjustment object.
+
+#### `POST /api/staff/adjustments/get`
+
+Retrieves details of a staff adjustment.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns the staff adjustment object.
+
+#### `POST /api/staff/adjustments/find`
+
+Searches for staff payroll adjustments.
+
+* **Request Body:** (all fields are optional)
+
+  ```json
+  {
+    "id": 1,
+    "staffId": 1,
+    "adjustmentType": "Bonus",
+    "deductFromCurrentPayroll": false,
+    "isPaid": false
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns an array of matching staff adjustment records.
+
+#### `POST /api/staff/adjustments/delete`
+
+Deletes a staff payroll adjustment.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Returns `{"success": true}`.
+
 ### Action Audit Logs
 
 #### `GET /api/logs`
@@ -800,10 +1078,9 @@ Retrieves all system operational logs and audit traces sorted by most recent.
   [
     {
       "id": 1,
-      "username": "teto",
-      "action": "Updated",
-      "entityName": "Item",
-      "entityId": 1,
+      "actionType": "Edit",
+      "operatorUsername": "teto",
+      "details": "Edit on Item (ID: 1). Changes: Name: 'Coke' -> 'Coca-Cola'",
       "timestamp": "2026-07-05T14:30:00Z"
     }
   ]
@@ -1004,6 +1281,38 @@ Looks up a specific catalog product or service by its barcode.
 
 * **Error Response (404 Not Found):**
   * Returns `{"error": "Item with barcode '{code}' not found."}` if barcode does not match.
+
+### Static Enums & Tags Metadata
+
+#### `GET /api/enums`
+
+Retrieves all static lists and enum values in the system in a single call.
+
+* **Success Response (200 OK):**
+
+  ```json
+  {
+    "units": ["Count", "Milligrams", "Grams", "Kilograms", "Ounces", "Pounds", "Milliliters", "Liters", "Gallons", "Unlimited"],
+    "tags": ["Food", "Hygiene", "Consumable", "Reusable"],
+    "accessCardTypes": ["None", "Staff", "OneTime", "Member"],
+    "payFrequencies": ["Hourly", "Daily", "Weekly", "Biweekly", "Monthly", "Invalid"],
+    "stockTransactionTypes": ["NewStock", "Sale", "Consumed", "Damaged_Lost_Expired", "Correction_Sum", "Correction_Set"],
+    "transactionTypes": ["Income", "Expense", "Correction"],
+    "paymentMethods": ["Cash", "EWallet", "Savings", "Credit", "Mixed", "Other"]
+  }
+  ```
+
+#### Individual Enum Endpoints
+
+You can also fetch each list individually via standard `GET` requests:
+
+* `GET /api/enums/units` - Returns units of measurement array.
+* `GET /api/enums/tags` - Returns default tags array.
+* `GET /api/enums/access-cards` - Returns access card types array.
+* `GET /api/enums/frequencies` - Returns pay frequency types array.
+* `GET /api/enums/stock-transaction-types` - Returns stock transaction types array.
+* `GET /api/enums/transaction-types` - Returns transaction types array.
+* `GET /api/enums/payment-methods` - Returns payment methods array.
 
 ### Grid Pagination & Sorting
 

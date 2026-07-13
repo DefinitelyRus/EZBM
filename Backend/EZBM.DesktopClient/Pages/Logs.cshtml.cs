@@ -2,6 +2,7 @@ using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
 using EZBM.Core.Data;
+using EZBM.DesktopClient.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,27 @@ public class LogsModel : PageModel
     #region Handlers
 
     /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
+    public List<Transaction> TransactionLedger { get; set; } = new();
+
+    /// <summary>
     /// Handles GET request to fetch logs and staff options.
     /// </summary>
     public async Task OnGetAsync(
@@ -74,26 +96,47 @@ public class LogsModel : PageModel
     {
         if (!string.IsNullOrEmpty(tab))
             ActiveTab = tab.ToLower();
+        else
+            ActiveTab = "attendance";
 
         using AppDbContext context = new();
 
-        // Load attendance
-        Utils.RequestResult<List<Attendance>> attendanceResult = await StaffService.FindAttendanceAsync(null!);
-        AttendanceLogs = attendanceResult.Data ?? new List<Attendance>();
+        if (ActiveTab == "attendance")
+        {
+            // Load attendance
+            Utils.RequestResult<List<Attendance>> attendanceResult = await StaffService.FindAttendanceAsync(null!);
+            AttendanceLogs = attendanceResult.Data ?? new List<Attendance>();
 
-        // Load payroll
-        Utils.RequestResult<List<Payroll>> payrollResult = await StaffService.FindPayrollAsync(null!);
-        PayrollLogs = payrollResult.Data ?? new List<Payroll>();
+            // Load staff for dropdowns
+            Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
+            StaffList = staffResult.Data ?? new List<Staff>();
+        }
+        else if (ActiveTab == "ledger")
+        {
+            // Load transactions for Ledger
+            TransactionLedger = await context.Transaction
+                .Include(t => t.Staff)
+                .OrderByDescending(t => t.Timestamp)
+                .ToListAsync();
+        }
+        else if (ActiveTab == "compensation")
+        {
+            // Load payroll
+            Utils.RequestResult<List<Payroll>> payrollResult = await StaffService.FindPayrollAsync(null!);
+            PayrollLogs = payrollResult.Data ?? new List<Payroll>();
 
-        // Load adjustments
-        StaffAdjustments = await context.StaffAdjustment.OrderByDescending(a => a.Timestamp).ToListAsync();
+            // Load adjustments
+            StaffAdjustments = await context.StaffAdjustment.OrderByDescending(a => a.Timestamp).ToListAsync();
 
-        // Load staff for dropdowns
-        Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
-        StaffList = staffResult.Data ?? new List<Staff>();
-
-        // Load action logs
-        ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
+            // Load staff for dropdowns
+            Utils.RequestResult<List<Staff>> staffResult = await StaffService.FindStaffAsync(null!);
+            StaffList = staffResult.Data ?? new List<Staff>();
+        }
+        else if (ActiveTab == "actions")
+        {
+            // Load action logs
+            ActionLogs = await context.ActionLog.OrderByDescending(l => l.Timestamp).ToListAsync();
+        }
     }
 
     /// <summary>
@@ -121,6 +164,12 @@ public class LogsModel : PageModel
         return RedirectToPage("/Logs", new { tab = "attendance" });
     }
 
+    public async Task<IActionResult> OnGetGetShiftCashAsync(ulong staffId)
+    {
+        float expectedCash = await StateHelper.CalculateExpectedShiftCashAsync(staffId);
+        return new JsonResult(new { success = true, expectedCash });
+    }
+
     /// <summary>
     /// Handles manual creation of payroll logs.
     /// </summary>
@@ -139,19 +188,19 @@ public class LogsModel : PageModel
         if (totalHours < 0f)
         {
             ErrorMessage = "Total hours cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         if (grossAmount < 0f)
         {
             ErrorMessage = "Gross amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         if (netAmount < 0f)
         {
             ErrorMessage = "Net paid amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "payroll" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         CreatePayrollRequest request = new(
@@ -173,7 +222,7 @@ public class LogsModel : PageModel
         else
             ErrorMessage = result.Message;
 
-        return RedirectToPage("/Logs", new { tab = "payroll" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     /// <summary>
@@ -209,7 +258,7 @@ public class LogsModel : PageModel
         else
             ErrorMessage = result.Message;
 
-        return RedirectToPage("/Logs", new { tab = "payroll" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     /// <summary>
@@ -251,7 +300,7 @@ public class LogsModel : PageModel
         if (amount < 0f)
         {
             ErrorMessage = "Adjustment amount cannot be negative.";
-            return RedirectToPage("/Logs", new { tab = "adjustments" });
+            return RedirectToPage("/Logs", new { tab = "compensation" });
         }
 
         try
@@ -277,7 +326,7 @@ public class LogsModel : PageModel
             ErrorMessage = $"Failed to log adjustment: {ex.Message}";
         }
 
-        return RedirectToPage("/Logs", new { tab = "adjustments" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
     }
 
     public async Task<IActionResult> OnPostDeleteAdjustmentAsync(
@@ -304,7 +353,71 @@ public class LogsModel : PageModel
             ErrorMessage = $"Failed to delete adjustment: {ex.Message}";
         }
 
-        return RedirectToPage("/Logs", new { tab = "adjustments" });
+        return RedirectToPage("/Logs", new { tab = "compensation" });
+    }
+
+    public async Task<IActionResult> OnPostSupervisorClockOutAsync(
+        ulong attendanceId,
+        string supervisorUsername,
+        string supervisorPassword,
+        float expectedCash,
+        float actualCash,
+        string? reconciliationNotes
+    )
+    {
+        LoginRequest loginRequest = new(
+            Username: supervisorUsername,
+            Password: supervisorPassword
+        );
+        var authResult = await AuthenticationService.LoginAsync(loginRequest);
+        if (authResult.Type != Utils.Result.Success || authResult.Data is null)
+        {
+            ErrorMessage = "Authentication failed: " + authResult.Message;
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        ulong supervisorId = ulong.Parse(authResult.Data);
+        using AppDbContext context = new();
+        var supervisor = await context.Staff.FindAsync(supervisorId);
+        if (supervisor == null || (supervisor.Position != "Admin" && supervisor.Position != "Supervisor"))
+        {
+            ErrorMessage = "Unauthorized: Only Admin or Supervisor roles can force clock-out other employees.";
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        var attendance = await context.Attendance
+            .Include(a => a.Staff)
+            .FirstOrDefaultAsync(a => a.Id == attendanceId);
+
+        if (attendance == null || attendance.TimeOut != null)
+        {
+            ErrorMessage = "Attendance record not found or already clocked out.";
+            return RedirectToPage("/Logs", new { tab = "attendance" });
+        }
+
+        attendance.TimeOut = DateTime.UtcNow;
+        await context.SaveChangesAsync();
+
+        float discrepancy = actualCash - expectedCash;
+        string details = $"SUPERVISOR FORCE CLOCK-OUT for {attendance.Staff.FirstName} {attendance.Staff.LastName} ({attendance.Staff.Username}) " +
+                         $"by supervisor {supervisor.FirstName} {supervisor.LastName}. " +
+                         $"Expected Cash: {StateHelper.FormatCurrency(expectedCash)}, " +
+                         $"Actual Cash: {StateHelper.FormatCurrency(actualCash)}, " +
+                         $"Discrepancy: {StateHelper.FormatCurrency(discrepancy)}. " +
+                         $"Notes: {(string.IsNullOrEmpty(reconciliationNotes) ? "None" : reconciliationNotes)}";
+
+        ActionLog log = new(
+            id: Utils.GenerateEntityId(),
+            actionType: "Reconciliation",
+            operatorUsername: supervisor.Username,
+            details: details,
+            timestamp: DateTime.UtcNow
+        );
+        context.ActionLog.Add(log);
+        await context.SaveChangesAsync();
+
+        SuccessMessage = $"Force clocked out {attendance.Staff.FirstName} successfully.";
+        return RedirectToPage("/Logs", new { tab = "attendance" });
     }
 
     #endregion

@@ -33,15 +33,16 @@ public class Product : Item
         float? price = null,
         string? name = null,
         string? description = null,
-        List<Tag>? tags = null,
+        List<string>? tags = null,
         float quantity = 0,
         DateTime? expirationDate = null,
         float? cost = null,
         string? imageUrl = null,
         string? barcode = null,
         float targetStock = 0,
-        float lowStockThresholdPercentage = 0.20f)
-        : base(id, unitOfMeasurement, isForSale, price, name, description, tags, quantity, expirationDate, cost, imageUrl, barcode)
+        float lowStockThresholdPercentage = 0.20f,
+        string? brand = null)
+        : base(id, unitOfMeasurement, isForSale, price, name, description, tags, quantity, expirationDate, cost, imageUrl, barcode, brand)
     {
         TargetStock = targetStock;
         LowStockThresholdPercentage = lowStockThresholdPercentage;

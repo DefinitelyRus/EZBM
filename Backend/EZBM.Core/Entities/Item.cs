@@ -12,12 +12,9 @@ public class Item : Entity
     /// </summary>
     public enum Unit { Count, Milligrams, Grams, Kilograms, Ounces, Pounds, Milliliters, Liters, Gallons, Unlimited }
 
-    /// <summary>
-    /// Categories used to classify the item for filtering or reporting.
-    /// </summary>
-    public enum Tag { Food, Hygiene, Consumable, Reusable }
-
     #endregion
+
+    public static readonly List<string> DefaultTags = ["Food", "Hygiene", "Consumable", "Reusable"];
 
     #region Properties
 
@@ -35,6 +32,11 @@ public class Item : Entity
     /// A URL pointing to an image representing the item.
     /// </summary>
     public string? ImageUrl { get; set; }
+
+    /// <summary>
+    /// The brand name of the item.
+    /// </summary>
+    public string? Brand { get; set; }
 
     /// <summary>
     /// Indicates if the item is available for purchase by customers.
@@ -69,7 +71,7 @@ public class Item : Entity
     /// <summary>
     /// A list of tags associated with the item.
     /// </summary>
-    public List<Tag> Tags { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
 
     /// <summary>
     /// The barcode of the item, if applicable.
@@ -102,6 +104,7 @@ public class Item : Entity
     /// <param name="cost">The acquisition cost.</param>
     /// <param name="imageUrl">The URL for the item's image.</param>
     /// <param name="barcode">The item's barcode.</param>
+    /// <param name="brand">The item's brand name.</param>
     public Item(
         ulong id,
         Unit unitOfMeasurement,
@@ -109,12 +112,13 @@ public class Item : Entity
         float? price = null,
         string? name = null,
         string? description = null,
-        List<Tag>? tags = null,
+        List<string>? tags = null,
         float quantity = 0,
         DateTime? expirationDate = null,
         float? cost = null,
         string? imageUrl = null,
-        string? barcode = null)
+        string? barcode = null,
+        string? brand = null)
     {
         Id = id;
         Name = name ?? $"Item #{Id}";
@@ -128,6 +132,7 @@ public class Item : Entity
         ImageUrl = imageUrl;
         SalePrice = price;
         Barcode = barcode;
+        Brand = brand;
     }
 
     #endregion

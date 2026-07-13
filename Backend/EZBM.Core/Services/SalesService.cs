@@ -39,6 +39,49 @@ public static class SalesService
                 return noStaffResult;
             }
 
+            float discountPercentage = 0f;
+            if (!string.IsNullOrEmpty(request.PromoCode))
+            {
+                string codeUpper = request.PromoCode.Trim().ToUpper();
+                StoreSettings settings = SettingsService.LoadSettings();
+
+                if (settings.PromoCodes != null && settings.PromoCodes.TryGetValue(codeUpper, out var promoInfo))
+                {
+                    if (DateTime.UtcNow > promoInfo.ExpirationDate.Date.AddDays(1).AddSeconds(-1))
+                    {
+                        message = $"Promo code {request.PromoCode} is invalid: the promotion has expired.";
+                        Log.Me(message);
+                        Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                        return failResult;
+                    }
+                    discountPercentage = promoInfo.DiscountPercentage;
+                }
+                else if (codeUpper.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
+                    {
+                        discountPercentage = 100f;
+                    }
+                    else
+                    {
+                        message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                        Log.Me(message);
+                        Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                        return failResult;
+                    }
+                }
+                else
+                {
+                    message = $"Promo code {request.PromoCode} is invalid or unrecognized.";
+                    Log.Me(message);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    return failResult;
+                }
+            }
+
+            float finalAmount = request.TotalAmount * (1f - discountPercentage / 100f);
+            if (finalAmount < 0f) finalAmount = 0f;
+
             if (request.PaymentMethod == Transaction.PayMethod.Mixed)
             {
                 if (request.SplitPayments is null || request.SplitPayments.Count == 0)
@@ -49,35 +92,30 @@ public static class SalesService
                     return failResult;
                 }
                 float sum = request.SplitPayments.Sum(s => s.Amount);
-                if (Math.Abs(sum - request.TotalAmount) > 0.01f)
+                if (Math.Abs(sum - finalAmount) > 0.01f)
                 {
-                    message = $"Cannot checkout: Split payments sum (${sum}) does not match total amount (${request.TotalAmount}).";
+                    message = $"Cannot checkout: Split payments sum (${sum}) does not match discounted total amount (${finalAmount}).";
                     Log.Me(message);
                     Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
                     return failResult;
                 }
             }
 
-            bool hasFreeWeekPromo = false;
-            if (!string.IsNullOrEmpty(request.PromoCode) && request.PromoCode.Equals("FREEWEEK", StringComparison.OrdinalIgnoreCase))
+            Customer? customer = null;
+            if (request.CustomerId is not null && request.CustomerId > 0)
             {
-                StoreSettings settings = SettingsService.LoadSettings();
-                if (DateTime.UtcNow <= settings.StoreOpeningDate.AddDays(7))
+                customer = await context.Customer.FindAsync(request.CustomerId.Value);
+                if (customer is null)
                 {
-                    hasFreeWeekPromo = true;
-                }
-                else
-                {
-                    message = "Promo code FREEWEEK is invalid: the opening week promotion has expired.";
+                    message = $"Customer with ID {request.CustomerId} not found.";
                     Log.Me(message);
-                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_InvalidQuery, message, 0);
+                    Utils.RequestResult<ulong> failResult = new(Utils.Result.Failed_NoResults, message, 0);
                     return failResult;
                 }
             }
 
             DateTime serverTime = DateTime.UtcNow;
             int invoiceNumber = Utils.GenerateInvoiceNumber(serverTime);
-            float finalAmount = hasFreeWeekPromo ? 0f : request.TotalAmount;
 
             Sale sale = new(
                 id: Utils.GenerateEntityId(),
@@ -87,7 +125,10 @@ public static class SalesService
                 staff: staff,
                 timestamp: serverTime,
                 notes: request.Notes
-            );
+            )
+            {
+                Customer = customer
+            };
 
             context.Sale.Add(sale);
 
@@ -107,6 +148,7 @@ public static class SalesService
                         notes: $"Split payment component of Invoice {sale.InvoiceId}"
                     );
                     childTx.ParentTransactionId = sale.Id;
+                    childTx.Customer = customer;
                     context.Transaction.Add(childTx);
                 }
             }
@@ -139,30 +181,9 @@ public static class SalesService
 
                 context.SaleEntry.Add(entry);
 
-                if (item is Product)
+                if (item is Product && item.Quantity != -1f)
                 {
                     item.Quantity -= itemReq.Quantity;
-                }
-
-                if (item is Service && (item.Name.Contains("Upgrade", StringComparison.OrdinalIgnoreCase) || item.Name.Contains("Grooming", StringComparison.OrdinalIgnoreCase)))
-                {
-                    StoreSettings storeSettings = SettingsService.LoadSettings();
-                    float commissionRate = staff.CommissionRate ?? 1.0f;
-                    if (storeSettings.MembershipCommissions.TryGetValue(item.Name, out float baseCommission))
-                    {
-                        float finalCommission = baseCommission * commissionRate;
-                        StaffAdjustment adjustment = new(
-                            id: Utils.GenerateEntityId(),
-                            staffId: staff.Id,
-                            adjustmentType: "Commission",
-                            amount: finalCommission,
-                            deductFromCurrentPayroll: false,
-                            isPaid: false,
-                            timestamp: serverTime,
-                            notes: $"Commission earned from {item.Name} sold in Invoice {sale.InvoiceId}"
-                        );
-                        context.StaffAdjustment.Add(adjustment);
-                    }
                 }
 
                 ItemTransaction itemTransaction = new(
@@ -221,6 +242,7 @@ public static class SalesService
             using AppDbContext context = new();
             Sale? sale = await context.Sale
                 .Include(s => s.Staff)
+                .Include(s => s.Customer)
                 .FirstOrDefaultAsync(
                     s => s.Id == request.Id
                 );
@@ -269,7 +291,9 @@ public static class SalesService
         try
         {
             using AppDbContext context = new();
-            IQueryable<Sale> query = context.Sale.Include(s => s.Staff);
+            IQueryable<Sale> query = context.Sale
+                .Include(s => s.Staff)
+                .Include(s => s.Customer);
 
             if (request is not null)
             {
@@ -314,6 +338,11 @@ public static class SalesService
                 if (request.MaxAmount is not null)
                     query = query.Where(
                         s => s.Amount <= request.MaxAmount
+                    );
+
+                if (request.CustomerId is not null)
+                    query = query.Where(
+                        s => s.Customer != null && s.Customer.Id == request.CustomerId
                     );
             }
 

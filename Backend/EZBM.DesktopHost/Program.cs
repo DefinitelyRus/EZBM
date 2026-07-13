@@ -1,4 +1,5 @@
 using EZBM.DesktopHost.Endpoints;
+using EZBM.DesktopHost.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,6 +22,7 @@ builder.Services.AddCors(options =>
 
 WebApplication app = builder.Build();
 
+EZBM.Core.Data.DbManager.ConfigureFromArgs(args);
 EZBM.Core.Data.DbManager.Initialize();
 
 if (app.Environment.IsDevelopment()) app.MapOpenApi();
@@ -47,55 +49,51 @@ app.MapPost("/api/auth/setup", AuthController.Setup);
 
 // Inventory Endpoints
 app.MapGet("/api/items", InventoryController.GetAllItems);
-app.MapPost("/api/items/get", InventoryController.GetItem);
-app.MapPost("/api/items/find", InventoryController.FindItems);
-app.MapPost("/api/items/create", InventoryController.CreateItem);
-app.MapPost("/api/items/delete", InventoryController.DeleteItem);
+app.MapCrud("/api/items", InventoryController.CreateItem, InventoryController.GetItem, InventoryController.FindItems, null, InventoryController.DeleteItem);
 app.MapGet("/api/items/barcode/{code}", InventoryController.LookupBarcode);
 
 // Inventory Transaction Endpoints
-app.MapPost("/api/items/transactions/create", InventoryController.CreateItemTransaction);
-app.MapPost("/api/items/transactions/get", InventoryController.GetItemTransaction);
-app.MapPost("/api/items/transactions/find", InventoryController.FindItemTransactions);
-app.MapPost("/api/items/transactions/delete", InventoryController.DeleteItemTransaction);
+app.MapCrud("/api/items/transactions", InventoryController.CreateItemTransaction, InventoryController.GetItemTransaction, InventoryController.FindItemTransactions, null, InventoryController.DeleteItemTransaction);
 
 // Sales Endpoints
 app.MapPost("/api/sales", SalesController.CreateSale);
-app.MapPost("/api/sales/create", SalesController.CreateSale);
-app.MapPost("/api/sales/get", SalesController.GetSale);
-app.MapPost("/api/sales/find", SalesController.FindSales);
-app.MapPost("/api/sales/delete", SalesController.DeleteSale);
+app.MapCrud("/api/sales", SalesController.CreateSale, SalesController.GetSale, SalesController.FindSales, null, SalesController.DeleteSale);
 
 // Sale Entry Endpoints
-app.MapPost("/api/sales/entries/create", SalesController.CreateSaleEntry);
-app.MapPost("/api/sales/entries/get", SalesController.GetSaleEntry);
-app.MapPost("/api/sales/entries/find", SalesController.FindSaleEntries);
-app.MapPost("/api/sales/entries/delete", SalesController.DeleteSaleEntry);
+app.MapCrud("/api/sales/entries", SalesController.CreateSaleEntry, SalesController.GetSaleEntry, SalesController.FindSaleEntries, null, SalesController.DeleteSaleEntry);
 
 // Staff Endpoints
-app.MapPost("/api/staff/create", StaffController.CreateStaff);
-app.MapPost("/api/staff/get", StaffController.GetStaff);
-app.MapPost("/api/staff/find", StaffController.FindStaff);
-app.MapPost("/api/staff/update", StaffController.UpdateStaff);
-app.MapPost("/api/staff/delete", StaffController.DeleteStaff);
+app.MapCrud("/api/staff", StaffController.CreateStaff, StaffController.GetStaff, StaffController.FindStaff, StaffController.UpdateStaff, StaffController.DeleteStaff);
+
+// Staff Adjustment Endpoints
+app.MapCrud("/api/staff/adjustments", StaffAdjustmentController.CreateStaffAdjustment, StaffAdjustmentController.GetStaffAdjustment, StaffAdjustmentController.FindStaffAdjustments, null, StaffAdjustmentController.DeleteStaffAdjustment);
+
+// Customer Endpoints
+app.MapCrud("/api/customers", CustomerController.CreateCustomer, CustomerController.GetCustomer, CustomerController.FindCustomers, CustomerController.UpdateCustomer, CustomerController.DeleteCustomer);
+
+// Role Endpoints
+app.MapCrud("/api/roles", RoleController.CreateRole, RoleController.GetRole, RoleController.FindRoles, RoleController.UpdateRole, RoleController.DeleteRole);
 
 // Attendance Endpoints
 app.MapPost("/api/attendance", StaffController.LogAttendance);
-app.MapPost("/api/attendance/create", StaffController.CreateAttendance);
-app.MapPost("/api/attendance/get", StaffController.GetAttendance);
-app.MapPost("/api/attendance/find", StaffController.FindAttendance);
-app.MapPost("/api/attendance/update", StaffController.UpdateAttendance);
-app.MapPost("/api/attendance/delete", StaffController.DeleteAttendance);
+app.MapCrud("/api/attendance", StaffController.CreateAttendance, StaffController.GetAttendance, StaffController.FindAttendance, StaffController.UpdateAttendance, StaffController.DeleteAttendance);
 
 // Payroll Endpoints
-app.MapPost("/api/payroll/create", StaffController.CreatePayroll);
-app.MapPost("/api/payroll/get", StaffController.GetPayroll);
-app.MapPost("/api/payroll/find", StaffController.FindPayroll);
-app.MapPost("/api/payroll/delete", StaffController.DeletePayroll);
+app.MapCrud("/api/payroll", StaffController.CreatePayroll, StaffController.GetPayroll, StaffController.FindPayroll, null, StaffController.DeletePayroll);
 app.MapGet("/api/payroll/calculate", StaffController.CalculatePayroll);
 
 // Action Audit Logs Endpoint
 app.MapGet("/api/logs", LogsController.GetActionLogs);
+
+// Enums Endpoints
+app.MapGet("/api/enums", EnumsController.GetEnums);
+app.MapGet("/api/enums/units", EnumsController.GetUnits);
+app.MapGet("/api/enums/tags", EnumsController.GetTags);
+app.MapGet("/api/enums/access-cards", EnumsController.GetAccessCardTypes);
+app.MapGet("/api/enums/frequencies", EnumsController.GetPayFrequencies);
+app.MapGet("/api/enums/stock-transaction-types", EnumsController.GetStockTransactionTypes);
+app.MapGet("/api/enums/transaction-types", EnumsController.GetTransactionTypes);
+app.MapGet("/api/enums/payment-methods", EnumsController.GetPaymentMethods);
 
 // Settings Endpoints
 app.MapGet("/api/settings", SettingsController.GetSettings);

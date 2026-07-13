@@ -198,6 +198,10 @@ All public classes, methods, and fields must have XML comments.
   /// </summary>
   ```
 
+## In-line comments
+
+Do not leave non-XML comments unless absolutely necessary for code readability. Code should be self-documenting by default.
+
 ## Logging & Error Handling
 
 * Use our custom logging classes:

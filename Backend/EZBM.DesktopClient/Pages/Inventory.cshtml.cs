@@ -1,6 +1,7 @@
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
+using EZBM.DesktopClient.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -41,6 +42,25 @@ public class InventoryModel : PageModel
     #region Handlers
 
     /// <summary>
+    /// Restricts page access to authenticated staff members.
+    /// </summary>
+    public override async Task OnPageHandlerExecutionAsync(
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutingContext context,
+        Microsoft.AspNetCore.Mvc.Filters.PageHandlerExecutionDelegate next
+    )
+    {
+        Staff? activeStaff = await StateHelper.GetActiveStaffAsync(HttpContext);
+
+        if (activeStaff is null)
+        {
+            context.Result = RedirectToPage("/Login");
+            return;
+        }
+
+        await next();
+    }
+
+    /// <summary>
     /// Handles GET request for listing items and setting up edit mode.
     /// </summary>
     public async Task OnGetAsync(
@@ -75,10 +95,12 @@ public class InventoryModel : PageModel
         float quantity,
         Item.Unit unitOfMeasurement,
         DateTime? expirationDate,
-        List<Item.Tag>? tags,
+        List<string>? tags,
         string itemType,
         float? targetStock,
-        float? lowStockThresholdPercentage
+        float? lowStockThresholdPercentage,
+        string? brand,
+        string? imageUrl
     )
     {
         if (cost.HasValue && cost.Value < 0f)
@@ -93,9 +115,9 @@ public class InventoryModel : PageModel
             return RedirectToPage("/Inventory");
         }
 
-        if (quantity < 0f)
+        if (quantity < -1f)
         {
-            ErrorMessage = "Stock quantity cannot be negative.";
+            ErrorMessage = "Stock quantity cannot be less than -1.";
             return RedirectToPage("/Inventory");
         }
 
@@ -108,11 +130,12 @@ public class InventoryModel : PageModel
             Quantity: quantity,
             UnitOfMeasurement: unitOfMeasurement,
             ExpirationDate: expirationDate,
-            Tags: tags ?? new List<Item.Tag>(),
-            ImageUrl: null,
+            Tags: tags ?? new List<string>(),
+            ImageUrl: imageUrl,
             ItemType: itemType,
             TargetStock: targetStock,
-            LowStockThresholdPercentage: lowStockThresholdPercentage
+            LowStockThresholdPercentage: lowStockThresholdPercentage,
+            Brand: brand
         );
 
         Utils.RequestResult<Item> result = await InventoryService.CreateItemAsync(request);
@@ -139,9 +162,11 @@ public class InventoryModel : PageModel
         float quantity,
         Item.Unit unitOfMeasurement,
         DateTime? expirationDate,
-        List<Item.Tag>? tags,
+        List<string>? tags,
         float? targetStock,
-        float? lowStockThresholdPercentage
+        float? lowStockThresholdPercentage,
+        string? brand,
+        string? imageUrl
     )
     {
         if (cost.HasValue && cost.Value < 0f)
@@ -156,9 +181,9 @@ public class InventoryModel : PageModel
             return RedirectToPage("/Inventory");
         }
 
-        if (quantity < 0f)
+        if (quantity < -1f)
         {
-            ErrorMessage = "Stock quantity cannot be negative.";
+            ErrorMessage = "Stock quantity cannot be less than -1.";
             return RedirectToPage("/Inventory");
         }
 
@@ -172,9 +197,11 @@ public class InventoryModel : PageModel
             Quantity: quantity,
             UnitOfMeasurement: unitOfMeasurement,
             ExpirationDate: expirationDate,
-            Tags: tags ?? new List<Item.Tag>(),
+            Tags: tags ?? new List<string>(),
             TargetStock: targetStock,
-            LowStockThresholdPercentage: lowStockThresholdPercentage
+            LowStockThresholdPercentage: lowStockThresholdPercentage,
+            Brand: brand,
+            ImageUrl: imageUrl
         );
 
         Utils.RequestResult result = await InventoryService.UpdateItemAsync(request);

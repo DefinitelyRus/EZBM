@@ -1,4 +1,5 @@
 using EZBM.Core.Tools;
+using System.Linq;
 
 namespace EZBM.Core.Data;
 
@@ -11,12 +12,12 @@ public static class DbManager
     /// <summary>
     /// The name of the database file.
     /// </summary>
-    public static readonly string DbFileName = "business_data.db";
+    public static string DbFileName { get; set; } = "business_data.db";
 
     /// <summary>
     /// The full system path to the database file.
     /// </summary>
-    public static readonly string DbFilePath = Path.Combine(Utils.UserSavePath, DbFileName);
+    public static string DbFilePath => Path.Combine(Utils.UserSavePath, DbFileName);
 
     /// <summary>
     /// Occurs when the database fails to initialize.
@@ -84,6 +85,30 @@ public static class DbManager
         }
     }
 
+    /// <summary>
+    /// Configures the database filename and optionally triggers randomized seeder population based on command line arguments.
+    /// </summary>
+    /// <param name="args">The command line arguments.</param>
+    public static void ConfigureFromArgs(
+        string[] args
+    )
+    {
+        if (args is null) return;
+
+        bool useTest = args.Contains("-t") || args.Contains("--use_test_data");
+        bool generateTest = args.Contains("-g") || args.Contains("--generate_test_data");
+
+        if (useTest || generateTest)
+        {
+            DbFileName = "test_data.db";
+        }
+
+        if (generateTest)
+        {
+            Reset();
+            DataSeeder.Seed(true);
+        }
+    }
 }
 
 

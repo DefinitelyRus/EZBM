@@ -57,6 +57,12 @@ public class StoreSettings
     public bool BackupRotationEnabled { get; set; } = true;
 
     /// <summary>
+    /// Whether logging in with an RFID card is enabled globally.
+    /// </summary>
+    public bool EnableRfidLogin { get; set; } = false;
+
+
+    /// <summary>
     /// The default validity period in days for access card profiles.
     /// </summary>
     public Dictionary<string, int> CardExpirationOffsets { get; set; } = new()
@@ -66,20 +72,26 @@ public class StoreSettings
         { "Member", 30 }
     };
 
+
     /// <summary>
-    /// The standard commission rates earned for membership registration or upgrades.
+    /// Represents info about a promotional discount code.
     /// </summary>
-    public Dictionary<string, float> MembershipCommissions { get; set; } = new()
+    public class PromoCodeInfo
     {
-        { "Silver Upgrade", 10f },
-        { "Gold Upgrade", 25f },
-        { "Platinum Upgrade", 50f },
-        { "Dog Grooming - Small", 20f },
-        { "Dog Grooming - Medium", 30f },
-        { "Dog Grooming - Large", 40f },
-        { "Cat Grooming", 25f }
+        public float DiscountPercentage { get; set; }
+        public DateTime ExpirationDate { get; set; }
+    }
+
+    /// <summary>
+    /// Custom promotion discount codes and their settings.
+    /// </summary>
+    public Dictionary<string, PromoCodeInfo> PromoCodes { get; set; } = new()
+    {
+        { "FREEWEEK", new PromoCodeInfo { DiscountPercentage = 100f, ExpirationDate = new DateTime(2026, 12, 31) } },
+        { "EZBM10", new PromoCodeInfo { DiscountPercentage = 10f, ExpirationDate = new DateTime(2026, 12, 31) } }
     };
 }
+
 
 /// <summary>
 /// Provides access to read/write storefront configurations from settings.json.
