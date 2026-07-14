@@ -1,6 +1,6 @@
 import './Dashboard.css';
 
-import Alert from '../components/InventoryAlert';
+import Alert from '../../components/InventoryAlert';
 
 function Dashboard() {
   return (

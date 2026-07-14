@@ -1,5 +1,5 @@
 export const dropdownOptions = {
-  units: [
+  unitOfMeasurement: [
     "Kilograms (Kg)",
     "Packs",
     "Bottles",
@@ -13,5 +13,14 @@ export const dropdownOptions = {
     "Savings",
     "Credit",
     "Other",
+  ],
+
+  payFrequency: [
+    "Hourly",
+    "Daily",
+    "Weekly",
+    "Biweekly",
+    "Monthly",
+    "Invalid"
   ],
 };

@@ -1,0 +1,53 @@
+:root {
+    /* App Background */
+  --md-background: #EEF4FA;
+
+  /* Cards */
+  --md-surface: #FFFFFF;
+  --md-surface-container: #DCEAF8;
+  --md-surface-container-high: #CFE2F3;
+
+  /* Brand */
+  --md-primary: #4A7DAB;
+  --md-primary-hover: #3A6690;
+  --md-primary-container: #CFE6FA;
+
+  /* Text */
+  --md-on-surface: #233142;
+  --md-on-surface-variant: #5F7288;
+
+  /* Borders */
+  --md-outline: #B8C9D9;
+  --md-outline-variant: #D7E2EC;
+
+  /* States */
+  --md-hover: #D9ECFC;
+  --md-selected: #C8E2FA;
+
+  /* ===== Radius ===== */
+
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+
+  /* ===== Elevation ===== */
+
+  --shadow-1: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-2: 0 4px 12px rgba(0,0,0,.10);
+
+  /* ===== Spacing ===== */
+
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --space-6:32px;
+
+  /* ===== Motion ===== */
+
+  --transition:
+    250ms cubic-bezier(.2,0,0,1);
+}

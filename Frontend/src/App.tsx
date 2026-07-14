@@ -1,10 +1,10 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/sidebar';
-import Dashboard from './pages/Dashboard';
-import Inventory from './pages/Inventory';
-import Checkout from './pages/Checkout';
-import Staff from './pages/Staff';
-import Attendance_Logs from './pages/Attendance_Logs';
+import Sidebar from './components/Sidebar';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Inventory from './pages/Inventory/Inventory';
+import Checkout from './pages/Checkout/Checkout';
+import Staff from './pages/Staff/Staff';
+import AttendanceLogs from './pages/AttendanceLogs/AttendanceLogs';
 
 function App() {
   return (
@@ -22,7 +22,7 @@ function App() {
             <Route path="/inventory" element={<div><Inventory/></div>} />
             <Route path="/pos" element={<div><Checkout/></div>} />
             <Route path="/staff" element={<div><Staff/></div>} />
-            <Route path="/logs" element={<div><Attendance_Logs/></div>} />
+            <Route path="/logs" element={<div><AttendanceLogs/></div>} />
           </Routes>
         </div>
 
