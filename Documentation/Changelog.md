@@ -29,14 +29,16 @@ Changes:
 
 ### 07/15/2026
 
-Added backend support for adding, replacing, and removing tags to existing inventory items, including new request models, service layer methods, controller endpoints, and verification tests.
+Added backend support for updating inventory items and managing tags, including new controller endpoints, route mappings, API documentation, and test verification scripts.
 
 Changes:
 
+- Added `UpdateItem` endpoint to `InventoryController.cs` and mapped it to the `/api/items/update` route in `Program.cs` to expose complete item CRUD API operations.
 - Added `AddItemTagsRequest`, `ReplaceItemTagsRequest`, and `RemoveItemTagsRequest` definitions to `ServiceRequests.cs`.
 - Implemented `AddTagsToItemAsync`, `ReplaceItemTagsAsync`, and `RemoveTagsFromItemAsync` in `InventoryService.cs`.
 - Added tag manipulation endpoints `AddItemTags`, `ReplaceItemTags`, and `RemoveItemTags` to `InventoryController.cs`.
 - Registered route mappings for `/api/items/tags/add`, `/api/items/tags/replace`, and `/api/items/tags/remove` in `Program.cs`.
+- Documented the new item update and tag manipulation endpoints in the host `README.md`.
 - Wrote integration tests in `EZBM.Tests` verifying tag adding, replacing, and removing operations, ensuring database consistency.
 
 ### 07/13/2026

@@ -294,6 +294,83 @@ Deletes an item from the inventory database.
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
 
+#### `POST /api/items/update`
+
+Updates an existing product or service.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "name": "Noodles New Name",
+    "description": "Instant cup noodles updated description",
+    "isForSale": true,
+    "cost": 16.0,
+    "salePrice": 24.0,
+    "quantity": 30.0,
+    "unitOfMeasurement": "Count",
+    "expirationDate": "2026-11-15T00:00:00Z",
+    "tags": ["Food", "Instant"],
+    "imageUrl": "http://example.com/noodles_new.png",
+    "targetStock": 60.0,
+    "lowStockThresholdPercentage": 0.15,
+    "brand": "NoodleBrandNew",
+    "barcode": "4801234567891"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating successful update.
+
+#### `POST /api/items/tags/add`
+
+Adds new tags to an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["Instant", "Quick"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully added.
+
+#### `POST /api/items/tags/replace`
+
+Replaces all tags on an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["FoodOnly"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully replaced.
+
+#### `POST /api/items/tags/remove`
+
+Removes specific tags from an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["Quick"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully removed.
+
 ### Inventory Transactions
 
 #### `POST /api/items/transactions/create`
