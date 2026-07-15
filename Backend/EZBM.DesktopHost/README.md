@@ -166,8 +166,6 @@ Checks credentials to log a user in.
 
 ### Inventory Management
 
-> **Note on Tags:** The `tags` field on items is a free-form string array. You can use any string value — not just those returned by `GET /api/enums/tags`. The enums endpoint returns a default suggestion list only; users are free to add custom tags alongside or instead of them.
-
 #### `GET /api/items`
 
 Retrieves all items currently in the catalog.
