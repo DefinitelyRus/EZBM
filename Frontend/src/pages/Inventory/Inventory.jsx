@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { InventoryAPI } from "../../api/inventory";
+import { EnumsAPI } from "../../api/enums";
 import './Inventory.css';
 
 import Dropdown from "../../components/Dropdown";
 import DataTable from "../../components/DataTable/DataTable";
-import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
@@ -22,6 +22,28 @@ function Dashboard() {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [showAddItem, setShowAddItem] = useState(true);
   const [search, setSearch] = useState("");
+
+  const [enums, setEnums] = useState({
+    units: [],
+    tags: [],
+  });
+
+  useEffect(() => {
+    async function loadEnums() {
+      try {
+        const data = await EnumsAPI.getAll();
+
+        setEnums({
+          units: data.units,
+          tags: data.tags,
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadEnums();
+  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
@@ -336,13 +358,13 @@ function Dashboard() {
               <label className="form-label">Unit of Measurement</label>
               <Dropdown
                 title="Select Unit"
-                options={dropdownOptions.unitOfMeasurement}
+                options={enums.units}
                 value={formData.unitOfMeasurement}
                 onSelect={(value) =>
-                    setFormData({
-                        ...formData,
-                        unitOfMeasurement: value,
-                    })
+                  setFormData({
+                    ...formData,
+                    unitOfMeasurement: value,
+                  })
                 }
               />
             </div>
@@ -372,14 +394,7 @@ function Dashboard() {
             <div className="mb-2 d-flex flex-direction row">
                 <label className="form-label">Tags</label>
                 <div className="d-flex flex-wrap gap-2">
-                  {[
-                    "Beverage",
-                    "Food",
-                    "Ingredient",
-                    "Dairy",
-                    "Supplies",
-                    "Hygiene",
-                  ].map((tag) => (
+                  {enums.tags.map((tag) => (
                     <button
                       key={tag}
                       type="button"
