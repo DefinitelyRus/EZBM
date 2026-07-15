@@ -28,6 +28,9 @@ function Dashboard() {
     tags: [],
   });
 
+  const enumName = (list, value) =>
+  list?.[value] ?? "-";
+
   useEffect(() => {
     async function loadEnums() {
       try {
@@ -174,6 +177,7 @@ function Dashboard() {
       filterLabel: "Unit",
       width: "10%",
       className: "col-center",
+      render: (row) => enumName(enums.units, row.unitOfMeasurement),
     },
     {
       key: "expirationDate",
