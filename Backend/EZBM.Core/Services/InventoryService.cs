@@ -234,6 +234,151 @@ public static class InventoryService
 
 
     /// <summary>
+    /// Adds tags to an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request parameters containing the item ID and the list of tags to add.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> AddTagsToItemAsync(
+        AddItemTagsRequest request
+    )
+    {
+        string message;
+
+        try
+        {
+            using AppDbContext context = new();
+            Item? item = await context.Item.FindAsync(request.Id);
+
+            if (item is null)
+            {
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
+            }
+
+            List<string> updatedTags = new(item.Tags);
+            foreach (string tag in request.Tags)
+            {
+                if (!updatedTags.Contains(tag))
+                {
+                    updatedTags.Add(tag);
+                }
+            }
+
+            item.Tags = updatedTags;
+            await context.SaveChangesAsync();
+
+            message = $"Tags successfully added to item '{item.Name}' with ID {item.Id}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when adding tags to item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Replaces all tags on an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request parameters containing the item ID and the new list of tags.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> ReplaceItemTagsAsync(
+        ReplaceItemTagsRequest request
+    )
+    {
+        string message;
+
+        try
+        {
+            using AppDbContext context = new();
+            Item? item = await context.Item.FindAsync(request.Id);
+
+            if (item is null)
+            {
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
+            }
+
+            item.Tags = request.Tags;
+            await context.SaveChangesAsync();
+
+            message = $"Tags successfully replaced for item '{item.Name}' with ID {item.Id}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when replacing tags for item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
+        }
+    }
+
+
+    /// <summary>
+    /// Removes tags from an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request parameters containing the item ID and the list of tags to remove.</param>
+    /// <returns>A RequestResult representing the outcome.</returns>
+    public static async Task<Utils.RequestResult> RemoveTagsFromItemAsync(
+        RemoveItemTagsRequest request
+    )
+    {
+        string message;
+
+        try
+        {
+            using AppDbContext context = new();
+            Item? item = await context.Item.FindAsync(request.Id);
+
+            if (item is null)
+            {
+                message = $"Item with ID {request.Id} not found in database.";
+                Log.Me(message);
+                Utils.RequestResult failResult = new(Utils.Result.Failed_NoResults, message);
+                return failResult;
+            }
+
+            List<string> updatedTags = new(item.Tags);
+            foreach (string tag in request.Tags)
+            {
+                updatedTags.Remove(tag);
+            }
+
+            item.Tags = updatedTags;
+            await context.SaveChangesAsync();
+
+            message = $"Tags successfully removed from item '{item.Name}' with ID {item.Id}.";
+            Log.Me(message);
+            Utils.RequestResult successResult = new(Utils.Result.Success, message);
+            return successResult;
+        }
+
+        catch (Exception ex)
+        {
+            message = $"Error when removing tags from item with ID {request.Id}: {ex.Message}.";
+            Log.Me(message);
+            Utils.RequestResult errorResult = new(Utils.Result.Failed_UnhandledException, message);
+            return errorResult;
+        }
+    }
+
+
+
+    /// <summary>
     /// Creates a new inventory item.
     /// </summary>
     /// <param name="request">The request parameters containing new item details.</param>
