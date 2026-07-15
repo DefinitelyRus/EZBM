@@ -49,7 +49,14 @@ app.MapPost("/api/auth/setup", AuthController.Setup);
 
 // Inventory Endpoints
 app.MapGet("/api/items", InventoryController.GetAllItems);
-app.MapCrud("/api/items", InventoryController.CreateItem, InventoryController.GetItem, InventoryController.FindItems, null, InventoryController.DeleteItem);
+app.MapCrud(
+    "/api/items",
+    InventoryController.CreateItem,
+    InventoryController.GetItem,
+    InventoryController.FindItems,
+    InventoryController.UpdateItem,
+    InventoryController.DeleteItem
+);
 app.MapGet("/api/items/barcode/{code}", InventoryController.LookupBarcode);
 app.MapPost("/api/items/tags/add", InventoryController.AddItemTags);
 app.MapPost("/api/items/tags/replace", InventoryController.ReplaceItemTags);

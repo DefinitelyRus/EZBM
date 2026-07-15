@@ -53,6 +53,18 @@ public static class InventoryController
     }
 
     /// <summary>
+    /// Updates an existing inventory item's details.
+    /// </summary>
+    /// <param name="request">The request containing update details and item ID.</param>
+    /// <returns>An HTTP result indicating the status of the update.</returns>
+    public static async Task<IResult> UpdateItem(
+        [FromBody] UpdateItemRequest request)
+    {
+        Utils.RequestResult result = await InventoryService.UpdateItemAsync(request);
+        return EndpointHelpers.ToIResult(result);
+    }
+
+    /// <summary>
     /// Deletes a specific inventory item by its identifier.
     /// </summary>
     /// <param name="request">The request containing the item ID to delete.</param>
