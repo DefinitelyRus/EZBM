@@ -108,6 +108,13 @@ Every request should include the active operator's username in the header:
 
 If this header is missing, the backend defaults the operator name to `System` for audit logging.
 
+### 64-Bit Integer IDs (Precision Safety)
+
+To avoid JavaScript floating-point precision loss on the frontend for large database identifiers (64-bit unsigned integers / `ulong`), the API is configured with custom JSON number handling:
+
+* **API Responses:** All large identifier numbers and references are serialized as strings in JSON payloads (e.g. `"id": "11142895436128481513"`).
+* **API Requests:** The backend accepts both raw numbers and string formats for these fields. You can send either `"id": "11142895436128481513"` or `"id": 11142895436128481513` in your request bodies.
+
 ### Example Request (JavaScript Fetch)
 
 Here is how you can fetch the inventory list from the frontend:
