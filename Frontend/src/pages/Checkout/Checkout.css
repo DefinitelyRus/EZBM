@@ -71,6 +71,7 @@
     opacity: 0;
     transform: translateX(32px);
     overflow: hidden;
+    pointer-events: none;
 }
 
 #checkout-items-container .close-btn {

@@ -3,7 +3,7 @@ import { InventoryAPI } from "../../api/inventory";
 import './Checkout.css';
 
 import Dropdown from '../../components/Dropdown';
-import DataTable from "../../components/DataTable";
+import DataTable from "../../components/DataTable/DataTable";
 import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
@@ -76,12 +76,14 @@ function Checkout() {
     {
       key: "name",
       label: "Name",
+      filterLabel: "Name",
       width: "28%",
       className: "col-left",
     },
     {
       key: "salePrice",
       label: <>Sale<br />Price</>,
+      filterLabel: "Sale Price",
       width: "8%",
       className: "col-center",
       render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
@@ -89,18 +91,21 @@ function Checkout() {
     {
       key: "quantity",
       label: "Stock",
+      filterLabel: "Stock",
       width: "9%",
       className: "col-center",
     },
     {
       key: "unitOfMeasurement",
       label: "Unit",
+      filterLabel: "Unit",
       width: "10%",
       className: "col-center",
     },
     {
       key: "expirationDate",
       label: "Expiration",
+      filterLabel: "Expiration",
       width: "12%",
       className: "col-center",
       render: (row) =>
@@ -111,6 +116,8 @@ function Checkout() {
     {
       key: "actions",
       label: "",
+      filterLabel: "Actions",
+      hideable: false,
       width: "7%",
       className: "col-right-btn",
       render: () => (
@@ -202,6 +209,7 @@ function Checkout() {
               <DataTable
                 columns={ForSaleColumns}
                 data={inventoryItems.filter(item => item.isForSale)}
+                enableColumnFilter
               />
             </div>
           </div>

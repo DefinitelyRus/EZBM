@@ -22,7 +22,7 @@
 /* When the sidebar is collapsed */
 @media (max-width: 1599px) {
     #inventory-contents {
-        padding-left: 116px; /* 84px sidebar + ~32px gap */
+        padding-left: 116px; 
     }
 
     #inventory-content-left {
@@ -30,7 +30,6 @@
         flex: 1;
     }
 }
-
 
 #add-items-container {
     max-height: fit-content;
@@ -72,6 +71,7 @@
     opacity: 0;
     transform: translateX(32px);
     overflow: hidden;
+    pointer-events: none;
 }
 
 #add-items-container .close-btn {

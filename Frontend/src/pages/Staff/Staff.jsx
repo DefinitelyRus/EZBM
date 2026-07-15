@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import './Staff.css';
 
 import Dropdown from "../../components/Dropdown";
-import DataTable from "../../components/DataTable";
+import DataTable from "../../components/DataTable/DataTable";
 import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
@@ -81,61 +81,59 @@ function Staff() {
     };
 
   /* Tables */
-    const StaffColumns = [
-      {
-        key: "id",
-        label: "ID",
-        width: "10%",
-        className: "col-left",
-      },
-      {
-        key: "name",
-        label: "Name",
-        width: "8%",
-        className: "col-center",
-        render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
-      },
-      {
-        key: "username",
-        label: "Username",
-        width: "8%",
-        className: "col-center",
-        render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
-      },
-      {
-        key: "email",
-        label: "Email",
-        width: "8%",
-        className: "col-center",
-        render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
-      },
-      {
-        key: "phoneNumber",
-        label: "Phone",
-        width: "8%",
-        className: "col-center",
-        render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
-      },
-      {
-        key: "position",
-        label: "Position",
-        width: "8%",
-        className: "col-center",
-        render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
-      },
-      {
-        key: "payRate",
-        label: "Pay Rate",
-        width: "9%",
-        className: "col-center",
-      },
-      {
-        key: "actions",
-        label: "",
-        width: "7%",
-        className: "col-right-btn",
-        render: () => (
-          <div className="d-flex flex-direction col btn-group">
+  const StaffColumns = [
+    {
+      key: "id",
+      label: "ID",
+      width: "10%",
+      className: "col-left",
+    },
+    {
+      key: "name",
+      label: "Name",
+      width: "18%",
+      className: "col-left",
+    },
+    {
+      key: "username",
+      label: "Username",
+      width: "15%",
+      className: "col-center",
+    },
+    {
+      key: "email",
+      label: "Email",
+      width: "22%",
+      className: "col-center",
+    },
+    {
+      key: "phoneNumber",
+      label: "Phone",
+      width: "14%",
+      className: "col-center",
+    },
+    {
+      key: "position",
+      label: "Position",
+      width: "14%",
+      className: "col-center",
+    },
+    {
+      key: "payRate",
+      label: "Pay Rate",
+      width: "10%",
+      className: "col-center",
+      render: (row) =>
+        row.payRate != null ? `₱${row.payRate}` : "-",
+    },
+    {
+      key: "actions",
+      label: "",
+      width: "7%",
+      className: "col-right-btn",
+      hideable: false, // Prevents this column from appearing in the filter
+      render: () => (
+        <div className="d-flex flex-direction col btn-group">
           <button className="edit" title="Edit">
             <img src={EditIcon} alt="Edit" />
           </button>
@@ -144,9 +142,9 @@ function Staff() {
             <img src={DeleteIcon} alt="Delete" />
           </button>
         </div>
-        ),
-      },
-    ];
+      ),
+    },
+  ];
 
   return (
     <>
@@ -186,6 +184,7 @@ function Staff() {
               <DataTable
                 columns={StaffColumns}
                 data={[]}
+                enableColumnFilter
               />
             </div>
           </div>

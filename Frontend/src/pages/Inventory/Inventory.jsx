@@ -3,7 +3,7 @@ import { InventoryAPI } from "../../api/inventory";
 import './Inventory.css';
 
 import Dropdown from "../../components/Dropdown";
-import DataTable from "../../components/DataTable";
+import DataTable from "../../components/DataTable/DataTable";
 import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
@@ -59,23 +59,26 @@ function Dashboard() {
   };
 
   /* Search Bar */
-useEffect(() => {
-  const timeout = setTimeout(async () => {
-    try {
-      const data =
-        search.trim() === ""
-          ? await InventoryAPI.getAll()
-          : await InventoryAPI.find({
-              name: search.trim(),
-            });
+  useEffect(() => {
+    const timeout = setTimeout(async () => {
+      try {
+        const data =
+          search.trim() === ""
+            ? await InventoryAPI.getAll()
+            : await InventoryAPI.find({
+                name: search.trim(),
+              });
 
-      setInventoryItems(data);
-    } catch (err) {
-      console.error(err);
-    }
-  }, 300);
+        console.log("API response:", data);
+        console.log("Is array?", Array.isArray(data));
 
-  return () => clearTimeout(timeout);
+        setInventoryItems(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeout);
 }, [search]);
 
   /* Clear Button */
@@ -107,16 +110,18 @@ useEffect(() => {
   };
 
   /* Table */
-  const columns = [
+  const InventoryColumns = [
     {
       key: "name",
       label: "Name",
+      filterLabel: "Name",
       width: "28%",
       className: "col-left",
     },
     {
       key: "isForSale",
-      label: <>For<br />Sale?</>,
+      label: <>For<br />Sale</>,
+      filterLabel: "For Sale",
       width: "6%",
       className: "col-center",
       render: (row) => (row.isForSale ? "Yes" : "No"),
@@ -124,6 +129,7 @@ useEffect(() => {
     {
       key: "cost",
       label: <>Cost<br />Price</>,
+      filterLabel: "Cost Price",
       width: "8%",
       className: "col-center",
       render: (row) => `₱${row.cost}`,
@@ -131,6 +137,7 @@ useEffect(() => {
     {
       key: "salePrice",
       label: <>Sale<br />Price</>,
+      filterLabel: "Sale Price",
       width: "8%",
       className: "col-center",
       render: (row) => (row.salePrice ? `₱${row.salePrice}` : "-"),
@@ -138,18 +145,21 @@ useEffect(() => {
     {
       key: "quantity",
       label: "Quantity",
+      filterLabel: "Quantity",
       width: "9%",
       className: "col-center",
     },
     {
       key: "unitOfMeasurement",
       label: "Unit",
+      filterLabel: "Unit",
       width: "10%",
       className: "col-center",
     },
     {
       key: "expirationDate",
       label: "Expiration",
+      filterLabel: "Expiration",
       width: "12%",
       className: "col-center",
       render: (row) =>
@@ -160,12 +170,15 @@ useEffect(() => {
     {
       key: "tags",
       label: "Tags",
+      filterLabel: "Tags",
       width: "12%",
       className: "col-center",
     },
     {
       key: "actions",
       label: "",
+      filterLabel: "Actions",
+      hideable: false,
       width: "12%",
       className: "col-center-btn",
       render: () => (
@@ -217,9 +230,10 @@ useEffect(() => {
             </div>
 
             <div className="table-container w-100">
-               <DataTable
-                columns={columns}
+              <DataTable
+                columns={InventoryColumns}
                 data={inventoryItems}
+                enableColumnFilter
               />
               </div>
             </div>
