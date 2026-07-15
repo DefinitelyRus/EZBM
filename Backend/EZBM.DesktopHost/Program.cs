@@ -2,10 +2,16 @@ using EZBM.DesktopHost.Endpoints;
 using EZBM.DesktopHost.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling =
+        JsonNumberHandling.WriteAsString |
+        JsonNumberHandling.AllowReadingFromString;
+});
 builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
 
 // Enable CORS for port 5173
