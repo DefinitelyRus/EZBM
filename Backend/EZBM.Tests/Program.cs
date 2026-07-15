@@ -994,16 +994,26 @@ internal class Program
         SettingsService.SaveSettings(settings);
 
         bool promoOk = promoResValid.Type == Utils.Result.Success;
+        string saleDetails = "error";
         if (promoOk)
         {
             Sale? verifiedSale = await db.Sale.FindAsync(promoResValid.Data);
-            promoOk = verifiedSale is not null && verifiedSale.Amount == 0f;
+            if (verifiedSale is null)
+            {
+                saleDetails = "null sale";
+                promoOk = false;
+            }
+            else
+            {
+                saleDetails = verifiedSale.Amount.ToString("0.00");
+                promoOk = verifiedSale.Amount == 0f;
+            }
         }
 
         LogResult("FREEWEEK Promotion Validity Offset",
             "Verified that applying 'FREEWEEK' within 7 days of store opening discounts the total amount to $0.",
             promoOk,
-            $"Promo checkout result: {promoResValid.Type}. Final Sale Amount charged: {(promoOk ? "0.00" : "error")}");
+            $"Promo checkout result: {promoResValid.Type}. Final Sale Amount charged: {saleDetails}");
     }
 
     #endregion
