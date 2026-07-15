@@ -166,6 +166,8 @@ Checks credentials to log a user in.
 
 ### Inventory Management
 
+> **Note on Tags:** The `tags` field on items is a free-form string array. You can use any string value — not just those returned by `GET /api/enums/tags`. The enums endpoint returns a default suggestion list only; users are free to add custom tags alongside or instead of them.
+
 #### `GET /api/items`
 
 Retrieves all items currently in the catalog.
@@ -1307,7 +1309,7 @@ Retrieves all static lists and enum values in the system in a single call.
 You can also fetch each list individually via standard `GET` requests:
 
 * `GET /api/enums/units` - Returns units of measurement array.
-* `GET /api/enums/tags` - Returns default tags array.
+* `GET /api/enums/tags` - Returns the default tag suggestions array. Items may have any custom tags beyond this list.
 * `GET /api/enums/access-cards` - Returns access card types array.
 * `GET /api/enums/frequencies` - Returns pay frequency types array.
 * `GET /api/enums/stock-transaction-types` - Returns stock transaction types array.
