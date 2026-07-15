@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { Tooltip } from "bootstrap";
 
-import "./sidebar.css";
+import "./Sidebar.css";
 import Button from "./button";
 
 import ArrowMenu from "../assets/arrow_menu.svg?react";
@@ -172,7 +172,10 @@ function Sidebar() {
       </div>
 
       <div id="log-out">
-       <Button
+        {/* <button className="clock-out-btn">
+          Clock out
+        </button> */}
+        <Button
           to="/"
           text="Log out"
           icon={<LogOutIcon />}

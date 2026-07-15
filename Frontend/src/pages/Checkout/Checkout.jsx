@@ -181,34 +181,13 @@ function Checkout() {
           </div>
           
           <div className="input-group flex-direction row">
-            <div className="search-bar-container">
-              <div className="search-bar">
-                <SearchIcon className="search-icon" />
-
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Type in to filter..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-
-                {search && (
-                  <button
-                    type="button"
-                    className="clear-search-btn"
-                    onClick={() => setSearch("")}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
             <div>
               <DataTable
                 columns={ForSaleColumns}
                 data={inventoryItems.filter(item => item.isForSale)}
+                enableSearch
+                search={search}
+                onSearchChange={setSearch}
                 enableColumnFilter
               />
             </div>
@@ -241,7 +220,7 @@ function Checkout() {
         <div>
           <DataTable
                 columns={CartColumns}
-                data={inventoryItems.filter(item => item.isForSale)}
+                data={[]}
               />
         </div>
 

@@ -174,6 +174,28 @@
         max-width var(--transition);
 }
 
+#log-out .clock-out-btn {
+    width: 100%;
+    background:white;
+    color:#C62828;
+
+    border:1px solid #E57373;
+
+    height:42px;
+    width:110px;
+}
+
+#log-out .clock-out-btn:hover{
+    background:#C62828;
+    color: white;
+
+    border:1px solid #E57373;
+
+    height:42px;
+    width:110px;
+}
+
+
 /* ===========================
    User Name
 =========================== */

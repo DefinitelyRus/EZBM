@@ -45,7 +45,7 @@ function ColumnFilter({
     <div className="column-filter" ref={filterRef}>
       <button
         type="button"
-        className="d-flex column-filter-btn gap-2"
+        className="d-flex column-filter-btn"
         onClick={() => setOpen((prev) => !prev)}
       >
         <img src={MenuIcon} alt="Menu" />

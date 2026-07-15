@@ -1,3 +1,65 @@
+/* Search Bar */
+.table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;   /* <-- aligns bottoms */
+    gap: 16px;
+
+    margin-bottom: 16px;
+}
+
+.search-bar-container {
+    padding-bottom: 20px;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+
+    width: 60%;
+
+    background: white;
+    border: 1px solid var(--md-outline);
+    border-radius: 30px;
+
+    padding: 0 10px;
+}
+
+.search-icon {
+    width: 20px;
+    height: 20px;
+
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+
+    border: none;
+    outline: none;
+    background: transparent;
+
+    padding: 12px;
+    min-width: 0;
+}
+
+.clear-search-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+
+    cursor: pointer;
+
+    flex-shrink: 0;
+}
+
 /* ---------- Data Table ---------- */
 .table-wrapper {
     width: 100%;
@@ -71,17 +133,7 @@
 
 /* ---------- Hover ---------- */
 
-.ez-table tbody tr:not(.table-empty-row):hover {
-    background-color: #f5f5f5;
-}
-
-/* Optional subtle zebra striping */
-
-.ez-table tbody tr:nth-child(even) td {
-    background: var(--md-surface-variant);
-}
-
-.ez-table tbody tr:nth-child(even):hover td {
+.ez-table tbody tr:not(.table-empty-row):hover td {
     background: var(--md-hover);
 }
 

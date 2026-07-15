@@ -3,9 +3,16 @@ import "./DataTable.css";
 
 import ColumnFilter from "./ColumnFilter";
 
+import SearchIcon from "../../assets/search.svg?react";
+
 function DataTable({
   columns,
   data,
+
+  enableSearch = false,
+  search = "",
+  onSearchChange,
+
   enableColumnFilter = false,
 }) {
   const [displayMode, setDisplayMode] = useState(50);
@@ -63,13 +70,43 @@ function DataTable({
   return (
     <div className="table-wrapper">
 
-      {enableColumnFilter && (
-        <ColumnFilter
-          columns={columns}
-          visibleColumns={visibleColumns}
-          setVisibleColumns={setVisibleColumns}
-        />
-      )}
+      <div className="table-toolbar">
+
+        {enableSearch && (
+          <div className="search-bar">
+            <SearchIcon className="search-icon" />
+
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Type in to filter..."
+              value={search}
+              onChange={(e) =>
+                onSearchChange?.(e.target.value)
+              }
+            />
+
+            {search && (
+              <button
+                type="button"
+                className="clear-search-btn"
+                onClick={() => onSearchChange?.("")}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        )}
+
+       {enableColumnFilter && (
+          <ColumnFilter
+            columns={columns}
+            visibleColumns={visibleColumns}
+            setVisibleColumns={setVisibleColumns}
+          />
+        )}
+
+      </div>
 
       <table className="ez-table">
         <thead>
@@ -107,7 +144,7 @@ function DataTable({
               </tr>
             ))
           ) : (
-            <tr>
+            <tr className="table-empty-row">
               <td
                 colSpan={displayedColumns.length}
                 className="table-empty"

@@ -60,26 +60,23 @@ function Dashboard() {
 
   /* Search Bar */
   useEffect(() => {
-    const timeout = setTimeout(async () => {
-      try {
-        const data =
-          search.trim() === ""
-            ? await InventoryAPI.getAll()
-            : await InventoryAPI.find({
-                name: search.trim(),
-              });
+      const timeout = setTimeout(async () => {
+          try {
+              const data =
+                  search.trim() === ""
+                      ? await InventoryAPI.getAll()
+                      : await InventoryAPI.find({
+                          name: search.trim(),
+                      });
 
-        console.log("API response:", data);
-        console.log("Is array?", Array.isArray(data));
+              setInventoryItems(data);
+          } catch (err) {
+              console.error(err);
+          }
+      }, 300);
 
-        setInventoryItems(data);
-      } catch (err) {
-        console.error(err);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeout);
-}, [search]);
+      return () => clearTimeout(timeout);
+  }, [search]);
 
   /* Clear Button */
   const initialForm = {
@@ -205,34 +202,13 @@ function Dashboard() {
           </div>
           
           <div className="input-group flex-direction row">
-            <div className="search-bar-container">
-              <div className="search-bar">
-                <SearchIcon className="search-icon" />
-
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Type in to filter..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-
-                {search && (
-                  <button
-                    type="button"
-                    className="clear-search-btn"
-                    onClick={() => setSearch("")}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="table-container w-100">
+            <div>
               <DataTable
                 columns={InventoryColumns}
                 data={inventoryItems}
+                enableSearch
+                search={search}
+                onSearchChange={setSearch}
                 enableColumnFilter
               />
               </div>
