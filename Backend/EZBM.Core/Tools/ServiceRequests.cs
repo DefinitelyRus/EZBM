@@ -52,6 +52,37 @@ public record UpdateItemRequest(
     string? Barcode = null
 );
 
+/// <summary>
+/// Request to add tags to an existing item.
+/// </summary>
+/// <param name="Id">The unique identifier of the item.</param>
+/// <param name="Tags">The list of tags to add.</param>
+public record AddItemTagsRequest(
+    [Required] ulong Id,
+    [Required] List<string> Tags
+);
+
+/// <summary>
+/// Request to replace all tags on an existing item.
+/// </summary>
+/// <param name="Id">The unique identifier of the item.</param>
+/// <param name="Tags">The new list of tags for the item.</param>
+public record ReplaceItemTagsRequest(
+    [Required] ulong Id,
+    [Required] List<string> Tags
+);
+
+/// <summary>
+/// Request to remove specific tags from an existing item.
+/// </summary>
+/// <param name="Id">The unique identifier of the item.</param>
+/// <param name="Tags">The list of tags to remove.</param>
+public record RemoveItemTagsRequest(
+    [Required] ulong Id,
+    [Required] List<string> Tags
+);
+
+
 public record CreateItemRequest(
     string? Name,
     string? Description,

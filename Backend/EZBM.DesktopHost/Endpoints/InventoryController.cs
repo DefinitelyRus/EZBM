@@ -53,6 +53,18 @@ public static class InventoryController
     }
 
     /// <summary>
+    /// Updates an existing inventory item's details.
+    /// </summary>
+    /// <param name="request">The request containing update details and item ID.</param>
+    /// <returns>An HTTP result indicating the status of the update.</returns>
+    public static async Task<IResult> UpdateItem(
+        [FromBody] UpdateItemRequest request)
+    {
+        Utils.RequestResult result = await InventoryService.UpdateItemAsync(request);
+        return EndpointHelpers.ToIResult(result);
+    }
+
+    /// <summary>
     /// Deletes a specific inventory item by its identifier.
     /// </summary>
     /// <param name="request">The request containing the item ID to delete.</param>
@@ -73,6 +85,52 @@ public static class InventoryController
         Utils.RequestResult<List<Item>> result = await InventoryService.FindItemAsync(null!);
         return EndpointHelpers.ToIResult(result);
     }
+
+
+    /// <summary>
+    /// Adds tags to an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request containing tags to add.</param>
+    /// <returns>An HTTP result indicating the status of the operation.</returns>
+    public static async Task<IResult> AddItemTags(
+        [FromBody] AddItemTagsRequest request
+    )
+    {
+        Utils.RequestResult result = await InventoryService.AddTagsToItemAsync(request);
+        IResult httpResult = EndpointHelpers.ToIResult(result);
+        return httpResult;
+    }
+
+
+    /// <summary>
+    /// Replaces all tags on an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request containing the new tags list.</param>
+    /// <returns>An HTTP result indicating the status of the operation.</returns>
+    public static async Task<IResult> ReplaceItemTags(
+        [FromBody] ReplaceItemTagsRequest request
+    )
+    {
+        Utils.RequestResult result = await InventoryService.ReplaceItemTagsAsync(request);
+        IResult httpResult = EndpointHelpers.ToIResult(result);
+        return httpResult;
+    }
+
+
+    /// <summary>
+    /// Removes tags from an existing inventory item.
+    /// </summary>
+    /// <param name="request">The request containing tags to remove.</param>
+    /// <returns>An HTTP result indicating the status of the operation.</returns>
+    public static async Task<IResult> RemoveItemTags(
+        [FromBody] RemoveItemTagsRequest request
+    )
+    {
+        Utils.RequestResult result = await InventoryService.RemoveTagsFromItemAsync(request);
+        IResult httpResult = EndpointHelpers.ToIResult(result);
+        return httpResult;
+    }
+
 
     #endregion
 

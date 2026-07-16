@@ -2,10 +2,16 @@ using EZBM.DesktopHost.Endpoints;
 using EZBM.DesktopHost.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.NumberHandling =
+        JsonNumberHandling.WriteAsString |
+        JsonNumberHandling.AllowReadingFromString;
+});
 builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
 
 // Enable CORS for port 5173
@@ -49,8 +55,18 @@ app.MapPost("/api/auth/setup", AuthController.Setup);
 
 // Inventory Endpoints
 app.MapGet("/api/items", InventoryController.GetAllItems);
-app.MapCrud("/api/items", InventoryController.CreateItem, InventoryController.GetItem, InventoryController.FindItems, null, InventoryController.DeleteItem);
+app.MapCrud(
+    "/api/items",
+    InventoryController.CreateItem,
+    InventoryController.GetItem,
+    InventoryController.FindItems,
+    InventoryController.UpdateItem,
+    InventoryController.DeleteItem
+);
 app.MapGet("/api/items/barcode/{code}", InventoryController.LookupBarcode);
+app.MapPost("/api/items/tags/add", InventoryController.AddItemTags);
+app.MapPost("/api/items/tags/replace", InventoryController.ReplaceItemTags);
+app.MapPost("/api/items/tags/remove", InventoryController.RemoveItemTags);
 
 // Inventory Transaction Endpoints
 app.MapCrud("/api/items/transactions", InventoryController.CreateItemTransaction, InventoryController.GetItemTransaction, InventoryController.FindItemTransactions, null, InventoryController.DeleteItemTransaction);

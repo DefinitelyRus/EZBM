@@ -27,6 +27,21 @@ Changes:
 
 ## Logs
 
+### 07/15/2026
+
+Added backend support for updating inventory items and managing tags, alongside custom JSON serialization configurations to prevent large integer precision loss in JavaScript client requests, and updated host API references.
+
+Changes:
+
+- Configured `System.Text.Json` number handling in `Program.cs` to serialize `ulong`/`long` values as strings and accept stringified numbers in incoming payloads.
+- Added `UpdateItem` endpoint to `InventoryController.cs` and mapped it to the `/api/items/update` route in `Program.cs` to expose complete item CRUD API operations.
+- Added `AddItemTagsRequest`, `ReplaceItemTagsRequest`, and `RemoveItemTagsRequest` definitions to `ServiceRequests.cs`.
+- Implemented `AddTagsToItemAsync`, `ReplaceItemTagsAsync`, and `RemoveTagsFromItemAsync` in `InventoryService.cs`.
+- Added tag manipulation endpoints `AddItemTags`, `ReplaceItemTags`, and `RemoveItemTags` to `InventoryController.cs`.
+- Registered route mappings for `/api/items/tags/add`, `/api/items/tags/replace`, and `/api/items/tags/remove` in `Program.cs`.
+- Documented the new item update, tag manipulation endpoints, and JSON stringified ID representation guidelines in the host `README.md`.
+- Wrote integration tests in `EZBM.Tests` verifying tag adding, replacing, and removing operations, ensuring database consistency.
+
 ### 07/13/2026
 
 Implemented startup arguments to isolate testing environments and redesigned the database seeder to populate realistic, fully randomized business datasets.

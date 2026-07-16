@@ -530,6 +530,70 @@ internal class Program
             getAllStatus == 200,
             $"Status: {getAllStatus}");
 
+        // Add Item Tags
+        AddItemTagsRequest addTagsReq = new(Id: itemId, Tags: new() { "FastFood", "Combo" });
+        IResult addTagsRes = await InventoryController.AddItemTags(addTagsReq);
+        int? addTagsStatus = GetStatusCode(addTagsRes);
+        IResult getResultForAdd = await InventoryController.GetItem(getRequest);
+        bool tagsAddedSuccessfully = false;
+        string addTagsDetails = $"Status: {addTagsStatus}";
+        if (getResultForAdd is Ok<Item> okItemForAdd)
+        {
+            List<string>? tags = okItemForAdd.Value?.Tags;
+            if (tags is not null && tags.Contains("Food") && tags.Contains("FastFood") && tags.Contains("Combo"))
+            {
+                tagsAddedSuccessfully = true;
+                addTagsDetails = $"Tags are: {string.Join(", ", tags)}";
+            }
+        }
+        LogResult("Add Item Tags (Success)",
+            $"Added tags to item ID {itemId}.",
+            addTagsStatus == 200 && tagsAddedSuccessfully,
+            addTagsDetails);
+
+        // Replace Item Tags
+        ReplaceItemTagsRequest replaceTagsReq = new(Id: itemId, Tags: new() { "FastFoodOnly" });
+        IResult replaceTagsRes = await InventoryController.ReplaceItemTags(replaceTagsReq);
+        int? replaceTagsStatus = GetStatusCode(replaceTagsRes);
+        IResult getResultForReplace = await InventoryController.GetItem(getRequest);
+        bool tagsReplacedSuccessfully = false;
+        string replaceTagsDetails = $"Status: {replaceTagsStatus}";
+        if (getResultForReplace is Ok<Item> okItemForReplace)
+        {
+            List<string>? tags = okItemForReplace.Value?.Tags;
+            if (tags is not null && tags.Count == 1 && tags[0] == "FastFoodOnly")
+            {
+                tagsReplacedSuccessfully = true;
+                replaceTagsDetails = $"Tags are: {string.Join(", ", tags)}";
+            }
+        }
+        LogResult("Replace Item Tags (Success)",
+            $"Replaced tags for item ID {itemId}.",
+            replaceTagsStatus == 200 && tagsReplacedSuccessfully,
+            replaceTagsDetails);
+
+        // Remove Item Tags
+        RemoveItemTagsRequest removeTagsReq = new(Id: itemId, Tags: new() { "FastFoodOnly" });
+        IResult removeTagsRes = await InventoryController.RemoveItemTags(removeTagsReq);
+        int? removeTagsStatus = GetStatusCode(removeTagsRes);
+        IResult getResultForRemove = await InventoryController.GetItem(getRequest);
+        bool tagsRemovedSuccessfully = false;
+        string removeTagsDetails = $"Status: {removeTagsStatus}";
+        if (getResultForRemove is Ok<Item> okItemForRemove)
+        {
+            List<string>? tags = okItemForRemove.Value?.Tags;
+            if (tags is not null && tags.Count == 0)
+            {
+                tagsRemovedSuccessfully = true;
+                removeTagsDetails = "Tags list is empty.";
+            }
+        }
+        LogResult("Remove Item Tags (Success)",
+            $"Removed tags from item ID {itemId}.",
+            removeTagsStatus == 200 && tagsRemovedSuccessfully,
+            removeTagsDetails);
+
+
         // Create temporary staff to perform transaction
         CreateStaffRequest staffReq = new(
             Username: "inv_staff",
@@ -930,16 +994,26 @@ internal class Program
         SettingsService.SaveSettings(settings);
 
         bool promoOk = promoResValid.Type == Utils.Result.Success;
+        string saleDetails = "error";
         if (promoOk)
         {
             Sale? verifiedSale = await db.Sale.FindAsync(promoResValid.Data);
-            promoOk = verifiedSale is not null && verifiedSale.Amount == 0f;
+            if (verifiedSale is null)
+            {
+                saleDetails = "null sale";
+                promoOk = false;
+            }
+            else
+            {
+                saleDetails = verifiedSale.Amount.ToString("0.00");
+                promoOk = verifiedSale.Amount == 0f;
+            }
         }
 
         LogResult("FREEWEEK Promotion Validity Offset",
             "Verified that applying 'FREEWEEK' within 7 days of store opening discounts the total amount to $0.",
             promoOk,
-            $"Promo checkout result: {promoResValid.Type}. Final Sale Amount charged: {(promoOk ? "0.00" : "error")}");
+            $"Promo checkout result: {promoResValid.Type}. Final Sale Amount charged: {saleDetails}");
     }
 
     #endregion

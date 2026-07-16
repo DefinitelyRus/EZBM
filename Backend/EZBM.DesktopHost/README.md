@@ -108,6 +108,13 @@ Every request should include the active operator's username in the header:
 
 If this header is missing, the backend defaults the operator name to `System` for audit logging.
 
+### 64-Bit Integer IDs (Precision Safety)
+
+To avoid JavaScript floating-point precision loss on the frontend for large database identifiers (64-bit unsigned integers / `ulong`), the API is configured with custom JSON number handling:
+
+* **API Responses:** All large identifier numbers and references are serialized as strings in JSON payloads (e.g. `"id": "11142895436128481513"`).
+* **API Requests:** The backend accepts both raw numbers and string formats for these fields. You can send either `"id": "11142895436128481513"` or `"id": 11142895436128481513` in your request bodies.
+
 ### Example Request (JavaScript Fetch)
 
 Here is how you can fetch the inventory list from the frontend:
@@ -293,6 +300,83 @@ Deletes an item from the inventory database.
 
 * **Success Response (200 OK):**
   * Empty response indicating successful deletion.
+
+#### `POST /api/items/update`
+
+Updates an existing product or service.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "name": "Noodles New Name",
+    "description": "Instant cup noodles updated description",
+    "isForSale": true,
+    "cost": 16.0,
+    "salePrice": 24.0,
+    "quantity": 30.0,
+    "unitOfMeasurement": "Count",
+    "expirationDate": "2026-11-15T00:00:00Z",
+    "tags": ["Food", "Instant"],
+    "imageUrl": "http://example.com/noodles_new.png",
+    "targetStock": 60.0,
+    "lowStockThresholdPercentage": 0.15,
+    "brand": "NoodleBrandNew",
+    "barcode": "4801234567891"
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating successful update.
+
+#### `POST /api/items/tags/add`
+
+Adds new tags to an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["Instant", "Quick"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully added.
+
+#### `POST /api/items/tags/replace`
+
+Replaces all tags on an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["FoodOnly"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully replaced.
+
+#### `POST /api/items/tags/remove`
+
+Removes specific tags from an existing inventory item.
+
+* **Request Body:**
+
+  ```json
+  {
+    "id": 1,
+    "tags": ["Quick"]
+  }
+  ```
+
+* **Success Response (200 OK):**
+  * Empty response indicating tags were successfully removed.
 
 ### Inventory Transactions
 
@@ -1307,7 +1391,7 @@ Retrieves all static lists and enum values in the system in a single call.
 You can also fetch each list individually via standard `GET` requests:
 
 * `GET /api/enums/units` - Returns units of measurement array.
-* `GET /api/enums/tags` - Returns default tags array.
+* `GET /api/enums/tags` - Returns the default tag suggestions array. Items may have any custom tags beyond this list.
 * `GET /api/enums/access-cards` - Returns access card types array.
 * `GET /api/enums/frequencies` - Returns pay frequency types array.
 * `GET /api/enums/stock-transaction-types` - Returns stock transaction types array.
