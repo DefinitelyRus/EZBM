@@ -14,7 +14,9 @@ export async function request(endpoint, options = {}) {
     });
 
     if (!response.ok) {
-        throw new Error(`Request failed (${response.status})`);
+        const errorText = await response.text();
+        console.error(errorText);
+        throw new Error(`Request failed (${response.status})\n${errorText}`);
     }
 
     const text = await response.text();

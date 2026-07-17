@@ -24,13 +24,13 @@ function Dashboard() {
   const [search, setSearch] = useState("");
 
     /* Refreshing the Inventory */
-  const loadInventory = async () => {
+  const loadInventory = async (searchTerm = search) => {
     try {
       const data =
-        search.trim() === ""
+        searchTerm.trim() === ""
           ? await InventoryAPI.getAll()
           : await InventoryAPI.find({
-              name: search.trim(),
+              name: searchTerm.trim(),
             });
 
       setInventoryItems(data);
@@ -101,8 +101,8 @@ function Dashboard() {
   };
 
   /* Search Bar */
- useEffect(() => {
-    const timeout = setTimeout(loadInventory, 300);
+  useEffect(() => {
+    const timeout = setTimeout(() => loadInventory(search), 300);
 
     return () => clearTimeout(timeout);
   }, [search]);
@@ -123,6 +123,7 @@ function Dashboard() {
   const [formData, setFormData] = useState(initialForm);
 
   const handleClear = () => {
+    setEditingItem(null);
     setFormData(initialForm);
   };
 
@@ -135,16 +136,112 @@ function Dashboard() {
     }));
   };
 
+  const toBackendItem = (formData, enums, extra = {}) => ({
+    ...extra,
+    ...formData,
+
+    cost: Number(formData.cost),
+    salePrice: Number(formData.salePrice),
+    quantity: Number(formData.quantity),
+
+    // Convert dropdown index -> enum string
+    unitOfMeasurement: formData.unitOfMeasurement,
+
+    // Convert Date object -> ISO string
+    expirationDate: formData.expirationDate
+      ? formData.expirationDate.toISOString()
+      : null,
+  });
+  
+  /* Adding an Item */
+ const handleCreate = async () => {
+    const item = toBackendItem(formData, enums, {
+      imageUrl: null,
+      itemType: "Product",
+      barcode: null,
+      targetStock: 0,
+      lowStockThresholdPercentage: 0.2,
+      brand: null,
+    });
+
+    console.log(item);
+
+    try {
+      await InventoryAPI.create(item);
+      await loadInventory(search);
+      handleClear();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  /* Editing an Item */
+  const [editingItem, setEditingItem] = useState(null);
+
+    const handleEdit = (item) => {
+    setEditingItem(item);
+
+   console.log("Backend expiration:", item.expirationDate);
+    console.log("Type:", typeof item.expirationDate);
+
+    setFormData({
+      name: item.name ?? "",
+      description: item.description ?? "",
+      isForSale: item.isForSale,
+      cost: item.cost ?? "",
+      salePrice: item.salePrice ?? "",
+      quantity: item.quantity ?? "",
+
+      unitOfMeasurement: item.unitOfMeasurement,
+
+      // enter code for date here!
+
+      tags: item.tags ?? [],
+    });
+
+    setShowAddItem(true);
+  };
+
+  const handleUpdate = async () => {
+    const item = toBackendItem(formData, enums, {
+      id: editingItem.id,
+      imageUrl: editingItem.imageUrl,
+      barcode: editingItem.barcode,
+      brand: editingItem.brand,
+      targetStock: editingItem.targetStock ?? 0,
+      lowStockThresholdPercentage:
+        editingItem.lowStockThresholdPercentage ?? 0.2,
+    });
+
+    console.log(item);
+
+    try {
+      await InventoryAPI.update(item);
+
+      await loadInventory(search);
+
+      handleClear();
+
+      alert("Item updated successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update item.");
+    }
+  };
+
   /* Deleting an Item */
- const [deletingId, setDeletingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this item?")) return;
 
     try {
       setDeletingId(id);
+
       await InventoryAPI.delete(id);
-      await loadInventory();
+
+      // Reload using the current search term
+      await loadInventory(search);
     } catch (err) {
       console.error(err);
     } finally {
@@ -227,7 +324,11 @@ function Dashboard() {
       className: "col-center-btn",
       render: (row) => (
         <div className="d-flex flex-direction col btn-group">
-          <button className="edit" title="Edit">
+          <button
+            className="edit"
+            title="Edit"
+            onClick={() => handleEdit(row)}
+          >
             <img src={EditIcon} alt="Edit" />
           </button>
 
@@ -274,8 +375,12 @@ function Dashboard() {
         <div className="card-body">
           <div className="d-flex flex-direction col gap-3 panel-header">
             <div className="flex-direction row">
-              <h4>Add New Item</h4>
-              <p>Create a new inventory item.</p>
+              <h4>{editingItem ? "Edit Item" : "Add New Item"}</h4>
+              <p>
+                {editingItem
+                  ? "Update the selected inventory item."
+                  : "Create a new inventory item."}
+              </p>
             </div>
 
             <div>
@@ -442,9 +547,10 @@ function Dashboard() {
           <div className="d-flex justify-content-center gap-3 item-btn-group">
               <button
                 id="create-item"
-                className="btn btn-light align-self-center"
+                type="button"
+                onClick={editingItem ? handleUpdate : handleCreate}
               >
-                Create Item
+                {editingItem ? "Update Item" : "Create Item"}
               </button>
               <button
                 id="clear-item"

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./Dropdown.css";
 
-function Dropdown({ title, options, value, onSelect }) {
+function Dropdown({ title, options = [], value, onSelect }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -21,13 +21,16 @@ function Dropdown({ title, options, value, onSelect }) {
       document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
 
-  const handleSelect = (option) => {
+  const handleSelect = (index) => {
     setOpen(false);
 
-    if (onSelect) {
-      onSelect(option);
-    }
+    onSelect?.(index);
   };
+
+  const displayValue =
+    value !== "" && value !== null && value !== undefined
+      ? options[value]
+      : title;
 
   return (
     <div className="md-dropdown" ref={dropdownRef}>
@@ -36,7 +39,7 @@ function Dropdown({ title, options, value, onSelect }) {
         className={`md-dropdown-btn ${open ? "open" : ""}`}
         onClick={() => setOpen(!open)}
       >
-        <span>{value || title}</span>
+        <span>{displayValue}</span>
 
         <span className={`md-arrow ${open ? "rotate" : ""}`}>
           ▼
@@ -44,12 +47,12 @@ function Dropdown({ title, options, value, onSelect }) {
       </button>
 
       <div className={`md-dropdown-menu ${open ? "show" : ""}`}>
-        {options.map((option) => (
+        {options.map((option, index) => (
           <button
             key={option}
             type="button"
             className="md-dropdown-item"
-            onClick={() => handleSelect(option)}
+            onClick={() => handleSelect(index)}
           >
             {option}
           </button>

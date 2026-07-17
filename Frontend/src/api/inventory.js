@@ -20,6 +20,13 @@ export const InventoryAPI = {
         });
     },
 
+    update(item) {
+        return request("/items/update", {
+            method: "POST",
+            body: JSON.stringify(item)
+        });
+    },
+
     delete(id) {
         return request("/items/delete", {
             method: "POST",
