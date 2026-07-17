@@ -378,7 +378,7 @@ function Dashboard() {
               <h4>{editingItem ? "Edit Item" : "Add New Item"}</h4>
               <p>
                 {editingItem
-                  ? "Update the selected inventory item."
+                  ? "Update inventory item."
                   : "Create a new inventory item."}
               </p>
             </div>
@@ -558,7 +558,9 @@ function Dashboard() {
                 type="button"
                 onClick={handleClear}
               >
-                Clear
+                {editingItem
+                  ? "Cancel"
+                  : "Clear"}
             </button>
           </div>
         </div>

@@ -3,7 +3,10 @@ import "./Dropdown.css";
 
 function Dropdown({ title, options = [], value, onSelect }) {
   const [open, setOpen] = useState(false);
+  const [openUp, setOpenUp] = useState(false);
+
   const dropdownRef = useRef(null);
+  const menuRef = useRef(null);
 
   useEffect(() => {
     function handleOutsideClick(e) {
@@ -23,7 +26,6 @@ function Dropdown({ title, options = [], value, onSelect }) {
 
   const handleSelect = (index) => {
     setOpen(false);
-
     onSelect?.(index);
   };
 
@@ -32,12 +34,38 @@ function Dropdown({ title, options = [], value, onSelect }) {
       ? options[value]
       : title;
 
+  const toggleDropdown = () => {
+    if (!open) {
+      const GAP = 20;
+
+      const rect = dropdownRef.current.getBoundingClientRect();
+
+      const spaceBelow = window.innerHeight - rect.bottom - GAP;
+      const spaceAbove = rect.top - GAP;
+
+      const shouldOpenUp =
+        spaceBelow < 300 && spaceAbove > spaceBelow;
+
+      setOpenUp(shouldOpenUp);
+
+      requestAnimationFrame(() => {
+        if (menuRef.current) {
+          menuRef.current.style.maxHeight = `${
+            shouldOpenUp ? spaceAbove : spaceBelow
+          }px`;
+        }
+      });
+    }
+
+    setOpen((prev) => !prev);
+  };
+
   return (
     <div className="md-dropdown" ref={dropdownRef}>
       <button
         type="button"
         className={`md-dropdown-btn ${open ? "open" : ""}`}
-        onClick={() => setOpen(!open)}
+        onClick={toggleDropdown}
       >
         <span>{displayValue}</span>
 
@@ -46,7 +74,12 @@ function Dropdown({ title, options = [], value, onSelect }) {
         </span>
       </button>
 
-      <div className={`md-dropdown-menu ${open ? "show" : ""}`}>
+      <div
+        ref={menuRef}
+        className={`md-dropdown-menu ${open ? "show" : ""} ${
+          openUp ? "open-up" : ""
+        }`}
+      >
         {options.map((option, index) => (
           <button
             key={option}
