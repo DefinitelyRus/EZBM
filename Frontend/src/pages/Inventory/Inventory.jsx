@@ -23,6 +23,24 @@ function Dashboard() {
   const [showAddItem, setShowAddItem] = useState(true);
   const [search, setSearch] = useState("");
 
+    /* Refreshing the Inventory */
+  const loadInventory = async () => {
+    try {
+      const data =
+        search.trim() === ""
+          ? await InventoryAPI.getAll()
+          : await InventoryAPI.find({
+              name: search.trim(),
+            });
+
+      setInventoryItems(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+
+  /* Fetching enums */
   const [enums, setEnums] = useState({
     units: [],
     tags: [],
@@ -52,11 +70,9 @@ function Dashboard() {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
 
     const handleChange = ({ matches }) => {
-      // Hide the panel on small screens
       setShowAddItem(!matches);
     };
 
-    // Set initial state
     handleChange(mediaQuery);
 
     mediaQuery.addEventListener("change", handleChange);
@@ -65,6 +81,7 @@ function Dashboard() {
       mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+    /* Ensure only numbers are accepted */
   const handlePriceChange = (field, value) => {
     if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
       setFormData((prev) => ({
@@ -84,23 +101,10 @@ function Dashboard() {
   };
 
   /* Search Bar */
-  useEffect(() => {
-      const timeout = setTimeout(async () => {
-          try {
-              const data =
-                  search.trim() === ""
-                      ? await InventoryAPI.getAll()
-                      : await InventoryAPI.find({
-                          name: search.trim(),
-                      });
+ useEffect(() => {
+    const timeout = setTimeout(loadInventory, 300);
 
-              setInventoryItems(data);
-          } catch (err) {
-              console.error(err);
-          }
-      }, 300);
-
-      return () => clearTimeout(timeout);
+    return () => clearTimeout(timeout);
   }, [search]);
 
   /* Clear Button */
@@ -129,6 +133,23 @@ function Dashboard() {
         ? prev.tags.filter((t) => t !== tag)
         : [...prev.tags, tag],
     }));
+  };
+
+  /* Deleting an Item */
+ const [deletingId, setDeletingId] = useState(null);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this item?")) return;
+
+    try {
+      setDeletingId(id);
+      await InventoryAPI.delete(id);
+      await loadInventory();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   /* Table */
@@ -204,13 +225,17 @@ function Dashboard() {
       hideable: false,
       width: "12%",
       className: "col-center-btn",
-      render: () => (
+      render: (row) => (
         <div className="d-flex flex-direction col btn-group">
           <button className="edit" title="Edit">
             <img src={EditIcon} alt="Edit" />
           </button>
 
-          <button className="delete" title="Delete">
+          <button
+            className="delete"
+            disabled={deletingId === row.id}
+            onClick={() => handleDelete(row.id)}
+          >
             <img src={DeleteIcon} alt="Delete" />
           </button>
         </div>
