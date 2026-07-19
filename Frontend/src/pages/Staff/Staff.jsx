@@ -153,11 +153,15 @@ function Staff() {
       ];
 
       // Find the first missing field
-      const missingField = requiredFields.find(
-        (field) =>
-          !formData[field] ||
-          (typeof formData[field] === "string" && formData[field].trim() === "")
-      );
+      const missingField = requiredFields.find((field) => {
+        const value = formData[field];
+
+        return (
+          value === null ||
+          value === undefined ||
+          (typeof value === "string" && value.trim() === "")
+        );
+      });
 
       if (missingField) {
         alert(`Please fill in the ${missingField} field.`);
