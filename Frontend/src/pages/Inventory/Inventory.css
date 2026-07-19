@@ -47,7 +47,14 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-1);
 
-    overflow: hidden;      /* clips children to rounded corners */
+    overflow: hidden;     
+
+    transition:
+        width 300ms cubic-bezier(0.2,0,0,1),
+        opacity 200ms cubic-bezier(0.2,0,0,1),
+        transform 300ms cubic-bezier(0.2,0,0,1),
+        padding 300ms cubic-bezier(0.2,0,0,1),
+        margin 300ms cubic-bezier(0.2,0,0,1);
 }
 
 .card-body {
@@ -57,7 +64,7 @@
     min-height: 0;
 }
 
-.panel-content {
+.inv-panel-content {
     flex: 1;
     min-height: 0;
 

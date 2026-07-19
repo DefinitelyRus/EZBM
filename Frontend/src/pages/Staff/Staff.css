@@ -29,24 +29,36 @@
         max-width: none;
         flex: 1;
     }
+
+    .staff-panel-content {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 8px;
+}
+
 }
 
 #add-staff-container {
-    max-height: fit-content;
-    width: 410px;
-    position: fixed;
+    display: flex;
+    flex-direction: column;
 
+    position: fixed;
     top: 24px;
     right: 24px;
 
-    background: var(--md-surface);
+    width: 370px;
+    max-height: calc(100vh - 48px);
 
+    background: var(--md-surface);
     border: 1px solid var(--md-outline);
     border-radius: var(--radius-lg);
-
     box-shadow: var(--shadow-1);
 
-    padding: 15px;
+    overflow: hidden;     
 
     transition:
         width 300ms cubic-bezier(0.2,0,0,1),
@@ -54,6 +66,13 @@
         transform 300ms cubic-bezier(0.2,0,0,1),
         padding 300ms cubic-bezier(0.2,0,0,1),
         margin 300ms cubic-bezier(0.2,0,0,1);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 .panel-open {

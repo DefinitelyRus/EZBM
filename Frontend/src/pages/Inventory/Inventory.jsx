@@ -455,7 +455,7 @@ function Dashboard() {
             </div>
         </div>
 
-        <div className="panel-content">
+        <div className="inv-panel-content">
           <form id="item-form">
             <div id="item-inputs">
               <div className="mb-3">

@@ -192,151 +192,153 @@ function Staff() {
             </div>
         </div>
 
-        <form id="item-form">
-          <div id="item-inputs">
+        <div className="staff-panel-content">
+          <form id="item-form">
+            <div id="item-inputs">
 
-            {/* Account Information */}
-            <div className="form-section">
-              <h6 className="section-title">Account Information</h6>
+              {/* Account Information */}
+              <div className="form-section">
+                <h6 className="section-title">Account Information</h6>
 
-              <div className="usr-auth">
+                <div className="usr-auth">
+                  <div className="mb-3">
+                    <label className="form-label">Username</label>
+                    <input
+                      type="text"
+                      className="form-control usr-input"
+                      value={formData.username}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          username: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Password</label>
+                    <input
+                      type="password"
+                      className="form-control usr-input"
+                      value={formData.password}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          password: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Personal Information */}
+              <div className="form-section">
+                <h6 className="section-title">Personal Information</h6>
+
+                <div className="name-row">
+                  <div className="mb-3">
+                    <label className="form-label">First Name</label>
+                    <input
+                      type="text"
+                      className="form-control usr-input"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          firstName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Last Name</label>
+                    <input
+                      type="text"
+                      className="form-control usr-input"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          lastName: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
                 <div className="mb-3">
-                  <label className="form-label">Username</label>
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control usr-input"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        email: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Phone Number</label>
                   <input
                     type="text"
                     className="form-control usr-input"
-                    value={formData.username}
+                    value={formData.phoneNumber}
+                    inputMode="numeric"
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        username: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Password</label>
-                  <input
-                    type="password"
-                    className="form-control usr-input"
-                    value={formData.password}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        password: e.target.value,
+                        phoneNumber: e.target.value.replace(/\D/g, ""),
                       })
                     }
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Personal Information */}
-            <div className="form-section">
-              <h6 className="section-title">Personal Information</h6>
+              {/* Employment Information */}
+              <div className="form-section">
+                <h6 className="section-title">Employment Information</h6>
 
-              <div className="name-row">
                 <div className="mb-3">
-                  <label className="form-label">First Name</label>
+                  <label className="form-label">Position / Role</label>
                   <input
                     type="text"
                     className="form-control usr-input"
-                    value={formData.firstName}
+                    value={formData.position}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        firstName: e.target.value,
+                        position: e.target.value,
                       })
                     }
                   />
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label">Last Name</label>
-                  <input
-                    type="text"
-                    className="form-control usr-input"
-                    value={formData.lastName}
-                    onChange={(e) =>
+                  <label className="form-label">Pay Frequency</label>
+                  <Dropdown
+                    title="Select Frequency"
+                    options={dropdownOptions.payFrequency}
+                    value={formData.payFrequency}
+                    onSelect={(value) =>
                       setFormData({
                         ...formData,
-                        lastName: e.target.value,
+                        payFrequency: value,
                       })
                     }
                   />
                 </div>
               </div>
 
-              <div className="mb-3">
-                <label className="form-label">Email</label>
-                <input
-                  type="email"
-                  className="form-control usr-input"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      email: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Phone Number</label>
-                <input
-                  type="text"
-                  className="form-control usr-input"
-                  value={formData.phoneNumber}
-                  inputMode="numeric"
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      phoneNumber: e.target.value.replace(/\D/g, ""),
-                    })
-                  }
-                />
-              </div>
             </div>
-
-            {/* Employment Information */}
-            <div className="form-section">
-              <h6 className="section-title">Employment Information</h6>
-
-              <div className="mb-3">
-                <label className="form-label">Position / Role</label>
-                <input
-                  type="text"
-                  className="form-control usr-input"
-                  value={formData.position}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      position: e.target.value,
-                    })
-                  }
-                />
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label">Pay Frequency</label>
-                <Dropdown
-                  title="Select Frequency"
-                  options={dropdownOptions.payFrequency}
-                  value={formData.payFrequency}
-                  onSelect={(value) =>
-                    setFormData({
-                      ...formData,
-                      payFrequency: value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-
-          </div>
-        </form>
+          </form>
+        </div>
 
         <div className="d-flex justify-content-center gap-3 item-btn-group">
             <button
