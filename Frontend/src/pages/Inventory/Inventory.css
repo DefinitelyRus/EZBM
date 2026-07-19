@@ -35,14 +35,12 @@
     position: fixed;
     top: 24px;
     right: 24px;
-    bottom: 24px;     
+    bottom: 24px;
 
     width: 370px;
 
-    display: flex;
-    flex-direction: column;
-
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 
     background: var(--md-surface);
     border: 1px solid var(--md-outline);
@@ -50,6 +48,10 @@
     box-shadow: var(--shadow-1);
 
     padding: 15px;
+}
+
+.panel-content {
+    min-height: 0;
 }
 
 .panel-open {

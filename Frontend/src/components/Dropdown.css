@@ -69,6 +69,7 @@
     left: 0;
 
     width: 100%;
+    max-height: 220px;
 
     overflow-y: auto;
     overflow-x: hidden;
@@ -81,7 +82,6 @@
 
     opacity: 0;
     visibility: hidden;
-
     transform: translateY(-6px);
 
     transition:
@@ -91,18 +91,17 @@
 
     z-index: 1000;
 }
-
 .md-dropdown-menu.open-up {
     top: auto;
     bottom: calc(100% + 8px);
 }
 
 .md-dropdown-menu.show {
-
     opacity: 1;
     visibility: visible;
 
     transform: translateY(0);
+    
 }
 
 /* ---------- Items ---------- */

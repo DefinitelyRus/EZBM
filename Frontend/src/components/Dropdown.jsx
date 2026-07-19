@@ -37,6 +37,7 @@ function Dropdown({ title, options = [], value, onSelect }) {
   const toggleDropdown = () => {
     if (!open) {
       const GAP = 20;
+      const DEFAULT_MAX_HEIGHT = 220; // Match your CSS
 
       const rect = dropdownRef.current.getBoundingClientRect();
 
@@ -44,15 +45,26 @@ function Dropdown({ title, options = [], value, onSelect }) {
       const spaceAbove = rect.top - GAP;
 
       const shouldOpenUp =
-        spaceBelow < 300 && spaceAbove > spaceBelow;
+        spaceBelow < DEFAULT_MAX_HEIGHT && spaceAbove > spaceBelow;
 
       setOpenUp(shouldOpenUp);
 
       requestAnimationFrame(() => {
-        if (menuRef.current) {
-          menuRef.current.style.maxHeight = `${
-            shouldOpenUp ? spaceAbove : spaceBelow
-          }px`;
+        if (!menuRef.current) return;
+
+        const availableSpace = shouldOpenUp
+          ? spaceAbove
+          : spaceBelow;
+
+        // Only shrink if necessary.
+        // Otherwise let CSS control the height.
+        if (availableSpace < DEFAULT_MAX_HEIGHT) {
+          menuRef.current.style.maxHeight = `${Math.max(
+            availableSpace,
+            100
+          )}px`;
+        } else {
+          menuRef.current.style.removeProperty("max-height");
         }
       });
     }
