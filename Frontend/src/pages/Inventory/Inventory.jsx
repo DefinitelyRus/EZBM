@@ -151,7 +151,6 @@ function Dashboard() {
 
     if (!trimmed) return;
 
-    // Prevent duplicates (case-insensitive)
     const exists = availableTags.some(
       tag => tag.toLowerCase() === trimmed.toLowerCase()
     );
@@ -161,13 +160,11 @@ function Dashboard() {
       return;
     }
 
-    // Add it to the selected tags
     setFormData(prev => ({
       ...prev,
       tags: [...prev.tags, trimmed],
     }));
 
-    // Make it available immediately
     setEnums(prev => ({
       ...prev,
       tags: [...prev.tags, trimmed],
@@ -214,6 +211,26 @@ function Dashboard() {
 
   // Create Item
   const handleCreate = async () => {
+    const requiredFields = {
+      name: "Name",
+      cost: "Cost Price",
+      quantity: "Quantity",
+      unitOfMeasurement: "Unit of Measurement",
+    };
+
+    for (const [key, label] of Object.entries(requiredFields)) {
+      const value = formData[key];
+
+      if (
+        value === null ||
+        value === undefined ||
+        (typeof value === "string" && value.trim() === "")
+      ) {
+        alert(`${label} is required.`);
+        return;
+      }
+    }
+
     const item = toBackendItem(formData, enums, {
       imageUrl: null,
       itemType: "Product",
