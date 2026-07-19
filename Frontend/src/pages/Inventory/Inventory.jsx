@@ -17,38 +17,64 @@ import "react-datepicker/dist/react-datepicker.css";
 
 const BREAKPOINT = 1600;
 
+/* ---------- CONTANT ---------- */
+
+const INITIAL_FORM = {
+  name: "",
+  description: "",
+  isForSale: false,
+  cost: "",
+  salePrice: "",
+  quantity: "",
+  unitOfMeasurement: "",
+  expirationDate: null,
+  tags: [],
+};
+
 function Dashboard() {
  
+  /* ---------- STATES ---------- */
+
+  // Inventory
   const [inventoryItems, setInventoryItems] = useState([]);
-  const [showAddItem, setShowAddItem] = useState(true);
   const [search, setSearch] = useState("");
 
-    /* Refreshing the Inventory */
-  const loadInventory = async (searchTerm = search) => {
-    try {
-      const data =
-        searchTerm.trim() === ""
-          ? await InventoryAPI.getAll()
-          : await InventoryAPI.find({
-              name: searchTerm.trim(),
-            });
+  //Form
+  const [formData, setFormData] = useState(INITIAL_FORM);
 
-      setInventoryItems(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-
-  /* Fetching enums */
+  //Enums
   const [enums, setEnums] = useState({
-    units: [],
-    tags: [],
-  });
+      units: [],
+      tags: [],
+    });
 
-  const enumName = (list, value) =>
-  list?.[value] ?? "-";
+  // UI
+  const [showAddItem, setShowAddItem] = useState(true);
+  const [showAllTags, setShowAllTags] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(4);
 
+  // Tags
+  const [addingTag, setAddingTag] = useState(false);
+  const [newTag, setNewTag] = useState("");
+
+  // Editing / Deleting
+  const [editingItem, setEditingItem] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+ 
+   /* ---------- DERIVED VALUES ---------- */
+
+   const availableTags = [
+    ...new Set([
+      ...enums.tags,
+      ...inventoryItems.flatMap(item => item.tags ?? []),
+    ]),
+  ].sort();
+
+  const enumName = (list, value) => list?.[value] ?? "-";
+
+  /* ---------- EFFECTS ---------- */
+
+  // Load enums
   useEffect(() => {
     async function loadEnums() {
       try {
@@ -66,8 +92,11 @@ function Dashboard() {
     loadEnums();
   }, []);
 
+  // Responsive add-item panel
   useEffect(() => {
-    const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
+    const mediaQuery = window.matchMedia(
+      `(max-width: ${BREAKPOINT - 1}px)`
+    );
 
     const handleChange = ({ matches }) => {
       setShowAddItem(!matches);
@@ -81,10 +110,18 @@ function Dashboard() {
       mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-    /* Ensure only numbers are accepted */
+  // Search debounce
+  useEffect(() => {
+    const timeout = setTimeout(() => loadInventory(search), 300);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
+
+  /* ---------- HELPRES---------- */
+
   const handlePriceChange = (field, value) => {
     if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         [field]: value,
       }));
@@ -93,68 +130,90 @@ function Dashboard() {
 
   const handleQuantityChange = (value) => {
     if (/^\d*\.?\d*$/.test(value) || value === "") {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         quantity: value,
       }));
     }
   };
 
-  /* Search Bar */
-  useEffect(() => {
-    const timeout = setTimeout(() => loadInventory(search), 300);
+  const toggleTag = (tag) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tag)
+        ? prev.tags.filter(t => t !== tag)
+        : [...prev.tags, tag],
+    }));
+  };
 
-    return () => clearTimeout(timeout);
-  }, [search]);
+  const handleAddTag = () => {
+    const trimmed = newTag.trim();
 
-  /* Clear Button */
-  const initialForm = {
-      name: "",
-      description: "",
-      isForSale: false,
-      cost: "",
-      salePrice: "",
-      quantity: "",
-      unitOfMeasurement: "",
-      expirationDate: null,
-      tags: [],
-    };
+    if (!trimmed) return;
 
-  const [formData, setFormData] = useState(initialForm);
+    // Prevent duplicates (case-insensitive)
+    const exists = availableTags.some(
+      tag => tag.toLowerCase() === trimmed.toLowerCase()
+    );
+
+    if (exists) {
+      alert("That tag already exists.");
+      return;
+    }
+
+    // Add it to the selected tags
+    setFormData(prev => ({
+      ...prev,
+      tags: [...prev.tags, trimmed],
+    }));
+
+    // Make it available immediately
+    setEnums(prev => ({
+      ...prev,
+      tags: [...prev.tags, trimmed],
+    }));
+
+    setNewTag("");
+    setAddingTag(false);
+  };
 
   const handleClear = () => {
     setEditingItem(null);
-    setFormData(initialForm);
-  };
-
-  const toggleTag = (tag) => {
-    setFormData((prev) => ({
-      ...prev,
-      tags: prev.tags.includes(tag)
-        ? prev.tags.filter((t) => t !== tag)
-        : [...prev.tags, tag],
-    }));
+    setFormData(INITIAL_FORM);
   };
 
   const toBackendItem = (formData, enums, extra = {}) => ({
     ...extra,
     ...formData,
-
     cost: Number(formData.cost),
     salePrice: Number(formData.salePrice),
     quantity: Number(formData.quantity),
-
-    // Convert dropdown index -> enum string
     unitOfMeasurement: formData.unitOfMeasurement,
-
-    // Convert Date object -> ISO string
     expirationDate: formData.expirationDate
       ? formData.expirationDate.toISOString()
       : null,
   });
   
-  /* Adding an Item */
- const handleCreate = async () => {
+  /* ---------- INVENTORY CRUD ---------- */
+
+  // Load Inventory
+  const loadInventory = async (searchTerm = search) => {
+    try {
+      const data =
+        searchTerm.trim() === ""
+          ? await InventoryAPI.getAll()
+          : await InventoryAPI.find({
+              name: searchTerm.trim(),
+            });
+
+      setInventoryItems(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Create Item
+  const handleCreate = async () => {
     const item = toBackendItem(formData, enums, {
       imageUrl: null,
       itemType: "Product",
@@ -168,20 +227,20 @@ function Dashboard() {
 
     try {
       await InventoryAPI.create(item);
+
       await loadInventory(search);
+
       handleClear();
     } catch (err) {
       console.error(err);
     }
   };
 
-  /* Editing an Item */
-  const [editingItem, setEditingItem] = useState(null);
-
-    const handleEdit = (item) => {
+  // Edit Item
+  const handleEdit = (item) => {
     setEditingItem(item);
 
-   console.log("Backend expiration:", item.expirationDate);
+    console.log("Backend expiration:", item.expirationDate);
     console.log("Type:", typeof item.expirationDate);
 
     setFormData({
@@ -191,10 +250,12 @@ function Dashboard() {
       cost: item.cost ?? "",
       salePrice: item.salePrice ?? "",
       quantity: item.quantity ?? "",
-
       unitOfMeasurement: item.unitOfMeasurement,
 
-      // enter code for date here!
+      // TODO:
+      // expirationDate: item.expirationDate
+      //   ? new Date(item.expirationDate)
+      //   : null,
 
       tags: item.tags ?? [],
     });
@@ -202,6 +263,7 @@ function Dashboard() {
     setShowAddItem(true);
   };
 
+  // Update Item
   const handleUpdate = async () => {
     const item = toBackendItem(formData, enums, {
       id: editingItem.id,
@@ -229,9 +291,7 @@ function Dashboard() {
     }
   };
 
-  /* Deleting an Item */
-  const [deletingId, setDeletingId] = useState(null);
-
+  // Delete Item
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this item?")) return;
 
@@ -240,7 +300,6 @@ function Dashboard() {
 
       await InventoryAPI.delete(id);
 
-      // Reload using the current search term
       await loadInventory(search);
     } catch (err) {
       console.error(err);
@@ -249,7 +308,7 @@ function Dashboard() {
     }
   };
 
-  /* Table */
+  /* ---------- TABLE ---------- */
   const InventoryColumns = [
     {
       key: "name",
@@ -314,6 +373,8 @@ function Dashboard() {
       filterLabel: "Tags",
       width: "12%",
       className: "col-center",
+      render: (row) =>
+        row.tags?.length ? row.tags.join(", ") : "-",
     },
     {
       key: "actions",
@@ -394,141 +455,146 @@ function Dashboard() {
             </div>
         </div>
 
-        <form id="item-form">
-          <div id="item-inputs">
-            <div className="mb-3">
-              <label className="form-label">Name</label>
-              <input
-                type="text"
-                className="form-control usr-input"
-                value={formData.name}
+        <div className="panel-content">
+          <form id="item-form">
+            <div id="item-inputs">
+              <div className="mb-3">
+                <label className="form-label">Name</label>
+                <input
+                  type="text"
+                  className="form-control usr-input"
+                  value={formData.name}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        name: e.target.value,
+                      })
+                    }
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label">Description</label>
+                <textarea
+                  className="form-control usr-input"
+                  rows={2}
+                  style={{ resize: "none", overflow: "hidden" }}
+                  value={formData.description}
+                  onChange={(e) => {
+                    e.target.style.height = "auto";
+                    e.target.style.height = `${e.target.scrollHeight}px`;
+
+                    setFormData({
+                      ...formData,
+                      description: e.target.value,
+                    });
+                  }}
+                />
+              </div>
+
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="flexCheckDefault"
+                  checked={formData.isForSale}
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      name: e.target.value,
+                      isForSale: e.target.checked,
                     })
                   }
-              />
-            </div>
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor="flexCheckDefault"
+                >
+                  Available for Sale
+                </label>
+              </div>
 
-            <div className="mb-3">
-              <label className="form-label">Description</label>
-              <textarea
-                className="form-control usr-input"
-                rows={2}
-                style={{ resize: "none", overflow: "hidden" }}
-                value={formData.description}
-                onChange={(e) => {
-                  e.target.style.height = "auto";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
+              <div className="mb-3">
+                <label className="form-label">Cost Price</label>
+                <div className="input-group">
+                  <span className="input-group-text currency-span">₱</span>
+                  <input
+                    type="text"
+                    className="form-control usr-input"
+                    value={formData.cost}
+                    onChange={(e) => handlePriceChange("cost", e.target.value)}
+                  />
+                </div>
+              </div>
 
-                  setFormData({
-                    ...formData,
-                    description: e.target.value,
-                  });
-                }}
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label">Sale Price</label>
+                <div className="input-group">
+                  <span className="input-group-text currency-span">₱</span>
+                  <input
+                    type="text"
+                    className="form-control usr-input"
+                    value={formData.salePrice}
+                    onChange={(e) => handlePriceChange("salePrice", e.target.value)}
+                  />
+                </div>
+              </div>
 
-            <div className="form-check">
-              <input
-                className="form-check-input"
-                type="checkbox"
-                id="flexCheckDefault"
-                checked={formData.isForSale}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    isForSale: e.target.checked,
-                  })
-                }
-              />
-              <label
-                className="form-check-label"
-                htmlFor="flexCheckDefault"
-              >
-                Available for Sale
-              </label>
-            </div>
-
-            <div className="mb-3">
-              <label className="form-label">Cost Price</label>
-              <div className="input-group">
-                <span className="input-group-text currency-span">₱</span>
+              <div className="mb-3">
+                <label className="form-label">Quantity</label>
                 <input
                   type="text"
-                  className="form-control usr-input"
-                  value={formData.cost}
-                  onChange={(e) => handlePriceChange("cost", e.target.value)}
+                  className="form-control usr-input w-70"
+                  value={formData.quantity}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  inputMode="decimal"
                 />
               </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="form-label">Sale Price</label>
-              <div className="input-group">
-                <span className="input-group-text currency-span">₱</span>
-                <input
-                  type="text"
-                  className="form-control usr-input"
-                  value={formData.salePrice}
-                  onChange={(e) => handlePriceChange("salePrice", e.target.value)}
+              <div className="mb-3">
+                <label className="form-label">Unit of Measurement</label>
+                <Dropdown
+                  title="Select Unit"
+                  options={enums.units}
+                  value={formData.unitOfMeasurement}
+                  onSelect={(value) =>
+                    setFormData({
+                      ...formData,
+                      unitOfMeasurement: value,
+                    })
+                  }
                 />
               </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="form-label">Quantity</label>
-              <input
-                type="text"
-                className="form-control usr-input w-70"
-                value={formData.quantity}
-                onChange={(e) => handleQuantityChange(e.target.value)}
-                inputMode="decimal"
-              />
-            </div>
+              <div className="mb-3">
+                <label className="form-label">
+                  Expiry Date
+                </label>
 
-            <div className="mb-3">
-              <label className="form-label">Unit of Measurement</label>
-              <Dropdown
-                title="Select Unit"
-                options={enums.units}
-                value={formData.unitOfMeasurement}
-                onSelect={(value) =>
-                  setFormData({
-                    ...formData,
-                    unitOfMeasurement: value,
-                  })
-                }
-              />
-            </div>
+                <DatePicker
+                  className="form-control usr-input date-picker"
+                  calendarClassName="md-calendar"
+                  dateFormat="MM/dd/yyyy"
+                  placeholderText="mm/dd/yyyy"
+                  isClearable
 
-            <div className="mb-3">
-              <label className="form-label">
-                Expiry Date
-              </label>
+                  selected={formData.expirationDate}
+                  onChange={(date) =>
+                    setFormData({
+                      ...formData,
+                      expirationDate: date,
+                    })
+                  }
+                />
+              </div>
 
-              <DatePicker
-                className="form-control usr-input date-picker"
-                calendarClassName="md-calendar"
-                dateFormat="MM/dd/yyyy"
-                placeholderText="mm/dd/yyyy"
-                isClearable
-
-                selected={formData.expirationDate}
-                onChange={(date) =>
-                  setFormData({
-                    ...formData,
-                    expirationDate: date,
-                  })
-                }
-              />
-            </div>
-
-            <div className="mb-2 d-flex flex-direction row">
+              <div className="mb-2">
                 <label className="form-label">Tags</label>
-                <div className="d-flex flex-wrap gap-2">
-                  {enums.tags.map((tag) => (
+
+                <div className="tags-container">
+                  {(showAllTags
+                    ? availableTags
+                    : availableTags.slice(0, visibleCount)
+                  ).map((tag) => (
                     <button
                       key={tag}
                       type="button"
@@ -540,10 +606,94 @@ function Dashboard() {
                       {tag}
                     </button>
                   ))}
+
+                  {!showAllTags && visibleCount < availableTags.length && (
+                    <>
+                    {addingTag ? (
+                      <div className="new-tag-input">
+                        <input
+                          type="text"
+                          className="form-control usr-input"
+                          placeholder="New tag..."
+                          value={newTag}
+                          onChange={(e) => setNewTag(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddTag();
+                            }
+
+                            if (e.key === "Escape") {
+                              setAddingTag(false);
+                              setNewTag("");
+                            }
+                          }}
+                          autoFocus
+                        />
+
+                        <button
+                          type="button"
+                          className="new-tag-save"
+                          onClick={handleAddTag}
+                        >
+                          ✓
+                        </button>
+
+                        <button
+                          type="button"
+                          className="new-tag-cancel"
+                          onClick={() => {
+                            setAddingTag(false);
+                            setNewTag("");
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        className="tag-btn tag-add-btn"
+                        onClick={() => setAddingTag(true)}
+                      >
+                        + Add tag
+                      </button>
+                    )}
+                      <button
+                        type="button"
+                        className="tag-btn tag-expand-btn"
+                        onClick={() => setShowAllTags(true)}
+                      >
+                        View all ({availableTags.length})
+                      </button>
+                    </>
+                  )}
+
+                  {showAllTags && (
+                    <>
+                      <button
+                        type="button"
+                        className="tag-btn tag-add-btn"
+                        onClick={() => {
+                          // TODO: Open Add Tag dialog
+                        }}
+                      >
+                        + Add tag
+                      </button>
+
+                      <button
+                        type="button"
+                        className="tag-btn tag-expand-btn"
+                        onClick={() => setShowAllTags(false)}
+                      >
+                        Show less
+                      </button>
+                    </>
+                  )}
                 </div>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </div>
           <div className="d-flex justify-content-center gap-3 item-btn-group">
               <button
                 id="create-item"
