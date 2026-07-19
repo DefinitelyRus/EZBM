@@ -69,7 +69,7 @@
     left: 0;
 
     width: 100%;
-    max-height: 220px;
+    max-height: 150px;
 
     overflow-y: auto;
     overflow-x: hidden;
@@ -91,6 +91,7 @@
 
     z-index: 1000;
 }
+
 .md-dropdown-menu.open-up {
     top: auto;
     bottom: calc(100% + 8px);

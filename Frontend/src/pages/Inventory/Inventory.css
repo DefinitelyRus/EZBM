@@ -32,22 +32,39 @@
 }
 
 #add-items-container {
+    display: flex;
+    flex-direction: column;
+
     position: fixed;
     top: 24px;
     right: 24px;
-    bottom: 24px;
 
     width: 370px;
-
-    overflow-y: auto;
-    overflow-x: hidden;
+    max-height: calc(100vh - 48px);
 
     background: var(--md-surface);
     border: 1px solid var(--md-outline);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-1);
 
-    padding: 15px;
+    overflow: hidden;      /* clips children to rounded corners */
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.panel-content {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 8px;
 }
 
 .panel-content {
