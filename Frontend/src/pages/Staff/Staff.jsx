@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { StaffAPI } from "../../api/staff";
+import { EnumsAPI } from "../../api/enums";
 import './Staff.css';
 
 import Dropdown from "../../components/Dropdown";
@@ -11,20 +13,63 @@ import AddIcon from "../../assets/add.svg";
 
 const BREAKPOINT = 1600;
 
+  const INITIAL_FORM = {
+    firstName: "",
+    lastName: "",
+    username: "",
+    password: "",
+    email: "",
+    phoneNumber: "",
+    position: "",
+    payFrequency: "",
+  };
+ 
 function Staff() {
 
-  const [showAddItem, setShowAddItem] = useState(true);
+  /* ---------- STATES ---------- */
+  
+  // Inventory
   const [search, setSearch] = useState("");
 
+  // Enums
+  const [enums, setEnums] = useState({
+      payFrequencies: [],
+  });
+
+  // UI
+  const [showAddItem, setShowAddItem] = useState(true);
+
+  // Editing / Deleting
+   const [formData, setFormData] = useState(INITIAL_FORM);
+
+  /* ---------- DERIVED VALUES ---------- */
+
+  useEffect(() => {
+    async function loadEnums() {
+        try {
+            const data = await EnumsAPI.getAll();
+
+            setEnums({
+                payFrequencies: data.payFrequencies,
+            });
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    loadEnums();
+}, []);
+  
+  /* ---------- EFFECTS ---------- */
+  
+  // Responsive add-item panel
   useEffect(() => {
       const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
   
       const handleChange = ({ matches }) => {
-        // Hide the panel on small screens
         setShowAddItem(!matches);
       };
   
-      // Set initial state
       handleChange(mediaQuery);
   
       mediaQuery.addEventListener("change", handleChange);
@@ -33,8 +78,22 @@ function Staff() {
         mediaQuery.removeEventListener("change", handleChange);
     }, []);
   
+    /* ---------- HELPRES---------- */
 
-  /* Search Bar */
+    const handleClear = () => {
+      setFormData(INITIAL_FORM);
+    };
+  
+    const toggleTag = (tag) => {
+      setFormData((prev) => ({
+        ...prev,
+        tags: prev.tags.includes(tag)
+          ? prev.tags.filter((t) => t !== tag)
+          : [...prev.tags, tag],
+      }));
+    };
+
+    /* Search Bar */
     // useEffect(() => {
     //   const timeout = setTimeout(async () => {
     //     try {
@@ -54,33 +113,63 @@ function Staff() {
     //   return () => clearTimeout(timeout);
     // }, [search]);
 
-    /* Clear Button */
-  const initialForm = {
-    firstName: "",
-    lastName: "",
-    username: "",
-    password: "",
-    email: "",
-    phoneNumber: "",
-    position: "",
-  };
+    /* ---------- STAFF CRUD ---------- */
 
-  const [formData, setFormData] = useState(initialForm);
-  
-    const handleClear = () => {
-      setFormData(initialForm);
-    };
-  
-    const toggleTag = (tag) => {
-      setFormData((prev) => ({
-        ...prev,
-        tags: prev.tags.includes(tag)
-          ? prev.tags.filter((t) => t !== tag)
-          : [...prev.tags, tag],
-      }));
+    // Create Employee
+    const handleRegisterEmployee = async () => {
+      const requiredFields = [
+        "username",
+        "password",
+        "firstName",
+        "lastName",
+        "email",
+        "phoneNumber",
+        "position",
+        "payFrequency",
+      ];
+
+      // Find the first missing field
+      const missingField = requiredFields.find(
+        (field) =>
+          !formData[field] ||
+          (typeof formData[field] === "string" && formData[field].trim() === "")
+      );
+
+      if (missingField) {
+        alert(`Please fill in the ${missingField} field.`);
+        return;
+      }
+
+      try {
+        await StaffAPI.create({
+          username: formData.username,
+          password: formData.password,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          position: formData.position,
+          payFrequency: formData.payFrequency,
+
+          // Defaults
+          payRate: 0,
+          rfidCardId: "",
+          permissions: [],
+          permissionsAfterExpiry: [],
+          expirationDate: null,
+          roleIds: [],
+        });
+
+        alert("Employee registered successfully!");
+        handleClear();
+
+      } catch (err) {
+        console.error(err);
+        alert("Failed to register employee.");
+      }
     };
 
-  /* Tables */
+  /* ---------- TABLE ---------- */
   const StaffColumns = [
     {
       key: "id",
@@ -131,7 +220,7 @@ function Staff() {
       label: "",
       width: "7%",
       className: "col-right-btn",
-      hideable: false, // Prevents this column from appearing in the filter
+      hideable: false, 
       render: () => (
         <div className="d-flex flex-direction col btn-group">
           <button className="edit" title="Edit">
@@ -323,15 +412,15 @@ function Staff() {
                 <div className="mb-3">
                   <label className="form-label">Pay Frequency</label>
                   <Dropdown
-                    title="Select Frequency"
-                    options={dropdownOptions.payFrequency}
-                    value={formData.payFrequency}
-                    onSelect={(value) =>
-                      setFormData({
-                        ...formData,
-                        payFrequency: value,
-                      })
-                    }
+                      title="Select Pay Frequency"
+                      options={enums.payFrequencies}
+                      value={formData.payFrequency}
+                      onSelect={(value) =>
+                          setFormData(prev => ({
+                              ...prev,
+                              payFrequency: value,
+                          }))
+                      }
                   />
                 </div>
               </div>
@@ -344,6 +433,8 @@ function Staff() {
             <button
               id="create-item"
               className="btn btn-light align-self-center"
+              type="button"
+              onClick={handleRegisterEmployee}
             >
               Register Employee
             </button>

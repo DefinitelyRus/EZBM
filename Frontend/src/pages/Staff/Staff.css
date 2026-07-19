@@ -13,7 +13,7 @@
 
 #staff-content-left {
     width: 100%;
-    max-width: 1090px;
+    max-width: 1130px;
 
     display: flex;
     flex-direction: column;
@@ -38,8 +38,7 @@
     overflow-x: hidden;
 
     padding-right: 8px;
-}
-
+    }
 }
 
 #add-staff-container {
@@ -91,6 +90,10 @@
     transform: translateX(32px);
     overflow: hidden;
     pointer-events: none;
+}
+
+#add-staff-container .panel-header {
+    padding-bottom: 5px;
 }
 
 #add-staff-container .close-btn {
