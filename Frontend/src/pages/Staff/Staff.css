@@ -13,7 +13,7 @@
 
 #staff-content-left {
     width: 100%;
-    max-width: 1130px;
+    max-width: 1120px;
 
     display: flex;
     flex-direction: column;
@@ -28,16 +28,6 @@
     #staff-content-left {
         max-width: none;
         flex: 1;
-    }
-
-    .staff-panel-content {
-    flex: 1;
-    min-height: 0;
-
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    padding-right: 8px;
     }
 }
 
@@ -73,6 +63,16 @@
     flex: 1;
     min-height: 0;
 }
+
+.staff-panel-content {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 8px;
+    }
 
 .panel-open {
     width: 420px;
@@ -131,13 +131,11 @@
     margin-bottom: 0.6rem !important;
 }
 
-#add-staff-container .usr-input {
-    border: 1px solid var(--md-outline);
-    background: var(--md-surface);
 
-    border-radius: 12px;
-
-    transition: var(--transition);
+#add-staff-container .form-control.usr-input,
+#add-staff-container .input-group-text.currency-span {
+    background-color: #F3F4F6 !important;
+    border-color: #9097A8;
 }
 
 #add-staff-container .usr-input:hover {
@@ -169,4 +167,15 @@
     letter-spacing: 0.08em;
 
     color: var(--md-on-surface-variant);
+}
+
+/* Action Buttons*/
+#staff-content-left .edit {
+    background-color: transparent;
+    border: none;
+}
+
+#staff-content-left .delete {
+    background-color: transparent;
+    border: none;
 }

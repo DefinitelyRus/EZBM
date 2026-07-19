@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "./Dropdown.css";
 
-function Dropdown({ title, options = [], value, onSelect }) {
+function Dropdown({
+  title,
+  options = [],
+  value,
+  onSelect,
+  direction = "auto", // "auto" | "up" | "down"
+}) {
   const [open, setOpen] = useState(false);
   const [openUp, setOpenUp] = useState(false);
 
@@ -30,22 +36,41 @@ function Dropdown({ title, options = [], value, onSelect }) {
   };
 
   const displayValue =
-    value !== "" && value !== null && value !== undefined
+    value !== "" &&
+    value !== null &&
+    value !== undefined
       ? options[value]
       : title;
 
   const toggleDropdown = () => {
     if (!open) {
       const GAP = 20;
-      const DEFAULT_MAX_HEIGHT = 220; // Match your CSS
+      const DEFAULT_MAX_HEIGHT = 220;
 
       const rect = dropdownRef.current.getBoundingClientRect();
 
-      const spaceBelow = window.innerHeight - rect.bottom - GAP;
-      const spaceAbove = rect.top - GAP;
+      const spaceBelow =
+        window.innerHeight - rect.bottom - GAP;
+      const spaceAbove =
+        rect.top - GAP;
 
-      const shouldOpenUp =
-        spaceBelow < DEFAULT_MAX_HEIGHT && spaceAbove > spaceBelow;
+      let shouldOpenUp = false;
+
+      switch (direction) {
+        case "up":
+          shouldOpenUp = true;
+          break;
+
+        case "down":
+          shouldOpenUp = false;
+          break;
+
+        default: // auto
+          shouldOpenUp =
+            spaceBelow < DEFAULT_MAX_HEIGHT &&
+            spaceAbove > spaceBelow;
+          break;
+      }
 
       setOpenUp(shouldOpenUp);
 
@@ -56,8 +81,6 @@ function Dropdown({ title, options = [], value, onSelect }) {
           ? spaceAbove
           : spaceBelow;
 
-        // Only shrink if necessary.
-        // Otherwise let CSS control the height.
         if (availableSpace < DEFAULT_MAX_HEIGHT) {
           menuRef.current.style.maxHeight = `${Math.max(
             availableSpace,
@@ -73,24 +96,33 @@ function Dropdown({ title, options = [], value, onSelect }) {
   };
 
   return (
-    <div className="md-dropdown" ref={dropdownRef}>
+    <div
+      className="md-dropdown"
+      ref={dropdownRef}
+    >
       <button
         type="button"
-        className={`md-dropdown-btn ${open ? "open" : ""}`}
+        className={`md-dropdown-btn ${
+          open ? "open" : ""
+        }`}
         onClick={toggleDropdown}
       >
         <span>{displayValue}</span>
 
-        <span className={`md-arrow ${open ? "rotate" : ""}`}>
+        <span
+          className={`md-arrow ${
+            open ? "rotate" : ""
+          }`}
+        >
           ▼
         </span>
       </button>
 
       <div
         ref={menuRef}
-        className={`md-dropdown-menu ${open ? "show" : ""} ${
-          openUp ? "open-up" : ""
-        }`}
+        className={`md-dropdown-menu ${
+          open ? "show" : ""
+        } ${openUp ? "open-up" : ""}`}
       >
         {options.map((option, index) => (
           <button

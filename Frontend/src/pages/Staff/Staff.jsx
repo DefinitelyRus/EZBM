@@ -9,6 +9,8 @@ import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
+import DeleteIcon from "../../assets/delete.svg";
+import EditIcon from "../../assets/edit.svg";
 import AddIcon from "../../assets/add.svg";
 
 const BREAKPOINT = 1600;
@@ -21,6 +23,7 @@ const BREAKPOINT = 1600;
     email: "",
     phoneNumber: "",
     position: "",
+    payRate: "",
     payFrequency: "",
   };
  
@@ -29,18 +32,24 @@ function Staff() {
   /* ---------- STATES ---------- */
   
   // Inventory
+  const [staff, setStaff] = useState([]);
   const [search, setSearch] = useState("");
+
+  // Form
+  const [formData, setFormData] = useState(INITIAL_FORM);
 
   // Enums
   const [enums, setEnums] = useState({
       payFrequencies: [],
   });
+  const enumName = (list, value) => list?.[value] ?? "-";
 
   // UI
   const [showAddItem, setShowAddItem] = useState(true);
 
   // Editing / Deleting
-   const [formData, setFormData] = useState(INITIAL_FORM);
+  const [editingStaff, setEditingStaff] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   /* ---------- DERIVED VALUES ---------- */
 
@@ -61,7 +70,7 @@ function Staff() {
 }, []);
   
   /* ---------- EFFECTS ---------- */
-  
+
   // Responsive add-item panel
   useEffect(() => {
       const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
@@ -77,43 +86,58 @@ function Staff() {
       return () =>
         mediaQuery.removeEventListener("change", handleChange);
     }, []);
-  
-    /* ---------- HELPRES---------- */
 
-    const handleClear = () => {
-      setFormData(INITIAL_FORM);
-    };
+    useEffect(() => {
+      loadStaff();
+    }, []);
   
-    const toggleTag = (tag) => {
-      setFormData((prev) => ({
+  /* ---------- HELPRES---------- */
+
+  const handleRateChange = (field, value) => {
+    if (/^\d*\.?\d{0,2}$/.test(value) || value === "") {
+      setFormData(prev => ({
         ...prev,
-        tags: prev.tags.includes(tag)
-          ? prev.tags.filter((t) => t !== tag)
-          : [...prev.tags, tag],
+        [field]: value,
       }));
-    };
+    }
+  };
+
+  const handleClear = () => {
+    setEditingStaff(null);
+    setFormData(INITIAL_FORM);
+  };
 
     /* Search Bar */
-    // useEffect(() => {
-    //   const timeout = setTimeout(async () => {
-    //     try {
-    //       const data =
-    //         search.trim() === ""
-    //           ? await InventoryAPI.getAll()
-    //           : await InventoryAPI.find({
-    //               name: search.trim(),
-    //             });
-  
-    //       setInventoryItems(data);
-    //     } catch (err) {
-    //       console.error(err);
-    //     }
-    //   }, 300);
-  
-    //   return () => clearTimeout(timeout);
-    // }, [search]);
+    useEffect(() => {
+      loadStaff();
+    }, []);
+
+    // Search debounce
+    useEffect(() => {
+      const timeout = setTimeout(() => {
+        loadStaff(search);
+      }, 300);
+
+      return () => clearTimeout(timeout);
+    }, [search]);
 
     /* ---------- STAFF CRUD ---------- */
+
+    // Load Staff
+    const loadStaff = async (searchTerm = search) => {
+      try {
+        const data =
+          searchTerm.trim() === ""
+            ? await StaffAPI.find({})
+            : await StaffAPI.find({
+                username: searchTerm.trim(),
+              });
+
+        setStaff(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
     // Create Employee
     const handleRegisterEmployee = async () => {
@@ -169,20 +193,92 @@ function Staff() {
       }
     };
 
+    // Edit Employee
+    const handleEdit = (employee) => {
+      setEditingStaff(employee);
+
+      setFormData({
+        username: employee.username ?? "",
+        password: "", // don't populate passwords
+        firstName: employee.firstName ?? "",
+        lastName: employee.lastName ?? "",
+        email: employee.email ?? "",
+        phoneNumber: employee.phoneNumber ?? "",
+        position: employee.position ?? "",
+        payRate: employee.payRate ?? "",
+        payFrequency: employee.payFrequency ?? "",
+      });
+
+      setShowAddItem(true);
+    };
+
+    // Handle Update
+    const handleUpdate = async () => {
+      try {
+        await StaffAPI.update({
+          id: editingStaff.id,
+          username: formData.username,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          position: formData.position,
+          payRate: Number(formData.payRate),
+          payFrequency: formData.payFrequency,
+
+          // keep defaults for now
+          rfidCardId: editingStaff.rfidCardId ?? "",
+          permissions: editingStaff.permissions ?? [],
+          permissionsAfterExpiry: editingStaff.permissionsAfterExpiry ?? [],
+          expirationDate: editingStaff.expirationDate ?? null,
+          roleIds: editingStaff.roleIds ?? [],
+        });
+
+        await loadStaff(search);
+
+        alert("Employee updated successfully!");
+
+        setEditingStaff(null);
+        handleClear();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update employee.");
+      }
+    };
+
+    // Delete Employee
+    const handleDelete = async (id) => {
+      if (!window.confirm("Delete this employee?")) return;
+
+      try {
+        setDeletingId(id);
+
+        await StaffAPI.delete(id);
+
+        await loadStaff(search);
+
+        alert("Employee deleted successfully.");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to delete employee.");
+      } finally {
+        setDeletingId(null);
+      }
+    };
+
   /* ---------- TABLE ---------- */
   const StaffColumns = [
     {
-      key: "id",
-      label: "ID",
-      width: "10%",
-      className: "col-left",
-    },
-    {
-      key: "name",
-      label: "Name",
-      width: "18%",
-      className: "col-left",
-    },
+    key: "name",
+    label: "Name",
+    filterLabel: "Name",
+    width: "15%",
+    className: "col-left",
+    render: (row) =>
+      [row.firstName, row.lastName]
+        .filter(Boolean)
+        .join(" "),
+  },
     {
       key: "username",
       label: "Username",
@@ -209,25 +305,41 @@ function Staff() {
     },
     {
       key: "payRate",
-      label: "Pay Rate",
+      label: <>Pay<br />Rate</>,
       width: "10%",
       className: "col-center",
       render: (row) =>
         row.payRate != null ? `₱${row.payRate}` : "-",
     },
     {
+      key: "payFrequency",
+      label: <>Pay<br />Frequency</>,
+      width: "10%",
+      className: "col-center",
+      render: (row) => 
+        enumName(enums.payFrequencies, row.payFrequency),
+    },
+    {
       key: "actions",
       label: "",
-      width: "7%",
+      width: "6%",
       className: "col-right-btn",
-      hideable: false, 
-      render: () => (
+      hideable: false,
+      render: (row) => (
         <div className="d-flex flex-direction col btn-group">
-          <button className="edit" title="Edit">
+          <button
+            className="edit"
+            title="Edit"
+            onClick={() => handleEdit(row)}
+          >
             <img src={EditIcon} alt="Edit" />
           </button>
 
-          <button className="delete" title="Delete">
+          <button
+            className="delete"
+            title="Delete"
+            onClick={() => handleDelete(row.id)}
+          >
             <img src={DeleteIcon} alt="Delete" />
           </button>
         </div>
@@ -248,12 +360,12 @@ function Staff() {
             <div>
               <DataTable
                 columns={StaffColumns}
-                data={[]}
+                data={staff}
                 enableSearch
                 search={search}
                 onSearchChange={setSearch}
                 enableColumnFilter
-              />
+             />
             </div>
           </div>
         </div>
@@ -266,8 +378,12 @@ function Staff() {
         <div className="card-body">
           <div className="d-flex flex-direction col gap-3 panel-header">
             <div className="flex-direction row">
-              <h4>Add New Employee</h4>
-              <p>Register a new employee.</p>
+              <h4>{editingStaff ? "Edit Employee Details" : "Add New Employee"}</h4>
+              <p>
+                {editingStaff
+                  ? "Update Employee Details"
+                  : "Register a New Employee."}
+              </p>
             </div>
 
             <div>
@@ -319,6 +435,55 @@ function Staff() {
                       }
                     />
                   </div>
+                </div>
+              </div>
+
+               {/* Employment Information */}
+              <div className="form-section">
+                <h6 className="section-title">Employment Information</h6>
+
+                <div className="mb-3">
+                  <label className="form-label">Position / Role</label>
+                  <input
+                    type="text"
+                    className="form-control usr-input"
+                    value={formData.position}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        position: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Pay Rate</label>
+                  <div className="input-group">
+                    <span className="input-group-text currency-span">₱</span>
+                    <input
+                      type="text"
+                      className="form-control usr-input"
+                      value={formData.payRate}
+                      onChange={(e) => handleRateChange("payRate", e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label">Pay Frequency</label>
+                  <Dropdown
+                      direction="down"
+                      title="Select Pay Frequency"
+                      options={enums.payFrequencies}
+                      value={formData.payFrequency}
+                      onSelect={(value) =>
+                          setFormData(prev => ({
+                              ...prev,
+                              payFrequency: value,
+                          }))
+                      }
+                  />
                 </div>
               </div>
 
@@ -390,41 +555,6 @@ function Staff() {
                 </div>
               </div>
 
-              {/* Employment Information */}
-              <div className="form-section">
-                <h6 className="section-title">Employment Information</h6>
-
-                <div className="mb-3">
-                  <label className="form-label">Position / Role</label>
-                  <input
-                    type="text"
-                    className="form-control usr-input"
-                    value={formData.position}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        position: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label">Pay Frequency</label>
-                  <Dropdown
-                      title="Select Pay Frequency"
-                      options={enums.payFrequencies}
-                      value={formData.payFrequency}
-                      onSelect={(value) =>
-                          setFormData(prev => ({
-                              ...prev,
-                              payFrequency: value,
-                          }))
-                      }
-                  />
-                </div>
-              </div>
-
             </div>
           </form>
         </div>
@@ -432,19 +562,19 @@ function Staff() {
         <div className="d-flex justify-content-center gap-3 item-btn-group">
             <button
               id="create-item"
-              className="btn btn-light align-self-center"
               type="button"
-              onClick={handleRegisterEmployee}
+              onClick={editingStaff ? handleUpdate : handleRegisterEmployee}
             >
-              Register Employee
+              {editingStaff ? "Update Employee" : "Register Employee"}
             </button>
+
             <button
               id="clear-item"
               className="btn btn-light align-self-center"
               type="button"
               onClick={handleClear}
             >
-              Clear
+              {editingStaff ? "Cancel" : "Clear"}
             </button>
           </div>
         </div>

@@ -570,6 +570,7 @@ function Dashboard() {
               <div className="mb-3">
                 <label className="form-label">Unit of Measurement</label>
                 <Dropdown
+                  direction="down"
                   title="Select Unit"
                   options={enums.units}
                   value={formData.unitOfMeasurement}
