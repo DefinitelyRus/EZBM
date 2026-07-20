@@ -149,6 +149,7 @@ function Staff() {
         "email",
         "phoneNumber",
         "position",
+        "payRate",
         "payFrequency",
       ];
 
@@ -177,6 +178,7 @@ function Staff() {
           email: formData.email,
           phoneNumber: formData.phoneNumber,
           position: formData.position,
+          payRate: Number(formData.payRate),
           payFrequency: formData.payFrequency,
 
           // Defaults
