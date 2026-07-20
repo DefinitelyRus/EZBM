@@ -24,6 +24,11 @@
   --md-hover: #D9ECFC;
   --md-selected: #C8E2FA;
 
+  /* Success */
+  --md-success: #3F8F5B;
+  --md-success-container: #DCEFE2;
+  --md-on-success: #FFFFFF;
+
   /* ===== Radius ===== */
 
   --radius-xs: 8px;

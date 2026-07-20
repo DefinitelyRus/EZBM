@@ -1,53 +1,197 @@
 #dashboard-contents {
-    /* Layout */
-    max-height: 100vh;
+    display: flex;
+    gap: 24px;
 
-    /* Spacing */
-    padding: 20px 20px;
-    padding-left: 330px;
+    min-height: 100vh;
+
+    align-items: stretch;   /* or simply remove this line */
+
+    padding: 32px;
+    padding-left: 320px;
+
+    background: var(--md-background);
 }
 
 #dashboard-content-left {
-    /* Layout */
+    width: 100%;
+    max-width: 1050px;
+
     display: flex;
     flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+/* When the sidebar is collapsed */
+@media (max-width: 1599px) {
+    #dashboard-contents {
+        padding-left: 116px; 
+    }
+
+    #dashboard-content-left {
+        max-width: none;
+        flex: 1;
+    }
+}
+
+#recents-container {
+    display: flex;
+    flex-direction: column;
+
+    top: 24px;
+    right: 24px;
+    padding: 20px;
+
+    width: calc(100vw - 70vw);
+    max-height: calc(100vh - 48px);
+
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-1);
+
+    overflow: hidden;     
+
+    transition:
+        width 300ms cubic-bezier(0.2,0,0,1),
+        opacity 200ms cubic-bezier(0.2,0,0,1),
+        transform 300ms cubic-bezier(0.2,0,0,1),
+        padding 300ms cubic-bezier(0.2,0,0,1),
+        margin 300ms cubic-bezier(0.2,0,0,1);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 #card-container {
     padding: 0px 0px 20px 0px;
 }
 
-#recents-container {
-    /* Layout */
-    max-height: 100vh;
-    min-width: calc(100vh - 62vh);
-
-    padding: 10px 10px;
+#dashboard-content-left .metrics-card {
+    width: calc(100vw - 70vw);
 }
 
-#inventory-alerts-container {
-    min-height: calc(100vh - 32vh);
+.dashboard-panel-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    gap: 24px;
 }
 
-#alerts-container {
-    padding: 15px 15px;
+.dashboard-summary-card {
+    width: calc(100vw - 70vw);
+
+    background: var(--md-surface);
+    border: 1px solid var(--md-outline-variant);
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-1);
 }
 
-.money-card-1 {
-    width: 34rem;
-    padding: 5px 7px;
+.dashboard-summary-card .card-body {
+    display: flex;
+    flex-direction: column;
 
-    box-shadow:
-    0 1px 2px #1877F2;
-        
+    flex: 0 0 auto;  
+
+    padding: var(--space-4);
 }
 
-.money-card-2 {
-    width: 34rem;
-    padding: 5px 7px;
+.dashboard-summary-card .summary-item {
+    padding: 15px;
+}
 
-    box-shadow:
-    0 1px 2px #42B72A;
+.upper-cards{
+    display:flex;
+    gap:24px;
+    align-items:flex-start;   
+}
+
+.lower-card {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+}
+
+.dashboard-summary-card-lower {
+    display: flex;
+    flex: 1;
+}
+
+.dashboard-summary-card-lower .card-body {
+    flex: 1;
+}
+
+.summary-header h5 {
+    font-weight: bold;
+
+    color: #4A5568;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.summary-title {
+    margin: 0;
+
+    font-size: 1.0rem;
+    font-weight: 600;
+
+    color: var(--md-on-surface);
+}
+
+.summary-value {
+    margin: 0;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    color: var(--md-primary);
+
+    white-space: nowrap;
+}
+
+.summary-value-2 {
+    margin: 0;
+
+    font-size: 1.4rem;
+    font-weight: 700;
+
+    color: var(--md-on-surface-variant);
+
+    white-space: nowrap;
+}
+
+.summary-value.profit {
+    color: var(--md-primary-hover);
+}
+
+.summary-divider {
+    height: 1px;
+    background: var(--md-outline-variant);
+}
+
+.summary-divider-2 {
+    height: 2px;
+    width: 100%;
+
+    background-image: radial-gradient(
+        circle,
+        var(--md-surface-container-high) 1.5px,
+        transparent 1.5px
+    );
+
+    background-size: 8px 2px;
+    background-repeat: repeat-x;
+    background-position: center;
 }
 
 /* TEXT */
@@ -64,19 +208,11 @@
     font-style: italic;
 }
 
-#card-container .card-title {
-    font-style: oblique;
-    font-weight: 500;
+.panel-header h4{
+    font-weight: 700;
+    margin-bottom: 3px;
 }
 
-#inventory-alerts-container .card-title {
-    font-weight: 600;
-}
-
-#inventory-link {
-  margin-left: auto;   
-}
-
-#inventory-link {
-    color: #333333;
+.panel-header p {
+    color:var(--md-on-surface-variant);
 }

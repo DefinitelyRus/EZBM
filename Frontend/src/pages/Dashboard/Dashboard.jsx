@@ -1,46 +1,142 @@
+import { useState, useEffect } from "react";
 import './Dashboard.css';
 
-import Alert from '../../components/InventoryAlert';
+import DataTable from "../../components/DataTable/DataTable"
+
+/* ---------- TABLE ---------- */
+  const LowStockColumns = [
+    {
+    key: "name",
+    label: "Product",
+    filterLabel: "Name",
+    width: "15%",
+    className: "col-left",
+    render: (row) =>
+      [row.firstName, row.lastName]
+        .filter(Boolean)
+        .join(" "),
+    },
+    {
+      key: "username",
+      label: "Stock",
+      width: "15%",
+      className: "col-center",
+    },
+    {
+      key: "email",
+      label: "Target",
+      width: "22%",
+      className: "col-center",
+    },
+    {
+      key: "phoneNumber",
+      label: "Treshold",
+      width: "14%",
+      className: "col-center",
+    }
+  ];
 
 function Dashboard() {
   return (
     <div id="dashboard-contents" className="d-flex flex-row gap-4">
-      <div id="dashboard-content-left" className="d-flex col-9">
-      <div id="top-text">
-        <h2>Analytics Dashboard</h2>
-        <h5>Here's how the store is doing today.</h5>
-      </div>
-      <div id="card-container" className="d-flex flex-row gap-4" >
-        <div className="money-card-1 card" style={{ backgroundColor: '#FFFFFF', borderColor: '#1877F2' }}>
-          <div className="card-body d-flex flex-column">
-              <h5 className="card-title">Today's Total Sales</h5>
-              <h1 className="card-text align-self-center">₱2,439.67</h1>
-          </div>
+      <div id="dashboard-content-left" className="d-flex flex-direction row">
+        <div id="top-text">
+          <h2>Analytics Dashboard</h2>
+          <h5>Here's how the store is doing today.</h5>
         </div>
-        <div className="money-card-2 card" style={{ backgroundColor: '#FFFFFF', borderColor: '#42B72A' }}>
-          <div className="card-body d-flex flex-column">
-              <h5 className="card-title">Today's Total Profits</h5>
-              <h1 className="card-text align-self-center">₱1,247.20</h1>
+
+         <div className="dashboard-panel-content">
+          <div className="upper-cards">
+            <div className="card dashboard-summary-card">
+              <div className="card-body">
+                <div className="summary-header">
+                  <h5>KEY METRICS SUMMARY</h5>
+                </div>
+
+                <div className="summary-divider"></div>
+
+                <div className="summary-item">
+                  <div>
+                    <h6 className="summary-title">Today's Sales:</h6>
+                  </div>
+
+                  <h3 className="summary-value">
+                    ₱24,530.00
+                  </h3>
+                </div>
+
+                <div className="summary-divider-2"></div>
+
+                <div className="summary-item">
+                  <div>
+                    <h6 className="summary-title">Today's Profit:</h6>
+                  </div>
+
+                  <h3 className="summary-value profit" style={{ color: "var(--md-success)" }}>
+                    ₱8,942.50
+                  </h3>
+                </div>
+
+                <div className="summary-divider-2"></div>
+
+                <div className="summary-item">
+                  <div>
+                    <h6 className="summary-title">Net Profit (All Time):</h6>
+                  </div>
+
+                  <h3 className="summary-value profit" style={{ color: "#C62828" }}>
+                    ₱8,942.50
+                  </h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="card dashboard-summary-card">
+              <div className="card-body">
+                <div className="summary-header">
+                  <h5>7-DAY SALES VOLUME TREND</h5>
+                </div>
+
+                <div className="summary-divider"></div>
+
+              </div>
+            </div>
           </div>
+
+          <div className="lower-card">
+            <div className="card dashboard-summary-card-lower">
+              <div className="card-body">
+                <div className="summary-header">
+                  <h4>Recent Transactions</h4>
+                </div>
+
+                <div className="summary-divider"></div>
+
+              </div>
+            </div>
+          </div>
+            
         </div>
       </div>
-      <div id="inventory-alerts-container" className="card" style={{ backgroundColor: '#FFFFFF' }}>
+
+      <div id="recents-container" >
         <div className="card-body">
-          <div className="card-header d-flex flex-direction col" style={{ backgroundColor: '#FFFFFF' }}>
-          <h4 className="card-title">Inventory Items</h4>
-          <a id="inventory-link" href="/inventory" className="card-link">Manage Items</a>
+          <div className="d-flex flex-direction row panel-header">
+            <h4>Low Stock Warnings</h4>
           </div>
-          <div id="alerts-container" className="d-flex flex-column gap-2">
-              <Alert item="Pancit Canton" stock="2" />
-              <Alert item="Fresh Milk" stock="12" />
-              <Alert item="Coca Cola" stock="15" />
+
+          <div className="summary-divider"></div>
+
+          <div>
+            <DataTable
+                columns={LowStockColumns}
+                data={[]}
+             />
           </div>
+          
+        <div className="recents-panel-content">
         </div>
-      </div>
-      </div>
-      <div id="recents-container" className="d-flex card" style={{ backgroundColor: '#FFFFFF' }}>
-        <div className="card-body">
-          <h5>Recent Transactions</h5>
+          
         </div>
       </div>
     </div>
