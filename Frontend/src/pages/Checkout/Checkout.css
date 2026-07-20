@@ -31,22 +31,23 @@
     }
 }
 
-#checkout-items-container{
-    max-height: fit-content;
-    width: 490px;
-    position: fixed;
+#checkout-items-container {
+    display: flex;
+    flex-direction: column;
 
+    position: fixed;
     top: 24px;
     right: 24px;
 
-    background: var(--md-surface);
+    width: 490px;
+    max-height: calc(100vh - 48px);
 
+    background: var(--md-surface);
     border: 1px solid var(--md-outline);
     border-radius: var(--radius-lg);
-
     box-shadow: var(--shadow-1);
 
-    padding: 15px;
+    overflow: hidden;     
 
     transition:
         width 300ms cubic-bezier(0.2,0,0,1),
@@ -54,6 +55,27 @@
         transform 300ms cubic-bezier(0.2,0,0,1),
         padding 300ms cubic-bezier(0.2,0,0,1),
         margin 300ms cubic-bezier(0.2,0,0,1);
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+}
+
+.cart-panel-content {
+    flex: 1;
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding-right: 8px;
+}
+
+.panel-content {
+    min-height: 0;
 }
 
 .panel-open {
@@ -93,6 +115,51 @@
     height: 24px;
 
     transform: scaleX(-1);
+}
+
+.qty-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.qty-btn {
+    width: 25px;
+    height: 25px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding-bottom: 4px;
+
+    border: 1px solid var(--md-outline);
+    border-radius: var(--radius-pill);
+
+    background: var(--md-surface-container);
+    color: var(--md-on-surface);
+
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: var(--transition);
+}
+
+.qty-btn:hover {
+    background: var(--md-hover);
+}
+
+.qty-btn:active {
+    background: var(--md-selected);
+}
+
+.qty-value {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 600;
 }
 
 #checkout-items-container .form-label {
@@ -139,7 +206,7 @@
 
 #checkout-items-container .total-amount {
     justify-content: space-between;
-    padding-bottom: 20px;
+    padding: 20px 0px;
 }
 
 #checkout-items-container .item-btn-group {
@@ -160,4 +227,22 @@
 #checkout-content-left .addCart {
     background-color: transparent;
     border: none;
+}
+
+
+#checkout-items-container .removeItem {
+    color: #C62828;
+    background-color: transparent;
+
+    padding: 3px 8px;
+    margin-right: 10px;
+
+    border: 1px solid #C62828;
+    border-radius: 5px;
+}
+
+#checkout-items-container .removeItem:hover {
+    background:#C62828;
+    color: white;
+
 }

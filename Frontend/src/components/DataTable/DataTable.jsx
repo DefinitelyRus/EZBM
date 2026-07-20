@@ -14,6 +14,7 @@ function DataTable({
   onSearchChange,
 
   enableColumnFilter = false,
+  showFooter = true,   // NEW
 }) {
   const [displayMode, setDisplayMode] = useState(50);
   const [visibleCount, setVisibleCount] = useState(50);
@@ -156,7 +157,7 @@ function DataTable({
         </tbody>
       </table>
 
-      {data.length > 0 && (
+      {showFooter && data.length > 0 && (
         <>
           <div ref={loadMoreRef} style={{ height: 1 }} />
 
