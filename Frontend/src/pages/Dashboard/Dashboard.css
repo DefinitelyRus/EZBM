@@ -84,7 +84,7 @@
 }
 
 .dashboard-summary-card {
-    width: calc(100vw - 70vw);
+    width: 100%;
 
     background: var(--md-surface);
     border: 1px solid var(--md-outline-variant);

@@ -90,17 +90,6 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-
-            <div className="card dashboard-summary-card">
-              <div className="card-body">
-                <div className="summary-header">
-                  <h5>7-DAY SALES VOLUME TREND</h5>
-                </div>
-
-                <div className="summary-divider"></div>
-
-              </div>
-            </div>
           </div>
 
           <div className="lower-card">
