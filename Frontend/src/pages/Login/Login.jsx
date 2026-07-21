@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AuthAPI } from "../../api/auth";
+import { StaffAPI } from "../../api/staff";
 
 import "./Login.css";
 
@@ -19,25 +20,28 @@ function Login() {
     setLoading(true);
 
     try {
+      // Login
       const staff = await AuthAPI.login(username, password);
 
-      console.log("API ID:", staff.id);
-      console.log("TYPE:", typeof staff.id);
+      console.log("Login Response:", staff);
 
-      localStorage.setItem("staffId", staff.id);
+      // Fetch the complete staff record
+      const fullStaff = await StaffAPI.get(staff.id);
 
-      console.log(
-        "Stored ID:",
-        localStorage.getItem("staffId"),
-        typeof localStorage.getItem("staffId")
+      console.log("Full Staff Record:", fullStaff);
+
+      // Save to localStorage
+      localStorage.setItem("staffId", fullStaff.id);
+      localStorage.setItem("username", fullStaff.username ?? "");
+      localStorage.setItem("firstName", fullStaff.firstName ?? "");
+      localStorage.setItem("lastName", fullStaff.lastName ?? "");
+      localStorage.setItem("position", fullStaff.position ?? "");
+      localStorage.setItem("payFrequency", fullStaff.payFrequency ?? "");
+      localStorage.setItem("payRate", fullStaff.payRate ?? "");
+
+      alert(
+        `Welcome, ${fullStaff.firstName ?? fullStaff.username}!`
       );
-
-      localStorage.setItem("username", staff.username);
-      localStorage.setItem("position", staff.position);
-      localStorage.setItem("payFrequency", staff.payFrequency);
-      localStorage.setItem("payRate", staff.payRate);
-
-      alert(`Welcome, ${staff.username}!`);
 
       window.location.href = "/dashboard";
     } catch (err) {

@@ -50,6 +50,8 @@ function Sidebar() {
   /* Helper */
  const handleLogout = () => {
   localStorage.removeItem("staffId");
+  localStorage.removeItem("firstName");
+  localStorage.removeItem("lastName");
   localStorage.removeItem("username");
   localStorage.removeItem("position");
   localStorage.removeItem("payFrequency");
@@ -57,6 +59,16 @@ function Sidebar() {
 
   window.location.href = "/login";
 };
+
+  const displayName =
+    [
+      localStorage.getItem("firstName"),
+      localStorage.getItem("lastName"),
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    localStorage.getItem("username") ||
+    "Guest";
 
   /* Navigation */
 
@@ -110,7 +122,7 @@ function Sidebar() {
       <div className="d-flex header-cont">
         {!collapsed && (
           <h4 id="user-name" className="align-self-center">
-            Krishna Reformina
+            {displayName}
           </h4>
         )}
 
