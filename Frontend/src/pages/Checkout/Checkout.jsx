@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { InventoryAPI } from "../../api/inventory";
+import { SalesAPI } from "../../api/sales";
 import { useMemo } from "react";
 import './Checkout.css';
 
@@ -100,8 +101,8 @@ function Checkout() {
 
           quantity: 1,
 
-          unitPrice: Number(item.salePrice),   // <-- convert here
-          subtotal: Number(item.salePrice),    // <-- convert here
+          unitPrice: Number(item.salePrice),   
+          subtotal: Number(item.salePrice),   
         },
       ];
     });
@@ -153,16 +154,6 @@ function Checkout() {
     setCart([]);
   };
 
-  // Total
-  const totalAmount = useMemo(
-    () =>
-      cart.reduce(
-        (total, item) => total + item.unitPrice * item.quantity,
-        0
-      ),
-    [cart]
-  );
-
   // Field validation
   const validateCheckout = () => {
     if (cart.length === 0) {
@@ -210,19 +201,53 @@ function Checkout() {
     return true;
   };
 
+  const totalAmount = cart.reduce(
+    (total, item) => total + item.unitPrice * item.quantity,
+    0
+  );
+
   // Checkout 
-  const handleCheckout = async () => {
+ const handleCheckout = async () => {
     if (!validateCheckout()) return;
 
     try {
-      // TODO:
-      // Create Sale
-      // Create Sale Entries
-      // Create Inventory Transactions
-      // Reload inventory
-      // Clear cart
+      const payload = {
+        staffId: localStorage.getItem("staffId"),
 
-      alert("Checkout completed successfully!");
+        paymentMethod: Number(formData.paymentMethod),
+
+        totalAmount: Number(totalAmount),
+
+        notes: formData.transactionNotes,
+
+        promoCode:
+          formData.promoCode.trim() === ""
+            ? null
+            : formData.promoCode.trim(),
+
+        customerId: null,
+
+        items: cart.map(item => ({
+          itemId: item.id,
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+        })),
+
+        splitPayments: [],
+      };
+
+      console.log("Checkout payload:", payload);
+
+      const result = await SalesAPI.create(payload);
+
+      const inventory = await InventoryAPI.getAll();
+      setInventoryItems(inventory);
+
+      setCart([]);
+      setFormData(INITIAL_FORM);
+
+      alert(`Checkout successful! Sale #${result.saleId}`);
+
     } catch (err) {
       console.error(err);
       alert("Checkout failed.");

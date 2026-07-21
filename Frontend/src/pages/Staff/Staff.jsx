@@ -275,6 +275,12 @@ function Staff() {
   /* ---------- TABLE ---------- */
   const StaffColumns = [
     {
+      key: "id",
+      label: "ID",
+      width: "20%",
+      className: "col-center",
+    },
+    {
     key: "name",
     label: "Name",
     filterLabel: "Name",
