@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Tooltip } from "bootstrap";
 
 import "./Sidebar.css";
@@ -18,8 +18,14 @@ import SettingsIcon from "../assets/settings.svg?react";
 const BREAKPOINT = 1600;
 
 function Sidebar() {
+
   const [collapsed, setCollapsed] = useState(false);
   const [logsOpen, setLogsOpen] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isLoggedIn = !!localStorage.getItem("staffId");
 
   const closeLogsMenu = () => {
     setLogsOpen(false);
@@ -40,6 +46,19 @@ function Sidebar() {
       mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
+
+  /* Helper */
+ const handleLogout = () => {
+  localStorage.removeItem("staffId");
+  localStorage.removeItem("username");
+  localStorage.removeItem("position");
+  localStorage.removeItem("payFrequency");
+  localStorage.removeItem("payRate");
+
+  window.location.href = "/login";
+};
+
+  /* Navigation */
 
   const navItems = [
     {
@@ -175,13 +194,24 @@ function Sidebar() {
         {/* <button className="clock-out-btn">
           Clock out
         </button> */}
-        <Button
-          to="/"
-          text="Log out"
-          icon={<LogOutIcon />}
-          collapsed={collapsed}
-          onClick={closeLogsMenu}
-        />
+         {isLoggedIn ? (
+          <Button
+            to="/login"
+            text="Log out"
+            icon={<LogOutIcon />}
+            collapsed={collapsed}
+            onClick={handleLogout}
+            disableActive
+          />
+        ) : (
+          <Button
+            to="/login"
+            text="Login"
+            icon={<LogOutIcon />}
+            collapsed={collapsed}
+            disableActive
+          />
+        )}
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ function Button({
   icon,
   collapsed,
   onClick,
+  disableActive = false,
 }) {
   const handleClick = (e) => {
     const tooltip = Tooltip.getInstance(e.currentTarget);
@@ -18,14 +19,16 @@ function Button({
 
     e.currentTarget.blur();
 
-    onClick?.();
+    onClick?.(e);
   };
 
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `custom-btn${isActive ? " active" : ""}`
+        disableActive
+          ? "custom-btn"
+          : `custom-btn${isActive ? " active" : ""}`
       }
       data-bs-toggle={collapsed ? "tooltip" : undefined}
       data-bs-placement="right"
