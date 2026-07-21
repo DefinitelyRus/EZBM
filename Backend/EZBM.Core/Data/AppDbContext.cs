@@ -245,10 +245,8 @@ public class AppDbContext : DbContext
 
     private void AuditChanges()
     {
-        List<ActionLog> auditEntries = new();
-        List<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = ChangeTracker.Entries()
-            .Where(e => (e.State == EntityState.Modified || e.State == EntityState.Deleted) && !(e.Entity is ActionLog))
-            .ToList();
+        List<ActionLog> auditEntries = [];
+        List<Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry> entries = [.. ChangeTracker.Entries().Where(e => (e.State == EntityState.Modified || e.State == EntityState.Deleted) && e.Entity is Entity && e.Entity is not Entities.ActionLog)];
 
         foreach (Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry entry in entries)
         {
@@ -259,7 +257,7 @@ public class AppDbContext : DbContext
             string details = $"{action} on {entityName} (ID: {entityId}).";
             if (entry.State == EntityState.Modified)
             {
-                List<string> changes = new();
+                List<string> changes = [];
                 foreach (Microsoft.EntityFrameworkCore.Metadata.IProperty property in entry.OriginalValues.Properties)
                 {
                     object? original = entry.OriginalValues[property];
