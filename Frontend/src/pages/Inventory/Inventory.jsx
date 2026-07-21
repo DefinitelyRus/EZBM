@@ -186,12 +186,21 @@ function Dashboard() {
     salePrice: Number(formData.salePrice),
     quantity: Number(formData.quantity),
     unitOfMeasurement: formData.unitOfMeasurement,
-    expirationDate: formData.expirationDate
-      ? formData.expirationDate.toISOString()
-      : null,
+    expirationDate: formatLocalDate(formData.expirationDate),
   });
   
   /* ---------- INVENTORY CRUD ---------- */
+
+  // Date 
+  const formatLocalDate = (date) => {
+    if (!date) return null;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
 
   // Load Inventory
   const loadInventory = async (searchTerm = search) => {
@@ -269,10 +278,9 @@ function Dashboard() {
       quantity: item.quantity ?? "",
       unitOfMeasurement: item.unitOfMeasurement,
 
-      // TODO:
-      // expirationDate: item.expirationDate
-      //   ? new Date(item.expirationDate)
-      //   : null,
+      expirationDate: item.expirationDate
+      ? new Date(item.expirationDate)
+      : null,
 
       tags: item.tags ?? [],
     });
@@ -323,6 +331,10 @@ function Dashboard() {
     } finally {
       setDeletingId(null);
     }
+
+    await StaffAPI.delete(id);
+
+    await loadInventory(search);
   };
 
   /* ---------- TABLE ---------- */
@@ -688,15 +700,56 @@ function Dashboard() {
 
                   {showAllTags && (
                     <>
-                      <button
-                        type="button"
-                        className="tag-btn tag-add-btn"
-                        onClick={() => {
-                          // TODO: Open Add Tag dialog
-                        }}
-                      >
-                        + Add tag
-                      </button>
+                      {addingTag ? (
+                        <div className="new-tag-input">
+                          <input
+                            type="text"
+                            className="form-control usr-input"
+                            placeholder="New tag..."
+                            value={newTag}
+                            onChange={(e) => setNewTag(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddTag();
+                              }
+
+                              if (e.key === "Escape") {
+                                setAddingTag(false);
+                                setNewTag("");
+                              }
+                            }}
+                            autoFocus
+                          />
+
+                          <button
+                            type="button"
+                            className="new-tag-save"
+                            onClick={handleAddTag}
+                          >
+                            ✓
+                          </button>
+
+                          <button
+                            type="button"
+                            className="new-tag-cancel"
+                            onClick={() => {
+                              setAddingTag(false);
+                              setNewTag("");
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="tag-btn tag-add-btn"
+                          onClick={() => setAddingTag(true)}
+                        >
+                          + Add tag
+                        </button>
+                      )}
 
                       <button
                         type="button"
