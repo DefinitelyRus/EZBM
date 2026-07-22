@@ -187,8 +187,11 @@ function Dashboard() {
 
           <div className="stock-panel-content">
             <DataTable
-                columns={LowStockColumns}
-                data={analytics.lowStockAlerts}
+              columns={LowStockColumns}
+              data={analytics.lowStockAlerts}
+              enableSearch={false}
+              enableColumnFilter={false}
+              enableRowSelector={false}
             />
           </div>
           
