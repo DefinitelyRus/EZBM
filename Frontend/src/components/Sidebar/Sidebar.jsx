@@ -3,17 +3,17 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Tooltip } from "bootstrap";
 
 import "./Sidebar.css";
-import Button from "./button";
+import Button from "../Button/button";
 
-import ArrowMenu from "../assets/arrow_menu.svg?react";
+import ArrowMenu from "../../assets/arrow_menu.svg?react";
 
-import DashboardIcon from "../assets/dashboard.svg?react";
-import InventoryIcon from "../assets/inventory.svg?react";
-import CheckoutIcon from "../assets/checkout.svg?react";
-import StaffIcon from "../assets/staff.svg?react";
-import LogsIcon from "../assets/logs.svg?react";
-import LogOutIcon from "../assets/log_out.svg?react";
-import SettingsIcon from "../assets/settings.svg?react";
+import DashboardIcon from "../../assets/dashboard.svg?react";
+import InventoryIcon from "../../assets/inventory.svg?react";
+import CheckoutIcon from "../../assets/checkout.svg?react";
+import StaffIcon from "../../assets/staff.svg?react";
+import LogsIcon from "../../assets/logs.svg?react";
+import LogOutIcon from "../../assets/log_out.svg?react";
+import SettingsIcon from "../../assets/settings.svg?react";
 
 const BREAKPOINT = 1600;
 

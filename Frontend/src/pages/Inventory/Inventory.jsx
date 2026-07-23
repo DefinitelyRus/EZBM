@@ -3,7 +3,7 @@ import { InventoryAPI } from "../../api/inventory";
 import { EnumsAPI } from "../../api/enums";
 import './Inventory.css';
 
-import Dropdown from "../../components/Dropdown";
+import Dropdown from "../../components/Dropdown/Dropdown";
 import DataTable from "../../components/DataTable/DataTable";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
@@ -61,7 +61,7 @@ function Dashboard() {
   const [editingItem, setEditingItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
  
-   /* ---------- DERIVED VALUES ---------- */
+  /* ---------- DERIVED VALUES ---------- */
 
    const availableTags = [
     ...new Set([

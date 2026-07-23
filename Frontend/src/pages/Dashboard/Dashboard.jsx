@@ -6,6 +6,8 @@ import DataTable from "../../components/DataTable/DataTable";
 
 function Dashboard() {
 
+  /* ---------- STATES ---------- */
+
   // Recent Sales
   const [recentSales, setRecentSales] = useState([]);
 
@@ -19,6 +21,8 @@ function Dashboard() {
     cashierLeaderboard: [],
     lowStockAlerts: [],
   });
+
+  /* ---------- EFFECTS ---------- */
 
   useEffect(() => {
     console.log("DashboardAPI:", DashboardAPI);
@@ -36,6 +40,8 @@ function Dashboard() {
       console.error(err);
     }
   };
+
+  /* ---------- DASHBOARD CRUD ---------- */
 
   // Load Recent Sales
   const loadRecentSales = async () => {

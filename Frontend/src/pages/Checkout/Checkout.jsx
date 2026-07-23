@@ -4,9 +4,8 @@ import { SalesAPI } from "../../api/sales";
 import { useMemo } from "react";
 import './Checkout.css';
 
-import Dropdown from '../../components/Dropdown';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import DataTable from "../../components/DataTable/DataTable";
-import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
@@ -23,6 +22,8 @@ import AddCartIcon from "../../assets/add_cart.svg";
   };
 
 function Checkout() {
+
+  /* ---------- STATES ---------- */
 
   // Inventory
   const [inventoryItems, setInventoryItems] = useState([]);

@@ -3,9 +3,8 @@
   import { EnumsAPI } from "../../api/enums";
   import './Staff.css';
 
-  import Dropdown from "../../components/Dropdown";
+  import Dropdown from "../../components/Dropdown/Dropdown";
   import DataTable from "../../components/DataTable/DataTable";
-  import { dropdownOptions } from "../../components/dropdownOptions";
 
   import CloseMenu from "../../assets/arrow_menu.svg?react";
   import SearchIcon from "../../assets/search.svg?react";
@@ -121,7 +120,7 @@
         return () => clearTimeout(timeout);
       }, [search]);
 
-      /* ---------- STAFF CRUD ---------- */
+    /* ---------- STAFF CRUD ---------- */
 
       // Load Staff
       const loadStaff = async (searchTerm = search) => {
