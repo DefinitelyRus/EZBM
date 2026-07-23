@@ -210,7 +210,7 @@
 }
 
 #checkout-items-container .item-btn-group {
-    padding-top: 25px;
+    padding-top: 10px;
 }
 
 #checkout-items-container  h5, #checkout-items-container s p {
@@ -245,4 +245,23 @@
     background:#C62828;
     color: white;
 
+}
+
+/* Error Messages */
+.form-error {
+    margin-top: 6px;
+
+    color: #C62828;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+
+    text-align: left;
+}
+
+.required {
+    color: #C62828;
+    margin-left: 2px;
+    font-weight: 700;
 }

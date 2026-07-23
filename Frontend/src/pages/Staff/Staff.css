@@ -151,7 +151,7 @@
 }
 
 #add-staff-container .item-btn-group {
-    padding-top: 25px;
+    padding-top: 10px;
 }
 
 #item-inputs .form-section:not(:last-child) {
@@ -178,4 +178,23 @@
 #staff-content-left .delete {
     background-color: transparent;
     border: none;
+}
+
+/* Error Messages */
+.form-error {
+    margin-top: 6px;
+
+    color: #C62828;
+
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+
+    text-align: left;
+}
+
+.required {
+    color: #C62828;
+    margin-left: 2px;
+    font-weight: 700;
 }

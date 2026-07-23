@@ -43,6 +43,7 @@ function Checkout() {
 
   // UI
   const [showAddItem, setShowAddItem] = useState(true);
+  const [error, setError] = useState("");
   
   // Editing / Deleting
 
@@ -183,7 +184,7 @@ function Checkout() {
   // Field validation
   const validateCheckout = () => {
     if (cart.length === 0) {
-      alert("Please add at least one item to the cart.");
+      setError(`Please add at least one item to the cart`);
       return false;
     }
 
@@ -192,13 +193,13 @@ function Checkout() {
       formData.paymentMethod === null ||
       formData.paymentMethod === undefined
     ) {
-      alert("Please select a payment method.");
+      setError(`Please select a payment method`);
       return false;
     }
 
     for (const cartItem of cart) {
       if (cartItem.quantity <= 0) {
-        alert(`${cartItem.name} has an invalid quantity.`);
+        setError(`${cartItem.name} has an invalid quantity.`);
         return false;
       }
 
@@ -207,7 +208,7 @@ function Checkout() {
       );
 
       if (!inventoryItem) {
-        alert(`${cartItem.name} no longer exists in inventory.`);
+        setError(`${cartItem.name} no longer exists in inventory.`);
         return false;
       }
 
@@ -215,6 +216,7 @@ function Checkout() {
         alert(
           `Not enough stock for ${cartItem.name}. Only ${inventoryItem.quantity} remaining.`
         );
+        setError(`Not enough stock for ${cartItem.name}. Only ${inventoryItem.quantity} remaining.`);
         return false;
       }
 
@@ -473,7 +475,9 @@ function Checkout() {
 
           <div id="item-inputs">
             <div className="mb-3">
-                <label className="form-label">Method of Payment</label>
+                <label className="form-label">
+                  Method of Payment <span className="required">*</span>
+                </label>
                 <Dropdown
                   title="Select Method"
                   options={enums.paymentMethods}
@@ -522,7 +526,11 @@ function Checkout() {
                   }}
                 />
               </div>
-
+               {error && (
+                <div className="form-error">
+                  {error}
+                </div>
+              )}
               <div className="d-flex justify-content-center gap-3 item-btn-group">
                 <button
                   id="create-item"
