@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { InventoryAPI } from "../../api/inventory";
 import { SalesAPI } from "../../api/sales";
+import { EnumsAPI } from "../../api/enums";
 import { useMemo } from "react";
 import './Checkout.css';
 
@@ -32,6 +33,11 @@ function Checkout() {
   // Cart
   const [cart, setCart] = useState([]);
 
+  // Enum
+  const [enums, setEnums] = useState({
+    paymentMethods: [],
+  });
+
   // Form
   const [formData, setFormData] = useState(INITIAL_FORM);
 
@@ -41,6 +47,7 @@ function Checkout() {
   // Editing / Deleting
 
   /* ---------- EFFECTS ---------- */
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
 
@@ -56,6 +63,7 @@ function Checkout() {
       mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Load inv
   useEffect(() => {
     const timeout = setTimeout(async () => {
       try {
@@ -74,6 +82,23 @@ function Checkout() {
 
     return () => clearTimeout(timeout);
   }, [search]);
+
+  // Load payment methods
+  useEffect(() => {
+    const loadEnums = async () => {
+      try {
+        const data = await EnumsAPI.getAll();
+
+        setEnums({
+          paymentMethods: data.paymentMethods ?? [],
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadEnums();
+  }, []);
 
   /* ---------- HELPRES---------- */
 
@@ -451,7 +476,7 @@ function Checkout() {
                 <label className="form-label">Method of Payment</label>
                 <Dropdown
                   title="Select Method"
-                  options={dropdownOptions.paymentMethods}
+                  options={enums.paymentMethods}
                   value={formData.paymentMethod}
                   onSelect={(value) =>
                     setFormData({

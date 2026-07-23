@@ -15,7 +15,7 @@ function App() {
   return (
     <div id="main-pages" className="container-fluid">
       <div className="row">
-        {/* Sidebar is always visible */}
+        {/* Sidebar  */}
         <Sidebar />
 
         <div className="col">
