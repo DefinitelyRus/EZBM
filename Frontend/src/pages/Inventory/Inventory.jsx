@@ -5,6 +5,7 @@ import './Inventory.css';
 
 import Dropdown from "../../components/Dropdown/Dropdown";
 import DataTable from "../../components/DataTable/DataTable";
+import Modal from "../../components/Modal/Modal";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
@@ -52,6 +53,7 @@ function Dashboard() {
   const [showAddItem, setShowAddItem] = useState(true);
   const [showAllTags, setShowAllTags] = useState(false);
   const [visibleCount, setVisibleCount] = useState(4);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   // Tags
   const [addingTag, setAddingTag] = useState(false);
@@ -60,6 +62,7 @@ function Dashboard() {
   // Editing / Deleting
   const [editingItem, setEditingItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedItemId, setSelectedItemId] = useState(null);
  
   /* ---------- DERIVED VALUES ---------- */
 
@@ -318,8 +321,6 @@ function Dashboard() {
 
   // Delete Item
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this item?")) return;
-
     try {
       setDeletingId(id);
 
@@ -331,10 +332,6 @@ function Dashboard() {
     } finally {
       setDeletingId(null);
     }
-
-    await StaffAPI.delete(id);
-
-    await loadInventory(search);
   };
 
   /* ---------- TABLE ---------- */
@@ -425,7 +422,10 @@ function Dashboard() {
           <button
             className="delete"
             disabled={deletingId === row.id}
-            onClick={() => handleDelete(row.id)}
+            onClick={() => {
+              setSelectedItemId(row.id);
+              setShowDeleteModal(true);
+            }}
           >
             <img src={DeleteIcon} alt="Delete" />
           </button>
@@ -796,6 +796,24 @@ function Dashboard() {
           <img src={AddIcon} alt="" />
           <span>Add New Item</span>
         </button>
+        
+      <Modal
+        isOpen={showDeleteModal}
+        title="Delete Item"
+        message="Are you sure you want to delete this item?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setSelectedItemId(null);
+        }}
+        onConfirm={async () => {
+          await handleDelete(selectedItemId);
+
+          setShowDeleteModal(false);
+          setSelectedItemId(null);
+        }}
+      />
     </>
   );
 }

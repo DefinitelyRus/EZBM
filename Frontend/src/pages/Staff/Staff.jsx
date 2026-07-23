@@ -5,6 +5,7 @@
 
   import Dropdown from "../../components/Dropdown/Dropdown";
   import DataTable from "../../components/DataTable/DataTable";
+  import Modal from "../../components/Modal/Modal";
 
   import CloseMenu from "../../assets/arrow_menu.svg?react";
   import SearchIcon from "../../assets/search.svg?react";
@@ -45,10 +46,12 @@
 
     // UI
     const [showAddItem, setShowAddItem] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     // Editing / Deleting
     const [editingStaff, setEditingStaff] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [selectedStaffId, setSelectedStaffId] = useState(null);
 
     /* ---------- DERIVED VALUES ---------- */
 
@@ -252,20 +255,15 @@
       };
 
       // Delete Employee
-      const handleDelete = async (id) => {
-        if (!window.confirm("Delete this employee?")) return;
-
+     const handleDelete = async (id) => {
         try {
           setDeletingId(id);
-
+    
           await StaffAPI.delete(id);
-
+    
           await loadStaff(search);
-
-          alert("Employee deleted successfully.");
         } catch (err) {
           console.error(err);
-          alert("Failed to delete employee.");
         } finally {
           setDeletingId(null);
         }
@@ -349,7 +347,10 @@
             <button
               className="delete"
               title="Delete"
-              onClick={() => handleDelete(row.id)}
+              onClick={() => {
+                setSelectedStaffId(row.id);
+                setShowDeleteModal(true);
+              }}
             >
               <img src={DeleteIcon} alt="Delete" />
             </button>
@@ -600,6 +601,24 @@
             <img src={AddIcon} alt="" />
             <span>Add New Employee</span>
           </button>
+
+        <Modal
+        isOpen={showDeleteModal}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setSelectedStaffId(null);
+        }}
+        onConfirm={async () => {
+          await handleDelete(selectedStaffId);
+
+          setShowDeleteModal(false);
+          setSelectedStaffId(null);
+        }}
+      />
       </>
     );
   }
