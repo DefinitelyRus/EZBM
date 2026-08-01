@@ -38,7 +38,9 @@ public static class StateHelper
         try
         {
             using AppDbContext context = new();
-            Staff? staff = await context.Staff.FindAsync(staffId);
+            Staff? staff = await context.Staff
+                .Include(s => s.Roles)
+                .FirstOrDefaultAsync(s => s.Id == staffId);
             if (staff is not null)
             {
                 httpContext.Items["ActiveStaff"] = staff;
