@@ -557,6 +557,11 @@
 
             window.openAddRoleModal = function() {
                 document.getElementById("addRoleModal").style.display = "flex";
+                const form = document.getElementById("createRoleForm");
+                if (form && form._wizardComponent) {
+                    form._wizardComponent.currentStep = 0;
+                    form._wizardComponent.showStep();
+                }
             };
             window.closeAddRoleModal = function() {
                 document.getElementById("addRoleModal").style.display = "none";
@@ -564,6 +569,11 @@
 
             window.openAddStaffModal = function() {
                 document.getElementById("addStaffModal").style.display = "flex";
+                const form = document.getElementById("createStaffForm");
+                if (form && form._wizardComponent) {
+                    form._wizardComponent.currentStep = 0;
+                    form._wizardComponent.showStep();
+                }
             };
             window.closeAddStaffModal = function() {
                 document.getElementById("addStaffModal").style.display = "none";
