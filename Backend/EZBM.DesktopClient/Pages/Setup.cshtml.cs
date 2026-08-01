@@ -15,6 +15,8 @@ namespace EZBM.DesktopClient.Pages;
 /// </summary>
 public class SetupModel : PageModel
 {
+    #region Properties
+
     /// <summary>
     /// Username for the initial admin account.
     /// </summary>
@@ -62,32 +64,44 @@ public class SetupModel : PageModel
     /// </summary>
     public string? ErrorMessage { get; set; }
 
+    #endregion
+
+    #region Handlers
+
     /// <summary>
     /// Handles GET requests to check if setup is already done.
     /// </summary>
     public async Task<IActionResult> OnGetAsync()
     {
         using AppDbContext context = new();
-        if (await context.Staff.AnyAsync())
+        bool hasStaff = await context.Staff.AnyAsync();
+
+        if (hasStaff)
         {
             return RedirectToPage("/Login");
         }
+
         return Page();
     }
 
     /// <summary>
-    /// Handles POST requests to save onboarding info and create the admin profile.
+    /// Handles POST requests to save onboarding info and create admin profile.
     /// </summary>
     public async Task<IActionResult> OnPostAsync()
     {
-        if (string.IsNullOrWhiteSpace(AdminUsername) || string.IsNullOrWhiteSpace(AdminPassword))
+        bool hasUsername = !string.IsNullOrWhiteSpace(AdminUsername);
+        bool hasPassword = !string.IsNullOrWhiteSpace(AdminPassword);
+
+        if (!hasUsername || !hasPassword)
         {
             ErrorMessage = "Admin Username and Password are required.";
             return Page();
         }
 
         using AppDbContext context = new();
-        if (await context.Staff.AnyAsync())
+        bool alreadySetup = await context.Staff.AnyAsync();
+
+        if (alreadySetup)
         {
             ErrorMessage = "Setup has already been completed.";
             return RedirectToPage("/Login");
@@ -95,23 +109,83 @@ public class SetupModel : PageModel
 
         try
         {
-            // 1. Create Initial Administrator Profile
+            Role? adminRole = await context.Role
+                .FirstOrDefaultAsync(r => r.Name == "Admin");
+
+            if (adminRole is null)
+            {
+                string adminPermsJson = "{\"Checkout\":1,\"ApplyDiscounts\":1," +
+                    "\"Refunds\":1,\"ViewInventory\":1,\"ModifyInventory\":1," +
+                    "\"ViewSensitiveInventoryCost\":1,\"ViewStaffInfo\":1," +
+                    "\"ManageStaff\":1,\"ManageAccess\":1,\"ManagePayroll\":1," +
+                    "\"ViewLogs\":1,\"DeleteLogs\":1,\"ManageSettings\":1}";
+                adminRole = new Role(
+                    id: Utils.GenerateEntityId(),
+                    name: "Admin",
+                    permissionsJson: adminPermsJson
+                );
+                context.Role.Add(adminRole);
+                await context.SaveChangesAsync();
+            }
+
+            Role? cashierRole = await context.Role
+                .FirstOrDefaultAsync(r => r.Name == "Cashier");
+
+            if (cashierRole is null)
+            {
+                string cashierPermsJson = "{\"Checkout\":1,\"ApplyDiscounts\":0," +
+                    "\"Refunds\":0,\"ViewInventory\":1,\"ModifyInventory\":0," +
+                    "\"ViewSensitiveInventoryCost\":0,\"ViewStaffInfo\":0," +
+                    "\"ManageStaff\":0,\"ManageAccess\":0,\"ManagePayroll\":0," +
+                    "\"ViewLogs\":0,\"DeleteLogs\":0,\"ManageSettings\":0}";
+                cashierRole = new Role(
+                    id: Utils.GenerateEntityId(),
+                    name: "Cashier",
+                    permissionsJson: cashierPermsJson
+                );
+                context.Role.Add(cashierRole);
+                await context.SaveChangesAsync();
+            }
+
+            string hashedPassword = AuthenticationService.HashPassword(
+                AdminPassword
+            );
+
             Staff admin = new(
                 id: Utils.GenerateEntityId(),
                 username: AdminUsername,
                 payFrequency: Staff.Frequency.Monthly,
                 payRate: 0f,
-                password: AuthenticationService.HashPassword(AdminPassword),
+                password: hashedPassword,
                 firstName: AdminFirstName,
                 lastName: AdminLastName,
                 email: AdminEmail,
                 position: "Administrator"
             );
+            admin.Roles.Add(adminRole);
+            admin.Permissions = new List<string>
+            {
+                "Checkout",
+                "ApplyDiscounts",
+                "Refunds",
+                "ViewInventory",
+                "ModifyInventory",
+                "ViewSensitiveInventoryCost",
+                "ViewStaffInfo",
+                "ManageStaff",
+                "ManageAccess",
+                "ManagePayroll",
+                "ViewLogs",
+                "DeleteLogs",
+                "ManageSettings",
+                "AccessAdminSettings",
+                "AccessPOS",
+                "AccessInventory"
+            };
 
             context.Staff.Add(admin);
             await context.SaveChangesAsync();
 
-            // 2. Save Initial Business & Store Configuration
             StoreSettings settings = new()
             {
                 StoreName = StoreName,
@@ -120,13 +194,24 @@ public class SetupModel : PageModel
             };
             SettingsService.SaveSettings(settings);
 
-            TempData["SuccessMessage"] = "Onboarding completed successfully! Please log in with your credentials.";
+            string message = "System setup completed successfully.";
+            Log.Me(message);
+
+            string successMsg = "Onboarding completed successfully! " +
+                                "Please log in with your credentials.";
+            TempData["SuccessMessage"] = successMsg;
+
             return RedirectToPage("/Login");
         }
+
         catch (Exception ex)
         {
-            ErrorMessage = $"Error during setup: {ex.Message}";
+            string errMessage = $"Error during setup: {ex.Message}";
+            Log.Err(errMessage);
+            ErrorMessage = errMessage;
             return Page();
         }
     }
+
+    #endregion
 }

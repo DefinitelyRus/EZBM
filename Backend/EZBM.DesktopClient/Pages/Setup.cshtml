@@ -1,154 +1,92 @@
 @page
 @model EZBM.DesktopClient.Pages.SetupModel
 @{
-    Layout = null; // No layout for setup
+    ViewData["Title"] = "System Onboarding";
 }
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>EZBM Onboarding & Initial Setup</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .setup-container {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            width: 450px;
-            box-sizing: border-box;
-        }
-        h2 {
-            margin-top: 0;
-            color: #333;
-            text-align: center;
-            border-bottom: 2px solid #0056b3;
-            padding-bottom: 10px;
-        }
-        h3 {
-            color: #555;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            border-bottom: 1px dashed #ddd;
-            padding-bottom: 5px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            font-size: 0.9em;
-            color: #444;
-        }
-        input, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .btn-submit {
-            background-color: #0056b3;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            width: 100%;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        .btn-submit:hover {
-            background-color: #004094;
-        }
-        .error-banner {
-            background-color: #fce8e6;
-            color: #c5221f;
-            border: 1px solid #fad2cf;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-        }
-    </style>
-</head>
-<body>
+<h2>System Onboarding</h2>
+<p>Initial system configuration and administrator staff registration.</p>
 
-<div class="setup-container">
-    <h2>EZBM System Onboarding</h2>
-    <p style="text-align: center; color: #666; font-size: 0.9em;">
-        Welcome! It looks like this is the first time running EZBM. Let's configure your initial administrator account and business settings.
-    </p>
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div style="background-color: #fff5f5; color: #e53e3e; border: 1px solid #fed7d7; padding: 12px; margin-bottom: 20px;">
+        <strong>Error:</strong> @Model.ErrorMessage
+    </div>
+}
 
-    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
-    {
-        <div class="error-banner">
-            <strong>Error:</strong> @Model.ErrorMessage
-        </div>
-    }
-
-    <form method="post">
-        
-        <h3>1. Create Administrator</h3>
-        
-        <div class="form-group">
-            <label>Admin Username:</label>
-            <input type="text" asp-for="AdminUsername" required placeholder="e.g. admin" />
+<div id="setupModal" style="display: flex; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center;">
+    <div style="background-color: white; padding: 25px; width: 480px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); max-height: 90vh; overflow-y: auto; box-sizing: border-box;">
+        <div style="margin-bottom: 20px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px;">
+            <h3 style="margin: 0; color: #2b6cb0;">EZBM System Onboarding</h3>
+            <small style="color: #718096; display: block; margin-top: 4px;">Welcome! Please configure your administrator account and store settings to get started.</small>
         </div>
 
-        <div class="form-group">
-            <label>Admin Password:</label>
-            <input type="password" asp-for="AdminPassword" required placeholder="••••••••" />
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>First Name:</label>
-                <input type="text" asp-for="AdminFirstName" required placeholder="Juan" />
+        <form method="post" id="setupForm">
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Admin Username <span style="color: red;">*</span></label>
+                <input type="text" name="AdminUsername" value="@Model.AdminUsername" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="e.g. admin" />
+                <small style="color: #718096; display: block; margin-top: 3px;">The unique username used to log in as administrator.</small>
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Last Name:</label>
-                <input type="text" asp-for="AdminLastName" required placeholder="Dela Cruz" />
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Admin Password <span style="color: red;">*</span></label>
+                <input type="password" name="AdminPassword" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="••••••••" />
+                <small style="color: #718096; display: block; margin-top: 3px;">The secure password for the administrator account.</small>
             </div>
-        </div>
 
-        <div class="form-group">
-            <label>Email Address:</label>
-            <input type="email" asp-for="AdminEmail" required placeholder="admin@mybusiness.com" />
-        </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">First Name</label>
+                <input type="text" name="AdminFirstName" value="@Model.AdminFirstName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="Juan" />
+                <small style="color: #718096; display: block; margin-top: 3px;">The administrator's first name.</small>
+            </div>
 
-        <h3>2. Business Configurations</h3>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Last Name</label>
+                <input type="text" name="AdminLastName" value="@Model.AdminLastName" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="Dela Cruz" />
+                <small style="color: #718096; display: block; margin-top: 3px;">The administrator's family or last name.</small>
+            </div>
 
-        <div class="form-group">
-            <label>Store Name:</label>
-            <input type="text" asp-for="StoreName" required placeholder="e.g. PH Pet Grooming & Supplies" />
-        </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Email Address</label>
+                <input type="email" name="AdminEmail" value="@Model.AdminEmail" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="admin@mybusiness.com" />
+                <small style="color: #718096; display: block; margin-top: 3px;">Primary email address for system notifications.</small>
+            </div>
 
-        <div class="form-group">
-            <label>Local Currency:</label>
-            <select asp-for="Currency" style="width: 100%;">
-                <option value="PHP">PHP - Philippine Peso (₱)</option>
-                <option value="USD">USD - United States Dollar ($)</option>
-                <option value="SGD">SGD - Singapore Dollar (S$)</option>
-                <option value="EUR">EUR - Euro (€)</option>
-            </select>
-        </div>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Store Name <span style="color: red;">*</span></label>
+                <input type="text" name="StoreName" value="@Model.StoreName" required style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;" placeholder="e.g. PH Pet Supplies" />
+                <small style="color: #718096; display: block; margin-top: 3px;">The business or store display name.</small>
+            </div>
 
-        <button type="submit" class="btn-submit">Complete Setup & Onboard</button>
-    </form>
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 4px;">Local Currency</label>
+                <select name="Currency" style="width: 100%; padding: 6px; border: 1px solid #cbd5e0;">
+                    <option value="PHP">PHP - Philippine Peso (₱)</option>
+                    <option value="USD">USD - United States Dollar ($)</option>
+                    <option value="SGD">SGD - Singapore Dollar (S$)</option>
+                    <option value="EUR">EUR - Euro (€)</option>
+                </select>
+                <small style="color: #718096; display: block; margin-top: 3px;">Primary currency used for transactions.</small>
+            </div>
+
+            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 10px;">Complete Setup & Register User</button>
+        </form>
+    </div>
 </div>
 
-</body>
-</html>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const setupForm = document.getElementById("setupForm");
+            if (setupForm) {
+                const setupSteps = [
+                    { fields: ['AdminUsername', 'AdminPassword'], question: 'Set initial staff username and password <span style="color: red;">*</span>', required: true },
+                    { fields: ['AdminFirstName', 'AdminLastName', 'AdminEmail'], question: 'Administrator details', required: false },
+                    { fields: ['StoreName', 'Currency'], question: 'Configure store name and currency <span style="color: red;">*</span>', required: true },
+                    { isSummary: true, question: 'Review and Complete Setup', fields: [] }
+                ];
+                new FormWizardComponent("setupForm", setupSteps, { hideModeToggle: true });
+            }
+        });
+    </script>
+}
