@@ -1,8 +1,12 @@
+using EZBM.Core.Data;
 using EZBM.Core.Entities;
 using EZBM.Core.Services;
 using EZBM.Core.Tools;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace EZBM.DesktopClient.Pages;
 
@@ -11,7 +15,6 @@ namespace EZBM.DesktopClient.Pages;
 /// </summary>
 public class LoginModel : PageModel
 {
-
     #region Properties
 
     /// <summary>
@@ -43,7 +46,7 @@ public class LoginModel : PageModel
     public string RfidCardId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Whether RFID login is enabled globally in the store settings.
+    /// Whether RFID login is enabled globally in store settings.
     /// </summary>
     public bool EnableRfidLogin { get; set; }
 
@@ -52,12 +55,14 @@ public class LoginModel : PageModel
     #region Handlers
 
     /// <summary>
-    /// Handles GET requests for the Login page and redirects to onboarding if database is empty.
+    /// Handles GET requests for the Login page and redirects to setup if DB empty.
     /// </summary>
     public async Task<IActionResult> OnGetAsync()
     {
-        using EZBM.Core.Data.AppDbContext context = new();
-        if (!await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(context.Staff))
+        using AppDbContext context = new();
+        bool hasStaff = await context.Staff.AnyAsync();
+
+        if (!hasStaff)
         {
             return RedirectToPage("/Setup");
         }
@@ -65,14 +70,14 @@ public class LoginModel : PageModel
         StoreSettings settings = SettingsService.LoadSettings();
         EnableRfidLogin = settings.EnableRfidLogin;
 
-        if (TempData.TryGetValue("SuccessMessage", out var val) && val is string msg)
+        if (TempData.TryGetValue("SuccessMessage", out object? val) &&
+            val is string msg)
         {
             SuccessMessage = msg;
         }
 
         return Page();
     }
-
 
     /// <summary>
     /// Handles login submission and sets user context.
@@ -82,9 +87,12 @@ public class LoginModel : PageModel
         StoreSettings settings = SettingsService.LoadSettings();
         EnableRfidLogin = settings.EnableRfidLogin;
 
-        if (EnableRfidLogin && !string.IsNullOrWhiteSpace(RfidCardId))
+        bool hasRfid = !string.IsNullOrWhiteSpace(RfidCardId);
+
+        if (EnableRfidLogin && hasRfid)
         {
-            Utils.RequestResult<string> loginResult = await AuthenticationService.LoginByRfidAsync(RfidCardId);
+            Utils.RequestResult<string> loginResult =
+                await AuthenticationService.LoginByRfidAsync(RfidCardId);
 
             if (loginResult.Type != Utils.Result.Success)
             {
@@ -95,18 +103,22 @@ public class LoginModel : PageModel
             string? staffId = loginResult.Data;
             if (staffId is not null)
             {
-                Response.Cookies.Append("ActiveStaffId", staffId, new CookieOptions
+                CookieOptions cookieOpts = new()
                 {
                     Expires = DateTimeOffset.UtcNow.AddDays(7),
                     HttpOnly = true,
                     SameSite = SameSiteMode.Strict
-                });
+                };
+                Response.Cookies.Append("ActiveStaffId", staffId, cookieOpts);
             }
 
             return RedirectToPage("/Index");
         }
 
-        if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+        bool hasUsername = !string.IsNullOrWhiteSpace(Username);
+        bool hasPassword = !string.IsNullOrWhiteSpace(Password);
+
+        if (!hasUsername || !hasPassword)
         {
             ErrorMessage = "Username and Password are required fields.";
             return Page();
@@ -117,7 +129,8 @@ public class LoginModel : PageModel
             Password: Password
         );
 
-        Utils.RequestResult<string> loginResultNormal = await AuthenticationService.LoginAsync(loginRequest);
+        Utils.RequestResult<string> loginResultNormal =
+            await AuthenticationService.LoginAsync(loginRequest);
 
         if (loginResultNormal.Type != Utils.Result.Success)
         {
@@ -128,17 +141,21 @@ public class LoginModel : PageModel
         string? staffIdNormal = loginResultNormal.Data;
         if (staffIdNormal is not null)
         {
-            Response.Cookies.Append("ActiveStaffId", staffIdNormal, new CookieOptions
+            CookieOptions cookieOptsNormal = new()
             {
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 HttpOnly = true,
                 SameSite = SameSiteMode.Strict
-            });
+            };
+            Response.Cookies.Append(
+                "ActiveStaffId",
+                staffIdNormal,
+                cookieOptsNormal
+            );
         }
 
         return RedirectToPage("/Index");
     }
-
 
     /// <summary>
     /// Handles logout requests by clearing the login cookie.
@@ -150,5 +167,4 @@ public class LoginModel : PageModel
     }
 
     #endregion
-
 }
