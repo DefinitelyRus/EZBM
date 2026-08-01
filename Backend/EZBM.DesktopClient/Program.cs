@@ -1,18 +1,20 @@
 using EZBM.Core.Data;
 using EZBM.Core.Entities;
+using EZBM.Core.Services;
 using EZBM.DesktopClient.Helpers;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
-builder.Services.AddSingleton<EZBM.Core.Services.ICashRegisterService, EZBM.Core.Services.MockCashRegisterService>();
+builder.Services.AddSingleton<ICashRegisterService, MockCashRegisterService>();
 
 WebApplication app = builder.Build();
 
 DbManager.ConfigureFromArgs(args);
 DbManager.Initialize();
-
-DataSeeder.Seed();
 
 if (!app.Environment.IsDevelopment())
 {
