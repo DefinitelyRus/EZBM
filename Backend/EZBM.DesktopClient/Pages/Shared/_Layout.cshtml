@@ -74,15 +74,19 @@
             box-sizing: border-box;
         }
 
-        /* Desktop (>= 1600px) layout */
-        @@media (min-width: 1600px) {
-            .layout-container {
+        /* Desktop (>= 1024px) layout */
+        @@media (min-width: 1024px) {
+            .layout-container:not(.no-sidebar) {
                 max-width: 100%;
                 padding-left: 260px; /* 240px sidebar + 20px spacing */
                 transition: padding-left 0.3s ease;
             }
-            .layout-container.sidebar-collapsed {
+            .layout-container.sidebar-collapsed:not(.no-sidebar) {
                 padding-left: 90px; /* 70px collapsed sidebar + 20px spacing */
+            }
+            .layout-container.no-sidebar {
+                max-width: 100%;
+                padding-left: 20px;
             }
             .mobile-only {
                 display: none !important;
@@ -133,8 +137,8 @@
             }
         }
 
-        /* Tablet/Mobile (< 1600px) layout */
-        @@media (max-width: 1599.98px) {
+        /* Tablet/Mobile (< 1024px) layout */
+        @@media (max-width: 1023.98px) {
             .desktop-only {
                 display: none !important;
             }
@@ -382,7 +386,11 @@
 <body>
     <header class="fixed-header">
         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                @if (activeStaff is not null)
+                {
+                    <button type="button" onclick="toggleMobileSidebar()" class="btn mobile-only" style="padding: 4px 8px; font-size: 1.1em;" title="Toggle Navigation Menu">☰ Menu</button>
+                }
                 <strong style="font-size: 1.2em; color: #2b6cb0;">@(EZBM.Core.Services.SettingsService.LoadSettings().StoreName) Platform</strong>
             </div>
             <div>
@@ -427,24 +435,27 @@
         </div>
     </header>
 
-    <div class="layout-container" id="layoutContainer">
-        <div class="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
-        <nav class="main-nav">
-            <h3 style="margin-top: 0; color: #4a5568; font-size: 1.1em; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;" class="nav-text">Navigation</h3>
-            <ul style="list-style-type: none; padding-left: 0; margin: 0;">
-                <li style="margin-bottom: 10px;" class="desktop-only">
-                    <button type="button" onclick="toggleDesktopSidebar()" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">
-                        <span class="sidebar-toggle-icon"></span> <span class="nav-text" style="margin-left: 8px;">Collapse</span>
-                    </button>
-                </li>
-                <li style="margin-bottom: 10px;"><a href="/" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📊 <span class="nav-text" style="margin-left: 8px;">Dashboard</span></a></li>
-                <li style="margin-bottom: 10px;"><a href="/Inventory" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📦 <span class="nav-text" style="margin-left: 8px;">Inventory</span></a></li>
-                <li style="margin-bottom: 10px;"><a href="/POS" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">🛒 <span class="nav-text" style="margin-left: 8px;">Cashier</span></a></li>
-                <li style="margin-bottom: 10px;"><a href="/Staff" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">👥 <span class="nav-text" style="margin-left: 8px;">Staff Management</span></a></li>
-                <li style="margin-bottom: 10px;"><a href="/Logs" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📄 <span class="nav-text" style="margin-left: 8px;">Log Records</span></a></li>
-                <li style="margin-bottom: 10px;"><a href="/Settings" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">⚙ <span class="nav-text" style="margin-left: 8px;">Settings</span></a></li>
-            </ul>
-        </nav>
+    <div class="layout-container @(activeStaff is null ? "no-sidebar" : "")" id="layoutContainer">
+        @if (activeStaff is not null)
+        {
+            <div class="sidebar-backdrop" onclick="toggleMobileSidebar()"></div>
+            <nav class="main-nav">
+                <h3 style="margin-top: 0; color: #4a5568; font-size: 1.1em; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;" class="nav-text">Navigation</h3>
+                <ul style="list-style-type: none; padding-left: 0; margin: 0;">
+                    <li style="margin-bottom: 10px;" class="desktop-only">
+                        <button type="button" onclick="toggleDesktopSidebar()" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">
+                            <span class="sidebar-toggle-icon"></span> <span class="nav-text" style="margin-left: 8px;">Collapse</span>
+                        </button>
+                    </li>
+                    <li style="margin-bottom: 10px;"><a href="/" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📊 <span class="nav-text" style="margin-left: 8px;">Dashboard</span></a></li>
+                    <li style="margin-bottom: 10px;"><a href="/Inventory" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📦 <span class="nav-text" style="margin-left: 8px;">Inventory</span></a></li>
+                    <li style="margin-bottom: 10px;"><a href="/POS" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">🛒 <span class="nav-text" style="margin-left: 8px;">Cashier</span></a></li>
+                    <li style="margin-bottom: 10px;"><a href="/Staff" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">👥 <span class="nav-text" style="margin-left: 8px;">Staff Management</span></a></li>
+                    <li style="margin-bottom: 10px;"><a href="/Logs" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">📄 <span class="nav-text" style="margin-left: 8px;">Log Records</span></a></li>
+                    <li style="margin-bottom: 10px;"><a href="/Settings" class="btn" style="width:100%; justify-content: flex-start; border: none; background: transparent; font-weight: normal; overflow: hidden; white-space: nowrap; padding: 7px 10px;">⚙ <span class="nav-text" style="margin-left: 8px;">Settings</span></a></li>
+                </ul>
+            </nav>
+        }
 
         <main style="flex-grow: 1; min-width: 0;">
             @RenderBody()
@@ -545,8 +556,22 @@
         });
     </script>
 
-    <!-- Cash Reconciliation Script -->
+    <!-- Cash Reconciliation & Sidebar Script -->
     <script>
+        function toggleMobileSidebar() {
+            const layout = document.getElementById("layoutContainer");
+            if (layout) {
+                layout.classList.toggle("sidebar-open");
+            }
+        }
+
+        function toggleDesktopSidebar() {
+            const layout = document.getElementById("layoutContainer");
+            if (layout) {
+                layout.classList.toggle("sidebar-collapsed");
+            }
+        }
+
         let currentExpectedCash = 0;
 
         async function promptClockOutReconciliation() {
@@ -947,8 +972,11 @@
         class FormWizardComponent {
             constructor(formId, steps, options = {}) {
                 this.form = document.getElementById(formId);
+                if (!this.form) return;
+                this.form._wizardComponent = this;
                 this.steps = steps;
                 this.currentStep = 0;
+                this.isUpdatingDOM = false;
 
                 // Handle backward compatibility (when third param is onModeToggle callback function)
                 if (typeof options === "function") {
@@ -962,6 +990,32 @@
                 }
 
                 this.setupUI();
+                this.setupObserver();
+            }
+
+            setupObserver() {
+                if (typeof MutationObserver === "undefined") return;
+                this.observer = new MutationObserver(() => {
+                    if (!this.isWizard || this.isUpdatingDOM) return;
+                    this.isUpdatingDOM = true;
+                    this.hideNonWizardFields();
+                    this.isUpdatingDOM = false;
+                });
+                this.observer.observe(this.form, {
+                    attributes: true,
+                    attributeFilter: ["style", "class"],
+                    subtree: true
+                });
+            }
+
+            hideNonWizardFields() {
+                if (!this.isWizard) return;
+                const allFormGroups = this.getAllFormGroups();
+                allFormGroups.forEach(g => {
+                    if (g.parentElement !== this.fieldsContainer) {
+                        g.style.display = "none";
+                    }
+                });
             }
 
             setupUI() {
@@ -1048,6 +1102,39 @@
                 this.updateMode();
             }
 
+            getAllFormGroups() {
+                const allDivs = Array.from(this.form.querySelectorAll("div"));
+                return allDivs.filter(div => {
+                    if (div === this.wizardContainer || div === this.fieldsContainer || 
+                        div === this.controlsContainer || div === this.bottomToggleContainer) {
+                        return false;
+                    }
+                    if (this.controlsContainer.contains(div) || this.bottomToggleContainer.contains(div)) {
+                        return false;
+                    }
+                    return (div.parentElement === this.form || div.parentElement === this.fieldsContainer) &&
+                           (div.querySelector("input") || div.querySelector("select") || 
+                            div.querySelector("textarea") || div.classList.contains("product-only-field") || 
+                            div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
+                });
+            }
+
+            getFieldGroup(fieldSelector) {
+                let el = this.form.querySelector(`[name="${fieldSelector}"]`);
+                if (!el) el = this.form.querySelector(fieldSelector);
+                if (!el) return null;
+
+                let group = el;
+                while (group && group !== this.form && group !== this.fieldsContainer) {
+                    if (group.tagName === "DIV" && 
+                        (group.parentElement === this.form || group.parentElement === this.fieldsContainer)) {
+                        return group;
+                    }
+                    group = group.parentElement;
+                }
+                return null;
+            }
+
             toggleMode() {
                 this.isWizard = !this.isWizard;
                 this.updateMode();
@@ -1067,13 +1154,12 @@
                     this.bottomToggleContainer.style.display = "flex";
                     if (submitBtn) submitBtn.style.display = "block";
 
-                    // Show all form groups
-                    const allFormGroups = Array.from(this.form.querySelectorAll("div")).filter(div => {
-                        return !this.wizardContainer.contains(div) && !this.bottomToggleContainer.contains(div) && 
-                               (div.querySelector("input") || div.querySelector("select") || div.querySelector("textarea") || div.classList.contains("product-only-field") || div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
-                    });
-
+                    // Return form groups from fieldsContainer back to form and show them
+                    const allFormGroups = this.getAllFormGroups();
                     allFormGroups.forEach(g => {
+                        if (g.parentElement === this.fieldsContainer) {
+                            this.form.insertBefore(g, this.bottomToggleContainer);
+                        }
                         if (g.classList.contains("product-only-field")) {
                             const select = this.form.querySelector('[name="itemType"]');
                             g.style.display = (select && select.value === 'Product') ? 'block' : 'none';
@@ -1101,12 +1187,14 @@
                 }
                 if (this.currentStep < 0) this.currentStep = 0;
 
-                // Hide all form groups first
-                const allFormGroups = Array.from(this.form.querySelectorAll("div")).filter(div => {
-                    return !this.wizardContainer.contains(div) && !this.bottomToggleContainer.contains(div) && 
-                           (div.querySelector("input") || div.querySelector("select") || div.querySelector("textarea") || div.classList.contains("product-only-field") || div.classList.contains("tags-input-container") || div.classList.contains("form-group"));
-                });
+                this.isUpdatingDOM = true;
+
+                // Return form groups from fieldsContainer back to form first before clearing fieldsContainer
+                const allFormGroups = this.getAllFormGroups();
                 allFormGroups.forEach(g => {
+                    if (g.parentElement === this.fieldsContainer) {
+                        this.form.insertBefore(g, this.bottomToggleContainer);
+                    }
                     g.style.display = "none";
                 });
 
@@ -1118,19 +1206,18 @@
                     this.fieldsContainer.style.display = "block";
                     this.renderSummary(visibleSteps);
                 } else {
-                    this.fieldsContainer.style.display = "none";
+                    this.fieldsContainer.style.display = "block";
                     step.fields.forEach(fieldSelector => {
-                        let el = this.form.querySelector(`[name="${fieldSelector}"]`);
-                        if (!el) el = this.form.querySelector(fieldSelector);
-                        
-                        if (el) {
-                            let group = el.closest("div");
-                            if (group) {
-                                group.style.display = "block";
-                            }
+                        let group = this.getFieldGroup(fieldSelector);
+                        if (group) {
+                            this.fieldsContainer.appendChild(group);
+                            group.style.display = "block";
                         }
                     });
                 }
+
+                this.hideNonWizardFields();
+                this.isUpdatingDOM = false;
 
                 this.backBtn.disabled = this.currentStep === 0;
                 this.modeBtn.textContent = "Use Form Instead";
