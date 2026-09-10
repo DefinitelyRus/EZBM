@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Backend.Core/Backend.Core.csproj" />
+  <Project Path="Backend.DesktopHost/Backend.DesktopHost.csproj" />
+</Solution>
