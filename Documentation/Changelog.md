@@ -9,7 +9,6 @@ A chronological record of all changes, updates, and additions made to the Easy B
 - Don't be too concise but don't be too verbose either.
 - Changelogs are not always 1:1 with Git changes.
 - Use the format template.
-- *TBD*
 
 ## Format Template
 
@@ -27,6 +26,90 @@ Changes:
 
 ## Logs
 
+### 09/10/2026
+
+Cleaned up project structure by removing outdated files.
+
+Changes:
+
+- Deleted all obsolete v0.1 files from the repository.
+
+### 08/01/2026
+
+Implemented major updates across frontend components, including redesigning wizards and forms, and refactored page models for improved data handling and setup.
+
+Changes:
+
+- Converted the Attendance form into a modal and updated its wizard steps.
+- Updated the sequence and form fields of the Add New Item wizard.
+- Improved the navigation sidebar and `FormWizardComponent`.
+- Refactored the Login page model.
+- Updated the setup wizard and its corresponding page model.
+- Included staff roles in the `StateHelper`.
+- Updated the `DataSeeder` and `Program` setup logic.
+
+### 07/22/2026
+
+Addressed UI issues on the dashboard and applied various minor hotfixes.
+
+Changes:
+
+- Fixed the dashboard scrolling issue.
+- Implemented additional dashboard layout updates.
+- Applied a hotfix for the pay rate logic.
+- Resolved various minor bugs.
+
+### 07/21/2026
+
+Enhanced the user interface with login functions, date picker fixes, and refactored backend logic to prevent invalid entity ID accesses.
+
+Changes:
+
+- Added log in functions and user name display.
+- Fixed an issue regarding the date picker and tags.
+- Removed an obsolete card component.
+- Fixed attempts to access IDs on non-Entity objects and applied minor refactors.
+- Merged the main branch into the frontend-test branch.
+
+### 07/20/2026
+
+Redesigned the dashboard layout and introduced the checkout page.
+
+Changes:
+
+- Redesigned the dashboard layout and added new UI elements.
+- Implemented the Check out page.
+- Fixed the pay rate logic on the Staff page.
+
+### 07/19/2026
+
+Improved the user interface with side panel responsiveness, scrollbar fixes, and staff page updates.
+
+Changes:
+
+- Added functionality to create new user profiles and updated the Staff page.
+- Implemented responsive side panels for the inventory and staff pages.
+- Added a scrollbar to the Add Items panel and nested the scrollbar properly.
+- Implemented the add tags function.
+- Applied various minor fixes and additions.
+
+### 07/17/2026
+
+Added edit and delete functionalities to the inventory items and resolved UI dropdown issues.
+
+Changes:
+
+- Implemented the ability to edit items in the inventory.
+- Added functionality to delete an item in the inventory.
+- Fixed a UI dropdown issue.
+
+### 07/16/2026
+
+Repository maintenance.
+
+Changes:
+
+- Merged the main branch into the frontend-test branch.
 ### 07/15/2026
 
 Added backend support for updating inventory items and managing tags, alongside custom JSON serialization configurations to prevent large integer precision loss in JavaScript client requests, and updated host API references.
