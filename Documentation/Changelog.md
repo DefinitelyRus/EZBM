@@ -26,13 +26,26 @@ Changes:
 
 ## Logs
 
+### 09/11/2026
+
+Updated the project roadmap and expanded the backend core domain entity models.
+
+Changes:
+
+- Added and updated domain entity models including Entity, Enums, ISellable, ProductBatch, ProductTransaction, and Service.
+- Updated the roadmap documentation.
+
 ### 09/10/2026
 
-Cleaned up project structure by removing outdated files.
+Re-architected the backend base and cleaned up the project structure.
 
 Changes:
 
 - Deleted all obsolete v0.1 files from the repository.
+- Added new database context and core domain models.
+- Configured backend project and solution files.
+- Configured API route setup and desktop host environment.
+- Updated documentation files (code style, git style, changelog, and readmes).
 
 ### 08/01/2026
 
