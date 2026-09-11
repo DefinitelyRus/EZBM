@@ -10,7 +10,7 @@ The main goal of Phase 1 is to get a working inventory tracker running with a si
 
 * Set up a C# and .NET Core project using ASP.NET.
 * Connect a local SQLite database to store your data.
-* Create database models and tables for `Products`, `Categories`, and `Stock Levels`.
+* Create database models and tables for products and product handling.
 
 ### API Development
 
