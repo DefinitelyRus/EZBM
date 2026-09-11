@@ -1,7 +1,7 @@
 namespace Backend.Core.Models;
 
-// Currently only adds Barcode over Entity and ISellable
-public class Product : Entity, ISellable
+// Currently has no additional properties over Entity and ISellable
+public class Service : Entity, ISellable
 {
     #region Inherited properties
 
@@ -19,6 +19,5 @@ public class Product : Entity, ISellable
 
     #endregion
 
-    public string? Barcode { get; set; }
 
 }
