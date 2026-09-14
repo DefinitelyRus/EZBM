@@ -28,7 +28,11 @@ public class ProductsController(AppDbContext context) : ControllerBase
             return Problem(e.Message);
         }
 
-        return CreatedAtAction(nameof(GetProduct), new { id = createdProduct.Id }, createdProduct);
+        return CreatedAtAction(
+            nameof(GetProduct),
+            new { id = createdProduct.Id },
+            createdProduct
+        );
     }
 
 
