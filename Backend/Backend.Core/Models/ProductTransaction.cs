@@ -1,3 +1,5 @@
+using Backend.Core.Common;
+
 namespace Backend.Core.Models;
 
 public class ProductTransaction : Entity
