@@ -1,4 +1,4 @@
-namespace Backend.Core.Models;
+namespace Backend.Core.Common;
 
 public enum QuantityType
 {
@@ -17,6 +17,7 @@ public enum QuantityType
     Unknown,    // Fallback in case of missing info
     Other       // None of the above
 }
+
 
 public enum TransactionType
 {
@@ -40,4 +41,33 @@ public enum TransactionType
     /// Adjust a stock quantity by a specific amount.
     /// </summary>
     AdjustBy
+}
+
+
+public enum ProductTransactionMethod
+{
+    /// <summary>
+    /// Automatically deduct from the batch that expires soonest.
+    /// </summary>
+    Fefo,
+
+    /// <summary>
+    /// Update the product's total quantity immediately, but defer batch synchronization for later.
+    /// </summary>
+    TotalFirst,
+
+    /// <summary>
+    /// Update the product's total quantity but do not touch the batches.
+    /// </summary>
+    TotalOnly,
+
+    /// <summary>
+    /// Require the user to specify the exact batch(es) involved.
+    /// </summary>
+    Manual,
+
+    /// <summary>
+    /// Fallback option.
+    /// </summary>
+    Unknown
 }

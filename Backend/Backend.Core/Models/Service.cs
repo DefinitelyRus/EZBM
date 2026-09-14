@@ -1,3 +1,5 @@
+using Backend.Core.Common;
+
 namespace Backend.Core.Models;
 
 // Currently has no additional properties over Entity and ISellable

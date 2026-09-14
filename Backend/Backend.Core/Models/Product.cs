@@ -1,3 +1,5 @@
+using Backend.Core.Common;
+
 namespace Backend.Core.Models;
 
 // Currently only adds Barcode over Entity and ISellable
