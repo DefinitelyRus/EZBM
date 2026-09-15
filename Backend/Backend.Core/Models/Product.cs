@@ -49,7 +49,8 @@ public class Product : Entity, ISellable
     public bool IsForSale { get; set; }
     public decimal TotalQuantity { get; set; }
     public QuantityType QuantityType { get; set; }
-    public ProductTransactionMethod TransactionMethod { get; set; }
+    public ProductTransactionMethod? TransactionMethod { get; set; }
+    // TODO: Assign to system default value upon creation.
 
     #endregion
 
