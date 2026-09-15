@@ -26,6 +26,36 @@ Changes:
 
 ## Logs
 
+### 09/16/2026
+
+Added product stock endpoints, transaction service business logic, and request DTOs.
+
+Changes:
+
+- Added `ProductStocksController` and registered `ProductTransactionService` in the desktop host.
+- Implemented stock creation and update business logic in `ProductTransactionService`.
+- Added stock request DTOs (`CreateStockRequest`, `GetStockRequest`, `UpdateStockRequest`).
+- Updated product transaction enums and entity models.
+
+### 09/15/2026
+
+Changes:
+
+- Updated `.gitignore`.
+
+### 09/14/2026
+
+Added product transaction service, product controller, batch tracking models, and prompt workflows.
+
+Changes:
+
+- Added product transaction service and controller endpoints.
+- Added product controller endpoints.
+- Updated product models and batch tracking properties.
+- Relocated shared enums to common namespace.
+- Added prompt workflow definitions for assistant tasks.
+- Cleaned up unused class files.
+
 ### 09/11/2026
 
 Updated the project roadmap and expanded the backend core domain entity models.
