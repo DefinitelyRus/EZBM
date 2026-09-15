@@ -1,5 +1,6 @@
 using Backend.Core.Data;
 using Backend.Core.Models;
+using Backend.DesktopHost.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.DesktopHost.Controllers;
@@ -9,6 +10,8 @@ namespace Backend.DesktopHost.Controllers;
 public class ProductTransactionsController(AppDbContext context) : ControllerBase
 {
     private readonly AppDbContext _context = context;
+
+    #region Unused
 
     [HttpPost]
     public async Task<ActionResult> CreateProductTransaction(ProductTransaction createdTransaction)
@@ -63,4 +66,7 @@ public class ProductTransactionsController(AppDbContext context) : ControllerBas
         // TODO: Implement DeleteProductTransaction.
         return Problem(statusCode: 501);
     }
+
+    #endregion
+
 }

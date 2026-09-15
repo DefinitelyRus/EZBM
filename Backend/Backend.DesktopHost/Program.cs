@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Backend.Core.Data;
+using Backend.DesktopHost.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<AppDbContext>(
 
 // Tell ASP.NET Core to look for the API controller classes within Backend.DesktopHost so they can handle incoming HTTP requests.
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<ProductTransactionService>();
 
 // Automatically read the code and generate a visual test page (Swagger UI) for the API endpoints.
 builder.Services.AddEndpointsApiExplorer();
