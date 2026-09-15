@@ -18,7 +18,12 @@ public class ProductTransaction : Entity
     /// How this transaction affects the <see cref="Product">product</see> and/or
     /// <see cref="ProductBatch">product batch</see>.
     /// </summary>
-    public ProductTransactionMethod Method { get; set; }
+    /// <remarks>
+    /// If null, use the <see cref="Product.TransactionMethod">product's transaction
+    /// method</see>. If that's also null, use the system default
+    /// <see cref="ProductTransactionMethod">transaction method</see> instead.
+    /// </remarks>
+    public ProductTransactionMethod? OverrideMethod { get; set; }
 
     /// <summary>
     /// The quantity to add, remove, or set.
