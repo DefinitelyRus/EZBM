@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-dotnettools.csdevkit",
+    "dotnetdev-kr-custom.csharp",
+    "karyfoundation.comment",
+    "exodiusstudios.comment-anchors",
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint"
+  ]
+}
