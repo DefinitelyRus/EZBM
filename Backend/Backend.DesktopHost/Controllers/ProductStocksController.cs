@@ -47,12 +47,12 @@ public class ProductStocksController(ProductTransactionService service) : Contro
 
         catch (ArgumentException e)
         {
-            return BadRequest(e.Message);
+            return BadRequest($"{e.Message} ProductId={request.ProductId}");
         }
-
+        
         catch (Exception e)
         {
-            return Problem(e.Message);
+            return Problem($"{e.Message} ProductId={request.ProductId}");
         }
     }
 

@@ -11,8 +11,7 @@ public class ProductTransactionService(AppDbContext context)
 
     public async Task<ProductTransaction> CreateStockAsync(CreateStockRequest request)
     {
-        Product? product = await _context.Products.FindAsync(request.ProductId)
-            ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
+        Product? product = await _context.Products.FindAsync(request.ProductId) ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
 
         product.TotalQuantity += request.Quantity;
 
@@ -44,8 +43,9 @@ public class ProductTransactionService(AppDbContext context)
 
     public async Task<IEnumerable<ProductTransaction>> UpdateStockAsync(UpdateStockRequest request)
     {
-        Product? product = await _context.Products.FindAsync(request.ProductId)
-            ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
+        if (request.QuantityChange == 0) throw new ArgumentException($"Request quantity change must not be zero.");
+
+        Product? product = await _context.Products.FindAsync(request.ProductId) ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
 
         ProductTransactionMethod method =
             request.TransactionMethod ??            // Use request override
@@ -58,181 +58,237 @@ public class ProductTransactionService(AppDbContext context)
         List<ProductBatch> allBatches = [.._context.ProductBatches
             .Where(b => b.Product.Id == request.ProductId)];
 
-
-        List<ProductBatch> affectedBatches = request.BatchChanges is not null
-            ? [.. allBatches.Where(b => request.BatchChanges.ContainsKey(b.BatchNumber))]
-            : [];
-
         List<ProductTransaction> transactions = [];
 
         switch (method)
         {
+            // ─── FEFO ────────────────────────────────────────────────────────
             case ProductTransactionMethod.Fefo:
                 if (type == TransactionType.Purchase)
-                    throw new ArgumentException($"Stocking method `{method}` does not allow adding new stock. Please use `CreateStockAsync` instead.");
+                    throw new ArgumentException($"Stocking method `{TransactionType.Purchase}` does not allow adding new stock. Please use `CreateStockAsync` instead.");
 
                 if (type != TransactionType.Sale) goto TotalFirst;
 
-                List<ProductBatch> sortedBatch = [.. allBatches.OrderBy(b => b.ExpirationDate)];
-                decimal remaining = request.QuantityChange;
-                int batchIndex = 0;
-
-                while (remaining > 0)
+                try
                 {
-                    decimal diff = Math.Clamp(
-                            remaining - sortedBatch[batchIndex].Quantity,
-                            0,
-                            decimal.MaxValue
-                        );
-
-                    remaining -= diff;
-                    sortedBatch[batchIndex].Quantity -= diff;
-                    batchIndex++;
-
-                    // Create new product transaction per batch
-                    ProductTransaction transaction = new()
-                    {
-                        Product = product,
-                        Batch = sortedBatch[batchIndex],
-                        Quantity = diff,
-                        TransactionType = type,
-                        OverrideMethod = method,
-                        Timestamp = DateTime.UtcNow
-                    };
-
-                    // Record transaction
-                    await _context.ProductTransactions.AddAsync(transaction);
-                    transactions.Add(transaction);
+                    transactions = [.. await ApplyChangesFefo(request, product, allBatches, method)];
                 }
-
+                catch (Exception e) { throw new Exception($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
+                // TODO: Complete exception handling
+                
                 break;
 
+            // ─── Total-First / Total-Only ────────────────────────────────────
             case ProductTransactionMethod.TotalFirst:
-            TotalFirst:
-                // TODO: Update records in TotalFirst method.
-                break;
-
             case ProductTransactionMethod.TotalOnly:
-                // TODO: Update records in TotalOnly method.
+            TotalFirst:
+                ProductTransaction transaction = await ApplyChangeTotal(request, product, method);
+                // TODO: Pass exceptions from ApplyChangeTotal
+
+
+                await _context.ProductTransactions.AddAsync(transaction);
+                transactions.Add(transaction);
+
                 break;
 
+            // ─── Manual ──────────────────────────────────────────────────────
             case ProductTransactionMethod.Manual:
-                // TODO: Update records in Manual method.
+                transactions = [.. await ApplyChangesManual(request, product, allBatches, method)];
+                // TODO: Pass exceptions from ApplyChangesManual
+
                 break;
 
+            // ─── Invalid ─────────────────────────────────────────────────────
             default:
-                throw new ArgumentException($"Stocking method {method} is invalid.");
+                throw new ArgumentException($"Invalid stocking method: {method} | ");
         }
+
+        await _context.ProductTransactions.AddRangeAsync(transactions);
+        await _context.SaveChangesAsync();
+        return transactions;
+    }
+
+    #region Helpers
+
+    private static async Task<IEnumerable<ProductTransaction>> ApplyChangesFefo(
+        UpdateStockRequest request,
+        Product product,
+        IEnumerable<ProductBatch> allBatches,
+        ProductTransactionMethod method
+        )
+    {
+        decimal remaining = request.QuantityChange;
+        int batchIndex = 0;
+        List<ProductBatch> sortedBatch = [.. allBatches.OrderBy(b => b.ExpirationDate)];
+        List<ProductTransaction> transactions = [];
+
+        while (remaining > 0 && batchIndex < sortedBatch.Count)
+        {
+            decimal diff = Math.Min(remaining, sortedBatch[batchIndex].Quantity);
+
+            remaining -= diff;
+            sortedBatch[batchIndex].Quantity -= diff;
+
+            ProductTransaction transaction = new()
+            {
+                Product = product,
+                Batch = sortedBatch[batchIndex],
+                Quantity = diff,
+                TransactionType = request.TransactionType,
+                OverrideMethod = method,
+                Timestamp = DateTime.UtcNow // TODO: Add as property in UpdateStockRequest
+            };
+
+            transactions.Add(transaction);
+            // TODO: Find a way to cancel all pending database changes when an exception is thrown. 
+            // The current system relies on thrown exceptions to cascade all the
+            // way up to the controller to prevent cancelled saved changes. This
+            // is fine for now, but is prone to data-impacting bugs.
+
+            batchIndex++;
+        }
+
+        if (remaining != 0) throw new InvalidOperationException($"Remaining change quantity is non-zero after applying quantity changes to all affected batches. | remaining={remaining}");
+        // TODO: Create a custom exception message generator.
+
+        try
+        {
+            product.TotalQuantity = ApplyChangeByType(
+                request.TransactionType,
+                product.TotalQuantity,
+                request.QuantityChange
+                );
+        }
+        catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
+        catch (Exception e) { throw new Exception($"{e.Message} | "); }
 
         return transactions;
     }
+
+    private static async Task<ProductTransaction> ApplyChangeTotal(
+        UpdateStockRequest request,
+        Product product,
+        ProductTransactionMethod method
+        )
+    {
+        try
+        {
+            product.TotalQuantity = ApplyChangeByType(
+                request.TransactionType,
+                product.TotalQuantity,
+                request.QuantityChange
+                );
+        }
+        catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
+        catch (Exception e) { throw new Exception($"{e.Message} | "); }
+
+        // Create new product transaction per batch
+        ProductTransaction transaction = new()
+        {
+            Product = product,
+            Batch = null,
+            Quantity = request.QuantityChange,
+            TransactionType = request.TransactionType,
+            OverrideMethod = method,
+            Timestamp = DateTime.UtcNow // TODO: Replace with property from UpdateStockRequest
+        };
+
+        return transaction;
+    }
+
+    private static async Task<IEnumerable<ProductTransaction>> ApplyChangesManual(
+        UpdateStockRequest request,
+        Product product,
+        IEnumerable<ProductBatch> allBatches,
+        ProductTransactionMethod method
+        )
+    {
+        List<ProductBatch> affectedBatches = request.BatchChanges is not null
+            ? [.. allBatches.Where(b => request.BatchChanges.ContainsKey(b.BatchNumber))]
+            : [];
+
+        Dictionary<long, decimal>? changes = request.BatchChanges;
+        if (affectedBatches.Count == 0 || changes == null) throw new ArgumentException($"Stocking method {ProductTransactionMethod.Manual} requires at least 1 batch change.");
+
+        decimal sum = changes.Values.Sum();
+        if (sum != request.QuantityChange) throw new ArgumentException($"Quantity change ({request.QuantityChange}) does not match batch sum ({sum}).");
+
+        List<ProductTransaction> transactions = [];
+
+        foreach (KeyValuePair<long, decimal> change in changes)
+        {
+            ProductBatch batch = affectedBatches.Find(b => b.BatchNumber == change.Key)!;
+
+            try
+            {
+                batch.Quantity = ApplyChangeByType(
+                    request.TransactionType,
+                    batch.Quantity,
+                    change.Value
+                    );
+            }
+            catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
+            catch (Exception e) { throw new Exception($"{e.Message} | "); }
+
+            transactions.Add(new()
+            {
+                Product = product,
+                Batch = batch,
+                Quantity = change.Value,
+                TransactionType = request.TransactionType,
+                OverrideMethod = method,
+                Timestamp = DateTime.UtcNow // TODO: Replace with property from UpdateStockRequest
+            });
+        }
+
+        product.TotalQuantity = request.QuantityChange;
+
+        return transactions;
+    }
+
+    private static decimal ApplyChangeByType(TransactionType type, decimal original, decimal change)
+    {
+        decimal newQuantity = original;
+
+        switch (type)
+        {
+            // ─── Set ─────────────────────────────────────────────────
+            case TransactionType.Initial:
+            case TransactionType.SetTo:
+                newQuantity = change;
+                break;
+
+            // ─── Add ─────────────────────────────────────────────────
+            case TransactionType.Purchase:
+            case TransactionType.ReturnToStock:
+                if (change <= 0)
+                    throw new ArgumentException($"Quantity value ({change}) must be a positive number. | TransactionType={type}");
+
+                newQuantity += change;
+                break;
+
+            // Allow changes
+            case TransactionType.AdjustBy:
+                newQuantity += change;
+                break;
+
+            // ─── Subtract ────────────────────────────────────────────
+            case TransactionType.Sale:
+            case TransactionType.ReturnToSupplier:
+                if (change <= 0)
+                    throw new ArgumentException($"Quantity value ({change}) must be a positive number. | TransactionType={type}");
+
+                decimal diff = Math.Min(newQuantity, change);
+                newQuantity -= diff;
+                break;
+
+            default:
+                throw new ArgumentException($"Invalid transaction type: {type} | ");
+        }
+
+        return newQuantity;
+    }
+
+    #endregion
+
 }
-
-
-
-
-
-// public async Task OLD_ProcessTransactionAsync(CreateTransactionRequest request)
-// {
-//     #region Validation
-
-//     if (request.TotalQuantityChange == 0)
-//         throw new ArgumentException($"`TotalQuantityChange` must be non-zero.");
-
-//     if (request.BatchAdjustments != null)
-//     {
-//         // Check if total and batch sum are equal
-//         if (request.BatchAdjustments.Count > 0)
-//         {
-//             decimal sum = request.BatchAdjustments.Values.Sum();
-
-//             if (sum != request.TotalQuantityChange)
-//                 throw new ArgumentException($"`TotalQuantityChange` ({request.TotalQuantityChange}) does not match the sum of `BatchAdjustments` ({sum}).");
-//         }
-
-//         // Check if the listed batches exist
-//         List<long> invalidIds = [];
-//         foreach (long batchId in request.BatchAdjustments.Keys)
-//         {
-//             ProductBatch? batch = await _context.ProductBatches.FindAsync(batchId);
-
-//             if (batch == null) invalidIds.Add(batchId);
-//         }
-
-//         if (invalidIds.Count > 0)
-//             throw new ArgumentException($"Batches with the following IDs do not exist: {string.Join(", ", invalidIds)}");
-//     }
-
-//     #endregion
-
-//     Product? product =
-//         await _context.Products.FindAsync(request.ProductId) ??
-//         throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
-
-//     // Get all product batches with a matching ID.
-//     ProductBatch[]? matchingBatches =
-//         request.BatchAdjustments != null
-//             ? [.. _context.ProductBatches
-//                 .Where(b => request.BatchAdjustments.ContainsKey(b.Id))]
-//             : null;
-
-//     // Determine which method to use.
-//     ProductTransactionMethod method =
-//         request.OverrideMethod                  // Use request's override
-//         ?? product.TransactionMethod            // Use product's override
-//         ?? ProductTransactionMethod.TotalOnly;  // Use system default.
-//                                                 // TODO: Replace with system default.
-
-//     switch (method)
-//     {
-//         // Adjust the batch by expirty date.
-//         // Oldest first for sales, newest first for purchases.
-//         case ProductTransactionMethod.Fefo:
-//             List<ProductBatch> sortedBatches = [.. _context.ProductBatches
-//                 .Where(b => b.Product.Id == request.ProductId)
-//                 .OrderBy(b => b.ExpirationDate)];
-
-//             switch (request.TransactionType)
-//             {
-//                 case TransactionType.Purchase:
-//                     // TODO: Create new batch
-//                     _context.ProductBatches
-//                         .Add(new ProductBatch());
-//                     break;
-
-//                 case TransactionType.Sale:
-//                     // TODO: Update existing batches in order
-//                     break;
-
-//                 default:
-//                     goto TotalFirst;
-//             }
-
-//             break;
-
-//         // Apply the total quantity, then the batch adjustments if specified.
-//         // This is separated from Manual as this allows for the absence of batch
-//         // adjustments, whereas Manual requires them.
-//         case ProductTransactionMethod.TotalFirst:
-//         TotalFirst:
-
-//             break;
-
-//         // Apply total quantity, then the batch adjustments.
-//         case ProductTransactionMethod.Manual:
-
-//             break;
-
-//         // Apply the total quantity only.
-//         // This is separated from Manual and TotalFirst because the client could
-//         // supply the batch adjustments even when they shouldn't be tracked, which
-//         // means they'll actively need to be filtered out regardless.
-//         case ProductTransactionMethod.TotalOnly:
-
-//             break;
-
-//         default:
-//             throw new ArgumentException($"Invalid transaction method: {product.TransactionMethod}");
-//     }
-
-// }
