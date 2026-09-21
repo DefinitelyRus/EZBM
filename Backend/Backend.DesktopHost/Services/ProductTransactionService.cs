@@ -11,7 +11,9 @@ public class ProductTransactionService(AppDbContext context)
 
     public async Task<ProductTransaction> CreateStockAsync(CreateStockRequest request)
     {
-        Product? product = await _context.Products.FindAsync(request.ProductId) ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
+        // ─── Checks And Assignments ──────────────────────────────────────────
+        Product? product = await _context.Products.FindAsync(request.ProductId)
+            ?? throw Esc.New<ArgumentException>($"Product does not exist.", request.ProductId);
 
         product.TotalQuantity += request.Quantity;
 
@@ -23,8 +25,6 @@ public class ProductTransactionService(AppDbContext context)
             ExpirationDate = request.ExpiryDate
         };
 
-        await _context.ProductBatches.AddAsync(newBatch);
-
         ProductTransaction transaction = new()
         {
             Product = product,
@@ -34,6 +34,8 @@ public class ProductTransactionService(AppDbContext context)
             Timestamp = DateTime.UtcNow
         };
 
+        // ─── Apply Changes To Database ───────────────────────────────────────
+        await _context.ProductBatches.AddAsync(newBatch);
         await _context.ProductTransactions.AddAsync(transaction);
         await _context.SaveChangesAsync();
 
@@ -43,9 +45,11 @@ public class ProductTransactionService(AppDbContext context)
 
     public async Task<IEnumerable<ProductTransaction>> UpdateStockAsync(UpdateStockRequest request)
     {
-        if (request.QuantityChange == 0) throw new ArgumentException($"Request quantity change must not be zero.");
+        // ─── Checks And Assignments ──────────────────────────────────────────
+        if (request.QuantityChange == 0) throw Esc.New<ArgumentException>($"Request quantity change must not be zero.", request.QuantityChange);
 
-        Product? product = await _context.Products.FindAsync(request.ProductId) ?? throw new ArgumentException($"Product with ID '{request.ProductId}' does not exist.");
+        Product? product = await _context.Products.FindAsync(request.ProductId)
+            ?? throw Esc.New<ArgumentException>($"Product does not exist.", request.ProductId);
 
         ProductTransactionMethod method =
             request.TransactionMethod ??            // Use request override
@@ -60,12 +64,13 @@ public class ProductTransactionService(AppDbContext context)
 
         List<ProductTransaction> transactions = [];
 
+        // Distribute to helper methods
         switch (method)
         {
             // ─── FEFO ────────────────────────────────────────────────────────
             case ProductTransactionMethod.Fefo:
                 if (type == TransactionType.Purchase)
-                    throw new ArgumentException($"Stocking method `{TransactionType.Purchase}` does not allow adding new stock. Please use `CreateStockAsync` instead.");
+                    throw Esc.New<ArgumentException>($"Stocking method `{nameof(TransactionType.Purchase)}` does not allow adding new stock. Please use `CreateStockAsync` instead.");
 
                 if (type != TransactionType.Sale) goto TotalFirst;
 
@@ -73,17 +78,22 @@ public class ProductTransactionService(AppDbContext context)
                 {
                     transactions = [.. await ApplyChangesFefo(request, product, allBatches, method)];
                 }
-                catch (Exception e) { throw new Exception($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
-                // TODO: Complete exception handling
-                
+                catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+                catch (Exception) { throw; }
+
                 break;
 
             // ─── Total-First / Total-Only ────────────────────────────────────
             case ProductTransactionMethod.TotalFirst:
             case ProductTransactionMethod.TotalOnly:
             TotalFirst:
-                ProductTransaction transaction = await ApplyChangeTotal(request, product, method);
-                // TODO: Pass exceptions from ApplyChangeTotal
+                ProductTransaction transaction;
+                try
+                {
+                    transaction = await ApplyChangeTotal(request, product, method);
+                }
+                catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+                catch (Exception) { throw; }
 
 
                 await _context.ProductTransactions.AddAsync(transaction);
@@ -100,7 +110,7 @@ public class ProductTransactionService(AppDbContext context)
 
             // ─── Invalid ─────────────────────────────────────────────────────
             default:
-                throw new ArgumentException($"Invalid stocking method: {method} | ");
+                throw Esc.New<ArgumentException>($"Invalid stocking method.", method);
         }
 
         await _context.ProductTransactions.AddRangeAsync(transactions);
@@ -117,11 +127,13 @@ public class ProductTransactionService(AppDbContext context)
         ProductTransactionMethod method
         )
     {
+        // ─── Assignments ─────────────────────────────────────────────────────
         decimal remaining = request.QuantityChange;
         int batchIndex = 0;
         List<ProductBatch> sortedBatch = [.. allBatches.OrderBy(b => b.ExpirationDate)];
         List<ProductTransaction> transactions = [];
 
+        // ─── Apply New Batch Quantities ──────────────────────────────────────
         while (remaining > 0 && batchIndex < sortedBatch.Count)
         {
             decimal diff = Math.Min(remaining, sortedBatch[batchIndex].Quantity);
@@ -148,9 +160,10 @@ public class ProductTransactionService(AppDbContext context)
             batchIndex++;
         }
 
-        if (remaining != 0) throw new InvalidOperationException($"Remaining change quantity is non-zero after applying quantity changes to all affected batches. | remaining={remaining}");
-        // TODO: Create a custom exception message generator.
+        // Throw if not all requested quantities consumed
+        if (remaining != 0) throw Esc.New<InvalidOperationException>($"Remaining change quantity is non-zero after applying quantity changes to all affected batches.", remaining);
 
+        // ─── Apply New Total Quantity ────────────────────────────────────────
         try
         {
             product.TotalQuantity = ApplyChangeByType(
@@ -159,8 +172,8 @@ public class ProductTransactionService(AppDbContext context)
                 request.QuantityChange
                 );
         }
-        catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
-        catch (Exception e) { throw new Exception($"{e.Message} | "); }
+        catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+        catch (Exception) { throw; }
 
         return transactions;
     }
@@ -171,6 +184,7 @@ public class ProductTransactionService(AppDbContext context)
         ProductTransactionMethod method
         )
     {
+        // ─── Apply New Total Quantity ────────────────────────────────────────
         try
         {
             product.TotalQuantity = ApplyChangeByType(
@@ -179,10 +193,10 @@ public class ProductTransactionService(AppDbContext context)
                 request.QuantityChange
                 );
         }
-        catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
-        catch (Exception e) { throw new Exception($"{e.Message} | "); }
+        catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+        catch (Exception) { throw; }
 
-        // Create new product transaction per batch
+        // ─── Create New Product Transaction Per Batch ────────────────────────
         ProductTransaction transaction = new()
         {
             Product = product,
@@ -203,18 +217,24 @@ public class ProductTransactionService(AppDbContext context)
         ProductTransactionMethod method
         )
     {
+        // ─── Checks And Assignments ──────────────────────────────────────────
         List<ProductBatch> affectedBatches = request.BatchChanges is not null
             ? [.. allBatches.Where(b => request.BatchChanges.ContainsKey(b.BatchNumber))]
             : [];
 
         Dictionary<long, decimal>? changes = request.BatchChanges;
-        if (affectedBatches.Count == 0 || changes == null) throw new ArgumentException($"Stocking method {ProductTransactionMethod.Manual} requires at least 1 batch change.");
+        if (affectedBatches.Count == 0 || changes == null)
+            throw Esc.New<ArgumentException>($"Stocking method {nameof(ProductTransactionMethod.Manual)} requires at least 1 batch change.");
 
         decimal sum = changes.Values.Sum();
-        if (sum != request.QuantityChange) throw new ArgumentException($"Quantity change ({request.QuantityChange}) does not match batch sum ({sum}).");
+        if (sum != request.QuantityChange)
+            throw Esc.New<ArgumentException>($"Quantity change does not match batch sum.")
+            .AddData(request.QuantityChange)
+            .AddData(sum);
 
         List<ProductTransaction> transactions = [];
 
+        // ─── Apply New Batch Quantities ──────────────────────────────────────
         foreach (KeyValuePair<long, decimal> change in changes)
         {
             ProductBatch batch = affectedBatches.Find(b => b.BatchNumber == change.Key)!;
@@ -227,8 +247,8 @@ public class ProductTransactionService(AppDbContext context)
                     change.Value
                     );
             }
-            catch (ArgumentException e) { throw new ArgumentException($"{e.Message} TransactionMethod={request.TransactionMethod}"); }
-            catch (Exception e) { throw new Exception($"{e.Message} | "); }
+            catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+            catch (Exception) { throw; }
 
             transactions.Add(new()
             {
@@ -241,12 +261,26 @@ public class ProductTransactionService(AppDbContext context)
             });
         }
 
-        product.TotalQuantity = request.QuantityChange;
+        // ─── Apply New Total Quantity ────────────────────────────────────────
+        try
+        {
+            product.TotalQuantity = ApplyChangeByType(
+                request.TransactionType,
+                product.TotalQuantity,
+                request.QuantityChange
+                );
+        }
+        catch (ArgumentException e) { throw e.AddData(request.TransactionMethod); }
+        catch (Exception) { throw; }
 
         return transactions;
     }
 
-    private static decimal ApplyChangeByType(TransactionType type, decimal original, decimal change)
+    private static decimal ApplyChangeByType(
+        TransactionType type,
+        decimal original,
+        decimal change
+        )
     {
         decimal newQuantity = original;
 
@@ -262,7 +296,9 @@ public class ProductTransactionService(AppDbContext context)
             case TransactionType.Purchase:
             case TransactionType.ReturnToStock:
                 if (change <= 0)
-                    throw new ArgumentException($"Quantity value ({change}) must be a positive number. | TransactionType={type}");
+                    throw Esc.New<ArgumentException>($"Quantity value ({change}) must be a positive number.")
+                        .AddData(change)
+                        .AddData(type);
 
                 newQuantity += change;
                 break;
@@ -276,14 +312,16 @@ public class ProductTransactionService(AppDbContext context)
             case TransactionType.Sale:
             case TransactionType.ReturnToSupplier:
                 if (change <= 0)
-                    throw new ArgumentException($"Quantity value ({change}) must be a positive number. | TransactionType={type}");
+                    throw Esc.New<ArgumentException>($"Quantity value ({change}) must be a positive number.")
+                        .AddData(change)
+                        .AddData(type);
 
                 decimal diff = Math.Min(newQuantity, change);
                 newQuantity -= diff;
                 break;
 
             default:
-                throw new ArgumentException($"Invalid transaction type: {type} | ");
+                throw Esc.New<ArgumentException>($"Invalid transaction type.", type);
         }
 
         return newQuantity;
