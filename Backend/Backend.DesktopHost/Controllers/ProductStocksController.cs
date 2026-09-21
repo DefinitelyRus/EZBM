@@ -1,3 +1,4 @@
+using Backend.Core.Common;
 using Backend.Core.Models;
 using Backend.DesktopHost.DTOs;
 using Backend.DesktopHost.Services;
@@ -27,12 +28,14 @@ public class ProductStocksController(ProductTransactionService service) : Contro
 
         catch (ArgumentException e)
         {
-            return BadRequest(e.Message);
+            e.AddData(request.ProductId);
+            return BadRequest($"{Esc.ExportMessage(e)}");
         }
 
         catch (Exception e)
         {
-            return Problem(e.Message);
+            e.AddData(request.ProductId);
+            return Problem($"{Esc.ExportMessage(e)}");
         }
     }
 
@@ -47,12 +50,14 @@ public class ProductStocksController(ProductTransactionService service) : Contro
 
         catch (ArgumentException e)
         {
-            return BadRequest($"{e.Message} ProductId={request.ProductId}");
+            e.AddData(request.ProductId);
+            return BadRequest($"{Esc.ExportMessage(e)}");
         }
-        
+
         catch (Exception e)
         {
-            return Problem($"{e.Message} ProductId={request.ProductId}");
+            e.AddData(request.ProductId);
+            return Problem($"{Esc.ExportMessage(e)}");
         }
     }
 
