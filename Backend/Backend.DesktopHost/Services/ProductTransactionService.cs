@@ -2,6 +2,7 @@ using Backend.Core.Common;
 using Backend.Core.Data;
 using Backend.Core.Models;
 using Backend.DesktopHost.DTOs;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.DesktopHost.Services;
 
@@ -13,7 +14,8 @@ public class ProductTransactionService(AppDbContext context)
     {
         // ─── Checks And Assignments ──────────────────────────────────────────
         Product? product = await _context.Products.FindAsync(request.ProductId)
-            ?? throw Esc.New<ArgumentException>($"Product does not exist.", request.ProductId);
+            ?? throw Esc.New<ArgumentException>($"Product does not exist.");
+        // Product ID is already provided in ProductStocksController.
 
         product.TotalQuantity += request.Quantity;
 
@@ -42,6 +44,27 @@ public class ProductTransactionService(AppDbContext context)
         return transaction;
     }
 
+    public async Task<GetStockResponse> GetStockAsync(long productId)
+    {
+        // ─── Checks And Assignments ──────────────────────────────────────────
+        Product? product = await _context.Products.FindAsync(productId)
+            ?? throw Esc.New<ArgumentException>($"Product does not exist.");
+        // Product ID is already provided in ProductStocksController.
+
+        List<ProductBatch> batches = [.. await _context.ProductBatches
+            .Where(b => b.Product.Id == product.Id)
+            .ToListAsync()];
+
+        GetStockResponse response = new()
+        {
+            ProductId = product.Id,
+            TotalQuantity = product.TotalQuantity,
+            Batches = batches
+        };
+
+        // ─── Return Results ──────────────────────────────────────────────────
+        return response;
+    }
 
     public async Task<IEnumerable<ProductTransaction>> UpdateStockAsync(UpdateStockRequest request)
     {
@@ -49,7 +72,8 @@ public class ProductTransactionService(AppDbContext context)
         if (request.QuantityChange == 0) throw Esc.New<ArgumentException>($"Request quantity change must not be zero.", request.QuantityChange);
 
         Product? product = await _context.Products.FindAsync(request.ProductId)
-            ?? throw Esc.New<ArgumentException>($"Product does not exist.", request.ProductId);
+            ?? throw Esc.New<ArgumentException>($"Product does not exist.");
+        // Product ID is already provided in ProductStocksController.
 
         ProductTransactionMethod method =
             request.TransactionMethod ??            // Use request override
