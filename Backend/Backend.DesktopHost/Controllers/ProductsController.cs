@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Backend.Core.Data;
 using Backend.Core.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Backend.DesktopHost.Controllers;
@@ -14,7 +14,7 @@ public class ProductsController(AppDbContext context) : ControllerBase
 
 
     [HttpPost]
-    public async Task<ActionResult> CreateProduct(Product createdProduct)
+    public async Task<ActionResult> CreateProduct([FromBody] Product createdProduct)
     {
         await _context.Products.AddAsync(createdProduct);
 
@@ -55,12 +55,14 @@ public class ProductsController(AppDbContext context) : ControllerBase
 
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateProduct(long id, Product updatedProduct)
+    public async Task<ActionResult> UpdateProduct(long id, [FromBody] Product updatedProduct)
     {
-        if (id != updatedProduct.Id) return BadRequest("The target ID does not match the updated product's ID.");
+        if (id != updatedProduct.Id)
+            return BadRequest("The target ID does not match the updated product's ID.");
 
         // TODO: Prevent direct quantity updates here.
         // Client should CREATE a new ProductTransaction instead.
+        // REVIEW: Is this complete?
 
         EntityEntry<Product> entry = _context.Entry(updatedProduct);
         entry.State = EntityState.Modified;
@@ -70,16 +72,16 @@ public class ProductsController(AppDbContext context) : ControllerBase
             await _context.SaveChangesAsync();
         }
 
-        catch (DbUpdateConcurrencyException duce)
+        catch (DbUpdateConcurrencyException e)
         {
-            if (!_context.Products.Any(e => e.Id == id))
+            if (!_context.Products.Any(p => p.Id == id))
             {
                 return NotFound();
             }
 
             else
             {
-                return Problem(duce.Message);
+                return Problem(e.Message);
             }
         }
 
