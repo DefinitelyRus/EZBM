@@ -12,6 +12,7 @@ public class ProductStocksController(ProductTransactionService service) : Contro
 {
     private readonly ProductTransactionService _service = service;
 
+
     [HttpPost("create-stock")]
     public async Task<ActionResult> CreateStock([FromBody] CreateStockRequest request)
     {
@@ -29,19 +30,55 @@ public class ProductStocksController(ProductTransactionService service) : Contro
         catch (ArgumentException e)
         {
             e.AddData(request.ProductId);
-            return BadRequest($"{Esc.ExportMessage(e)}");
+            return BadRequest(Esc.ExportMessage(e));
         }
 
         catch (Exception e)
         {
             e.AddData(request.ProductId);
-            return Problem($"{Esc.ExportMessage(e)}");
+            return Problem(Esc.ExportMessage(e));
         }
     }
 
-    [HttpPost("update-stock")]
-    public async Task<ActionResult> UpdateStock([FromBody] UpdateStockRequest request)
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<GetStockResponse>>> GetStocks()
     {
+        // TODO (Later): Implement GetStocks 
+        return StatusCode(StatusCodes.Status501NotImplemented);
+    }
+
+
+    [HttpGet("{productId}")]
+    public async Task<ActionResult<GetStockResponse>> GetStock(long productId)
+    {
+        // TODO: Implement GetStock
+        try
+        {
+            GetStockResponse response = await _service.GetStockAsync(productId);
+            return response;
+        }
+
+        catch (ArgumentException e)
+        {
+            e.AddData(productId);
+            return BadRequest(Esc.ExportMessage(e));
+        }
+
+        catch (Exception e)
+        {
+            e.AddData(productId);
+            return Problem(Esc.ExportMessage(e));
+        }
+    }
+
+
+    [HttpPost("{productId}")]
+    public async Task<ActionResult> UpdateStock(long productId, [FromBody] UpdateStockRequest request)
+    {
+        if (productId != request.ProductId)
+            return BadRequest($"The target product ID must match the product ID in the request. || productId={productId}");
+
         try
         {
             List<ProductTransaction> transactions = [.. await _service.UpdateStockAsync(request)];
@@ -50,21 +87,14 @@ public class ProductStocksController(ProductTransactionService service) : Contro
 
         catch (ArgumentException e)
         {
-            e.AddData(request.ProductId);
-            return BadRequest($"{Esc.ExportMessage(e)}");
+            e.AddData(productId);
+            return BadRequest(Esc.ExportMessage(e));
         }
 
         catch (Exception e)
         {
-            e.AddData(request.ProductId);
-            return Problem($"{Esc.ExportMessage(e)}");
+            e.AddData(productId);
+            return Problem(Esc.ExportMessage(e));
         }
-    }
-
-    [HttpGet("get-stock")]
-    public async Task<ActionResult<GetStockRequest>> GetStock(long productId)
-    {
-        // TODO: Implement GetStock
-        return Problem(statusCode: 501);
     }
 }
