@@ -6,16 +6,16 @@ This document outlines the step-by-step plan for building the EZBM inventory and
 
 The main goal of Phase 1 is to get a working inventory tracker running with a single bundled command.
 
-### Backend Setup
+### (COMPLETE) Backend Setup
 
-* Set up a C# and .NET Core project using ASP.NET.
-* Connect a local SQLite database to store your data.
-* Create database models and tables for products and product handling.
+* (COMPLETE) Set up a C# and .NET Core project using ASP.NET.
+* (COMPLETE) Connect a local SQLite database to store your data.
+* (COMPLETE) Create database models and tables for products and product handling.
 
-### API Development
+### (COMPLETE) API Development
 
-* Build REST API endpoints to fetch, add, update, and delete products.
-* Add endpoints to increase or decrease stock counts.
+* (COMPLETE) Build REST API endpoints to fetch, add, update, and delete products.
+* (COMPLETE) Add endpoints to increase or decrease stock counts.
 
 ### Frontend Setup
 
