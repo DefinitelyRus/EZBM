@@ -17,23 +17,27 @@ public class ProductsController(AppDbContext context) : ControllerBase
     [HttpPost]
     public async Task<ActionResult> CreateProduct([FromBody] Product createdProduct)
     {
-        await _context.Products.AddAsync(createdProduct);
-
+        // ─── Add New Product ─────────────────────────────────────────────────
         try
         {
+            await _context.Products.AddAsync(createdProduct);
             await _context.SaveChangesAsync();
         }
 
         catch (Exception e)
         {
-            return Problem(e.Message);
+            Esc.AddData(e, createdProduct.Id);
+            return Problem(Esc.ExportMessage(e));
         }
 
-        return CreatedAtAction(
+        // ─── Return Created Product ──────────────────────────────────────────
+        CreatedAtActionResult result = CreatedAtAction(
             nameof(GetProduct),
             new { id = createdProduct.Id },
             createdProduct
         );
+
+        return result;
     }
 
 
@@ -47,11 +51,26 @@ public class ProductsController(AppDbContext context) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<Product>> GetProduct(long id)
     {
-        Product? product = await _context.Products.FindAsync(id);
+        try
+        {
+            // ─── Checks And Assignments ──────────────────────────────────────
+            Product product = await _context.Products.FindAsync(id)
+                ?? throw Esc.New<ArgumentException>("Product does not exist.", id);
 
-        if (product == null) return NotFound();
+            // ─── Return Result ───────────────────────────────────────────────
+            return product;
+        }
 
-        return product;
+        catch (ArgumentException e)
+        {
+            return BadRequest(Esc.ExportMessage(e));
+        }
+
+        catch (Exception e)
+        {
+            Esc.AddData(e, id);
+            return Problem(Esc.ExportMessage(e));
+        }
     }
 
 
@@ -68,13 +87,13 @@ public class ProductsController(AppDbContext context) : ControllerBase
                 ?? throw Esc.New<ArgumentException>("Product does not exist.", id);
 
             EntityEntry<Product> entry = _context.Entry(updatedProduct);
-            entry.State = EntityState.Modified; // Allow data changes
-            entry.Property(p => p.TotalQuantity).IsModified = false; // Ignore all quantity changes
-            // TODO: Add documentation about quantity changes.
-            // Quantity changes must only be made in ProductStocksController, except
-            // during product creation (not batch creation).
 
             // ─── Apply Changes ───────────────────────────────────────────────
+            entry.State = EntityState.Modified; // Allow data changes
+            entry.Property(p => p.TotalQuantity).IsModified = false; // Ignore all quantity changes
+                                                                     // TODO: Add documentation about quantity changes.
+                                                                     // Quantity changes must only be made in ProductStocksController, except
+                                                                     // during product creation (not batch creation).
             await _context.SaveChangesAsync();
         }
 
@@ -85,6 +104,7 @@ public class ProductsController(AppDbContext context) : ControllerBase
 
         catch (Exception e)
         {
+            Esc.AddData(e, id);
             return Problem(Esc.ExportMessage(e));
         }
 
@@ -95,20 +115,26 @@ public class ProductsController(AppDbContext context) : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProduct(long id)
     {
-        Product? product = await _context.Products.FindAsync(id);
-
-        if (product == null) return NotFound();
-
-        _context.Products.Remove(product);
-
         try
         {
+            // ─── Checks And Assignments ──────────────────────────────────────
+            Product product = await _context.Products.FindAsync(id)
+                ?? throw Esc.New<ArgumentException>("Product does not exist.", id);
+
+            // ─── Apply Changes ───────────────────────────────────────────────
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
+        }
+
+        catch (ArgumentException e)
+        {
+            return BadRequest(Esc.ExportMessage(e));
         }
 
         catch (Exception e)
         {
-            return Problem(e.Message);
+            Esc.AddData(e, id);
+            return Problem(Esc.ExportMessage(e));
         }
 
         return NoContent();
