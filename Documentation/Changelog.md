@@ -26,6 +26,43 @@ Changes:
 
 ## Logs
 
+### 09/23/2026
+
+Prevented direct stock updates in products controller, configured transaction batch delete behavior, and updated controller stubs.
+
+Changes:
+
+- Prevented direct stock modifications through `ProductsController.UpdateProduct`.
+- Configured batch deletion behavior in `AppDbContext` to preserve product transactions and set their batch reference to null.
+- Updated `ProductTransactionsController` stubs to mark creation as obsolete/gone and discourage direct updates and deletions.
+- Updated the project roadmap and task lists.
+
+### 09/22/2026
+
+Added stock retrieval logic and refined product and stock controller bindings.
+
+Changes:
+
+- Added stock retrieval logic in `ProductTransactionService` and exposed it via `ProductStocksController.GetStock`.
+- Added the `GetStockResponse` data transfer object.
+- Updated `ProductsController` to improve request binding and error handling.
+
+### 09/21/2026
+
+Added contextual error handling and corrected stock calculation edge cases.
+
+Changes:
+
+- Added contextual error helper methods and an exception extension scheme in the core library.
+- Integrated structured contextual error reporting in `ProductStocksController`.
+- Corrected stock quantity calculations and edge case handling in `ProductTransactionService`.
+
+### 09/17/2026
+
+Changes:
+
+- Removed deprecated debug launch configuration.
+
 ### 09/16/2026
 
 Added product stock endpoints, transaction service business logic, and request DTOs.
