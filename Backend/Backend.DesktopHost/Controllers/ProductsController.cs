@@ -1,3 +1,4 @@
+using Backend.Core.Common;
 using Backend.Core.Data;
 using Backend.Core.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -57,37 +58,34 @@ public class ProductsController(AppDbContext context) : ControllerBase
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProduct(long id, [FromBody] Product updatedProduct)
     {
-        if (id != updatedProduct.Id)
-            return BadRequest("The target ID does not match the updated product's ID.");
-
-        // TODO: Prevent direct quantity updates here.
-        // Client should CREATE a new ProductTransaction instead.
-        // REVIEW: Is this complete?
-
-        EntityEntry<Product> entry = _context.Entry(updatedProduct);
-        entry.State = EntityState.Modified;
-
         try
         {
+            // ─── Checks And Assignments ──────────────────────────────────────
+            if (id != updatedProduct.Id)
+                throw Esc.New<ArgumentException>("Target ID does not match the updated product's ID.");
+
+            Product? product = await _context.Products.FindAsync(id)
+                ?? throw Esc.New<ArgumentException>("Product does not exist.", id);
+
+            EntityEntry<Product> entry = _context.Entry(updatedProduct);
+            entry.State = EntityState.Modified; // Allow data changes
+            entry.Property(p => p.TotalQuantity).IsModified = false; // Ignore all quantity changes
+            // TODO: Add documentation about quantity changes.
+            // Quantity changes must only be made in ProductStocksController, except
+            // during product creation (not batch creation).
+
+            // ─── Apply Changes ───────────────────────────────────────────────
             await _context.SaveChangesAsync();
         }
 
-        catch (DbUpdateConcurrencyException e)
+        catch (ArgumentException e)
         {
-            if (!_context.Products.Any(p => p.Id == id))
-            {
-                return NotFound();
-            }
-
-            else
-            {
-                return Problem(e.Message);
-            }
+            return BadRequest(Esc.ExportMessage(e));
         }
 
         catch (Exception e)
         {
-            return Problem(e.Message);
+            return Problem(Esc.ExportMessage(e));
         }
 
         return NoContent();
