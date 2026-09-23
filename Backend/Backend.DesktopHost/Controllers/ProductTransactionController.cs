@@ -1,6 +1,5 @@
 using Backend.Core.Data;
 using Backend.Core.Models;
-using Backend.DesktopHost.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.DesktopHost.Controllers;
@@ -11,28 +10,11 @@ public class ProductTransactionsController(AppDbContext context) : ControllerBas
 {
     private readonly AppDbContext _context = context;
 
-    #region Unused
-
     [HttpPost]
+    [Obsolete("Please use ProductStocksController.CreateStock instead.")]
     public async Task<ActionResult> CreateProductTransaction(ProductTransaction createdTransaction)
     {
-        await _context.ProductTransactions.AddAsync(createdTransaction);
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-
-        catch (Exception e)
-        {
-            return Problem(e.Message);
-        }
-
-        return CreatedAtAction(
-            nameof(CreateProductTransaction),
-            new { id = createdTransaction.Id },
-            createdTransaction
-        );
+        return StatusCode(statusCode: StatusCodes.Status410Gone);
     }
 
 
@@ -43,6 +25,7 @@ public class ProductTransactionsController(AppDbContext context) : ControllerBas
         return Problem(statusCode: 501);
     }
 
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductTransaction>>> GetProductTransactions()
     {
@@ -50,23 +33,25 @@ public class ProductTransactionsController(AppDbContext context) : ControllerBas
         return Problem(statusCode: 501);
     }
 
-    [HttpPut]
+
+    // The use of this endpoint is allowed but heavily discouraged.
+    [HttpPut("{id}")]
     public async Task<ActionResult> UpdateProductTransaction(
         long id,
         ProductTransaction updatedTransaction
     )
     {
         // TODO: Implement UpdateProductTransaction.
-        return Problem(statusCode: 501);
+        return StatusCode(statusCode: StatusCodes.Status200OK);
     }
 
+
+    // The use of this endpoint is allowed but heavily discouraged.
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteProductTransaction(long id)
     {
         // TODO: Implement DeleteProductTransaction.
-        return Problem(statusCode: 501);
+        return StatusCode(statusCode: StatusCodes.Status200OK);
     }
-
-    #endregion
 
 }
