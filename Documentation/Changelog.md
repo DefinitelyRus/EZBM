@@ -35,6 +35,7 @@ Changes:
 - Prevented direct stock modifications through `ProductsController.UpdateProduct`.
 - Configured batch deletion behavior in `AppDbContext` to preserve product transactions and set their batch reference to null.
 - Updated `ProductTransactionsController` stubs to mark creation as obsolete/gone and discourage direct updates and deletions.
+- Standardized error handling and parameter binding in `ProductsController`.
 - Updated the project roadmap and task lists.
 
 ### 09/22/2026
