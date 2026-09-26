@@ -26,6 +26,18 @@ Changes:
 
 ## Logs
 
+### 09/27/2026
+
+Enabled default file serving, added database migrations, and built the test frontend.
+
+Changes:
+
+- Added EF Core database migration `UpdateModels` and updated snapshot for product and batch schema changes.
+- Enabled `app.UseDefaultFiles()` in `Backend.DesktopHost` to serve default files from `wwwroot`.
+- Created bare HTML dashboard with controls for product operations and stock transactions in `wwwroot/index.html`.
+- Added minimal layout and structure styles in `wwwroot/css/style.css`.
+- Implemented API client functions and DOM listeners in `wwwroot/js/app.js`.
+
 ### 09/23/2026
 
 Prevented direct stock updates in products controller, configured transaction batch delete behavior, and updated controller stubs.
