@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Backend.Core.Data;
 using Backend.DesktopHost.Services;
+using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +31,9 @@ if (app.Environment.IsDevelopment())
 
 // Automatically redirect any plain HTTP requests to HTTPS.
 app.UseHttpsRedirection();
+
+// Serve default files (like index.html) when visiting root path.
+app.UseDefaultFiles();
 
 // Look inside the `wwwroot` folder and serve static files (HTML, CSS, images, etc.)
 app.UseStaticFiles();
