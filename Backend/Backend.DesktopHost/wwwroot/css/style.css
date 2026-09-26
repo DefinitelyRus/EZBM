@@ -1,0 +1,28 @@
+form {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+label {
+	display: block;
+}
+
+fieldset {
+	margin-bottom: 16px;
+	padding: 12px;
+}
+
+table, th, td {
+	border-collapse: collapse;
+	border: 1px solid #ccc;
+}
+
+th, td {
+	padding: 6px 10px;
+}
+
+pre {
+	white-space: pre-wrap;
+	background: #f4f4f4;
+}

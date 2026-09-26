@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title>EZBM Test Dashboard</title>
+		<link rel="stylesheet" href="css/style.css" />
+		<script src="js/app.js" defer></script>
+	</head>
+	<body>
+		<div>
+			<!-- Create product -->
+			<form id="create-product-form">
+				<fieldset>
+					<legend>Create Product</legend>
+					<label for="create-product-name">Name</label>
+					<input type="text" id="create-product-name" />
+					
+					<label for="create-product-sku">SKU</label>
+					<input type="text" id="create-product-sku" required />
+					
+					<label for="create-product-desc">Description (Optional)</label>
+					<input type="text" id="create-product-desc" />
+					
+					<label for="create-product-price">Price</label>
+					<input type="number" step="0.01" id="create-product-price" required />
+					
+					<label for="create-product-cost">Cost (Optional)</label>
+					<input type="number" step="0.01" id="create-product-cost" />
+					
+					<label for="create-product-quantity">Quantity (Optional)</label>
+					<input type="number" step="0.001" id="create-product-quantity" value="0" />
+					
+					<button type="submit" id="create-product-submit">Submit</button>
+					<div id="create-product-result"></div>
+				</fieldset>
+			</form>
+		</div>
+
+		<div>
+			<!-- List all products-->
+			<fieldset id="products-list-section">
+				<legend>Products</legend>
+				<button type="button" id="refresh-products-button">Refresh Products</button>
+				<table id="products-table">
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Name</th>
+							<th>Sku</th>
+							<th>Price</th>
+							<th>Total Quantity</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody id="products-table-body"></tbody>
+				</table>
+			</fieldset>
+		</div>
+
+		<div>
+			<!-- Add stock -->
+			<form id="create-product-stock-form">
+				<fieldset>
+					<legend>Add Stock</legend>
+
+					<label for="create-product-stock-id">Product ID</label>
+					<input type="number" id="create-product-stock-id" requried />
+					
+					<label for="create-product-stock-quantity">Quantity</label>
+					<input type="number" id="create-product-stock-quantity" requried />
+
+					<label for="create-product-stock-cost">Cost (Optional)</label>
+					<input type="number" id="create-product-stock-cost" />
+
+					<label for="create-product-stock-expiry">Expiry Date (Optional)</label>
+					<input type="date" id="create-product-stock-expiry" />
+
+					<label for="create-product-stock-batch-notes">Batch Notes (Optional)</label>
+					<input type="text" id="create-product-stock-batch-notes" />
+
+					<label for="create-product-stock-transaction-notes">Transaction Notes (Optional)</label>
+					<input type="text" id="create-product-stock-transaction-notes" />
+
+					<button id="create-product-stock-submit">Submit</button>
+
+					<div id="create-product-stock-result"></div>
+				</fieldset>
+			</form>
+		</div>
+	</body>
+</html>
