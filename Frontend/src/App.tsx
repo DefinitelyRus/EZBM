@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Sidebar from "./components/Sidebar";
+import Sidebar from "./components/Sidebar/Sidebar";
 
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
@@ -15,7 +15,7 @@ function App() {
   return (
     <div id="main-pages" className="container-fluid">
       <div className="row">
-        {/* Sidebar is always visible */}
+        {/* Sidebar  */}
         <Sidebar />
 
         <div className="col">

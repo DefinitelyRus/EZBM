@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { InventoryAPI } from "../../api/inventory";
 import { SalesAPI } from "../../api/sales";
+import { EnumsAPI } from "../../api/enums";
 import { useMemo } from "react";
 import './Checkout.css';
 
-import Dropdown from '../../components/Dropdown';
+import Dropdown from '../../components/Dropdown/Dropdown';
 import DataTable from "../../components/DataTable/DataTable";
-import { dropdownOptions } from "../../components/dropdownOptions";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
@@ -24,6 +24,8 @@ import AddCartIcon from "../../assets/add_cart.svg";
 
 function Checkout() {
 
+  /* ---------- STATES ---------- */
+
   // Inventory
   const [inventoryItems, setInventoryItems] = useState([]);
   const [search, setSearch] = useState("");
@@ -31,15 +33,22 @@ function Checkout() {
   // Cart
   const [cart, setCart] = useState([]);
 
+  // Enum
+  const [enums, setEnums] = useState({
+    paymentMethods: [],
+  });
+
   // Form
   const [formData, setFormData] = useState(INITIAL_FORM);
 
   // UI
   const [showAddItem, setShowAddItem] = useState(true);
+  const [error, setError] = useState("");
   
   // Editing / Deleting
 
   /* ---------- EFFECTS ---------- */
+
   useEffect(() => {
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT - 1}px)`);
 
@@ -55,6 +64,7 @@ function Checkout() {
       mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  // Load inv
   useEffect(() => {
     const timeout = setTimeout(async () => {
       try {
@@ -73,6 +83,23 @@ function Checkout() {
 
     return () => clearTimeout(timeout);
   }, [search]);
+
+  // Load payment methods
+  useEffect(() => {
+    const loadEnums = async () => {
+      try {
+        const data = await EnumsAPI.getAll();
+
+        setEnums({
+          paymentMethods: data.paymentMethods ?? [],
+        });
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadEnums();
+  }, []);
 
   /* ---------- HELPRES---------- */
 
@@ -157,7 +184,7 @@ function Checkout() {
   // Field validation
   const validateCheckout = () => {
     if (cart.length === 0) {
-      alert("Please add at least one item to the cart.");
+      setError(`Please add at least one item to the cart`);
       return false;
     }
 
@@ -166,13 +193,13 @@ function Checkout() {
       formData.paymentMethod === null ||
       formData.paymentMethod === undefined
     ) {
-      alert("Please select a payment method.");
+      setError(`Please select a payment method`);
       return false;
     }
 
     for (const cartItem of cart) {
       if (cartItem.quantity <= 0) {
-        alert(`${cartItem.name} has an invalid quantity.`);
+        setError(`${cartItem.name} has an invalid quantity.`);
         return false;
       }
 
@@ -181,7 +208,7 @@ function Checkout() {
       );
 
       if (!inventoryItem) {
-        alert(`${cartItem.name} no longer exists in inventory.`);
+        setError(`${cartItem.name} no longer exists in inventory.`);
         return false;
       }
 
@@ -189,6 +216,7 @@ function Checkout() {
         alert(
           `Not enough stock for ${cartItem.name}. Only ${inventoryItem.quantity} remaining.`
         );
+        setError(`Not enough stock for ${cartItem.name}. Only ${inventoryItem.quantity} remaining.`);
         return false;
       }
 
@@ -447,10 +475,12 @@ function Checkout() {
 
           <div id="item-inputs">
             <div className="mb-3">
-                <label className="form-label">Method of Payment</label>
+                <label className="form-label">
+                  Method of Payment <span className="required">*</span>
+                </label>
                 <Dropdown
                   title="Select Method"
-                  options={dropdownOptions.paymentMethods}
+                  options={enums.paymentMethods}
                   value={formData.paymentMethod}
                   onSelect={(value) =>
                     setFormData({
@@ -496,7 +526,11 @@ function Checkout() {
                   }}
                 />
               </div>
-
+               {error && (
+                <div className="form-error">
+                  {error}
+                </div>
+              )}
               <div className="d-flex justify-content-center gap-3 item-btn-group">
                 <button
                   id="create-item"
