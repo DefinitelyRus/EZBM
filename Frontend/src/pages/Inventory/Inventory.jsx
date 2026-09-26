@@ -3,8 +3,9 @@ import { InventoryAPI } from "../../api/inventory";
 import { EnumsAPI } from "../../api/enums";
 import './Inventory.css';
 
-import Dropdown from "../../components/Dropdown";
+import Dropdown from "../../components/Dropdown/Dropdown";
 import DataTable from "../../components/DataTable/DataTable";
+import Modal from "../../components/Modal/Modal";
 
 import CloseMenu from "../../assets/arrow_menu.svg?react";
 import SearchIcon from "../../assets/search.svg?react";
@@ -31,6 +32,15 @@ const INITIAL_FORM = {
   tags: [],
 };
 
+function RequiredLabel({ children }) {
+  return (
+    <label className="form-label">
+      {children}
+      <span className="required">*</span>
+    </label>
+  );
+}
+
 function Dashboard() {
  
   /* ---------- STATES ---------- */
@@ -52,6 +62,8 @@ function Dashboard() {
   const [showAddItem, setShowAddItem] = useState(true);
   const [showAllTags, setShowAllTags] = useState(false);
   const [visibleCount, setVisibleCount] = useState(4);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [error, setError] = useState("");
 
   // Tags
   const [addingTag, setAddingTag] = useState(false);
@@ -60,8 +72,9 @@ function Dashboard() {
   // Editing / Deleting
   const [editingItem, setEditingItem] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [selectedItemId, setSelectedItemId] = useState(null);
  
-   /* ---------- DERIVED VALUES ---------- */
+  /* ---------- DERIVED VALUES ---------- */
 
    const availableTags = [
     ...new Set([
@@ -220,6 +233,8 @@ function Dashboard() {
 
   // Create Item
   const handleCreate = async () => {
+    setError("");
+
     const requiredFields = {
       name: "Name",
       cost: "Cost Price",
@@ -235,30 +250,20 @@ function Dashboard() {
         value === undefined ||
         (typeof value === "string" && value.trim() === "")
       ) {
-        alert(`${label} is required.`);
+        setError(`Please fill in required fields`);
         return;
       }
     }
 
-    const item = toBackendItem(formData, enums, {
-      imageUrl: null,
-      itemType: "Product",
-      barcode: null,
-      targetStock: 0,
-      lowStockThresholdPercentage: 0.2,
-      brand: null,
-    });
-
-    console.log(item);
-
     try {
-      await InventoryAPI.create(item);
+      await InventoryAPI.create(toBackendItem(formData));
 
       await loadInventory(search);
 
       handleClear();
     } catch (err) {
       console.error(err);
+      setError("Failed to create item.");
     }
   };
 
@@ -318,8 +323,6 @@ function Dashboard() {
 
   // Delete Item
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this item?")) return;
-
     try {
       setDeletingId(id);
 
@@ -331,10 +334,6 @@ function Dashboard() {
     } finally {
       setDeletingId(null);
     }
-
-    await StaffAPI.delete(id);
-
-    await loadInventory(search);
   };
 
   /* ---------- TABLE ---------- */
@@ -425,7 +424,10 @@ function Dashboard() {
           <button
             className="delete"
             disabled={deletingId === row.id}
-            onClick={() => handleDelete(row.id)}
+            onClick={() => {
+              setSelectedItemId(row.id);
+              setShowDeleteModal(true);
+            }}
           >
             <img src={DeleteIcon} alt="Delete" />
           </button>
@@ -488,7 +490,7 @@ function Dashboard() {
           <form id="item-form">
             <div id="item-inputs">
               <div className="mb-3">
-                <label className="form-label">Name</label>
+                <RequiredLabel>Name</RequiredLabel>
                 <input
                   type="text"
                   className="form-control usr-input"
@@ -503,7 +505,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Description</label>
+                <RequiredLabel>Description</RequiredLabel>
                 <textarea
                   className="form-control usr-input"
                   rows={2}
@@ -543,7 +545,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Cost Price</label>
+                <RequiredLabel>Cost Price</RequiredLabel>
                 <div className="input-group">
                   <span className="input-group-text currency-span">₱</span>
                   <input
@@ -556,7 +558,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Sale Price</label>
+                <RequiredLabel>Sale Price</RequiredLabel>
                 <div className="input-group">
                   <span className="input-group-text currency-span">₱</span>
                   <input
@@ -569,7 +571,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Quantity</label>
+                <RequiredLabel>Quantity</RequiredLabel>
                 <input
                   type="text"
                   className="form-control usr-input w-70"
@@ -580,7 +582,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-3">
-                <label className="form-label">Unit of Measurement</label>
+                <RequiredLabel>Unit of Measurement</RequiredLabel>
                 <Dropdown
                   direction="down"
                   title="Select Unit"
@@ -618,7 +620,7 @@ function Dashboard() {
               </div>
 
               <div className="mb-2">
-                <label className="form-label">Tags</label>
+                <RequiredLabel>Tags</RequiredLabel>
 
                 <div className="tags-container">
                   {(showAllTags
@@ -765,6 +767,11 @@ function Dashboard() {
             </div>
           </form>
         </div>
+        {error && (
+          <div className="form-error">
+            {error}
+          </div>
+        )}
           <div className="d-flex justify-content-center gap-3 item-btn-group">
               <button
                 id="create-item"
@@ -796,6 +803,24 @@ function Dashboard() {
           <img src={AddIcon} alt="" />
           <span>Add New Item</span>
         </button>
+        
+      <Modal
+        isOpen={showDeleteModal}
+        title="Delete Item"
+        message="Are you sure you want to delete this item?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setSelectedItemId(null);
+        }}
+        onConfirm={async () => {
+          await handleDelete(selectedItemId);
+
+          setShowDeleteModal(false);
+          setSelectedItemId(null);
+        }}
+      />
     </>
   );
 }

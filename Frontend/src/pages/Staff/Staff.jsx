@@ -3,9 +3,9 @@
   import { EnumsAPI } from "../../api/enums";
   import './Staff.css';
 
-  import Dropdown from "../../components/Dropdown";
+  import Dropdown from "../../components/Dropdown/Dropdown";
   import DataTable from "../../components/DataTable/DataTable";
-  import { dropdownOptions } from "../../components/dropdownOptions";
+  import Modal from "../../components/Modal/Modal";
 
   import CloseMenu from "../../assets/arrow_menu.svg?react";
   import SearchIcon from "../../assets/search.svg?react";
@@ -26,6 +26,16 @@
       payRate: "",
       payFrequency: "",
     };
+    
+  function RequiredLabel({ children }) {
+    return (
+      <label className="form-label">
+        {children}
+        <span className="required">*</span>
+      </label>
+    );
+  }
+
   
   function Staff() {
 
@@ -46,10 +56,13 @@
 
     // UI
     const [showAddItem, setShowAddItem] = useState(true);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [error, setError] = useState("");
 
     // Editing / Deleting
     const [editingStaff, setEditingStaff] = useState(null);
     const [deletingId, setDeletingId] = useState(null);
+    const [selectedStaffId, setSelectedStaffId] = useState(null);
 
     /* ---------- DERIVED VALUES ---------- */
 
@@ -121,7 +134,7 @@
         return () => clearTimeout(timeout);
       }, [search]);
 
-      /* ---------- STAFF CRUD ---------- */
+    /* ---------- STAFF CRUD ---------- */
 
       // Load Staff
       const loadStaff = async (searchTerm = search) => {
@@ -165,7 +178,7 @@
         });
 
         if (missingField) {
-          alert(`Please fill in the ${missingField} field.`);
+          setError(`Please fill in required fields`);
           return;
         }
 
@@ -253,20 +266,15 @@
       };
 
       // Delete Employee
-      const handleDelete = async (id) => {
-        if (!window.confirm("Delete this employee?")) return;
-
+     const handleDelete = async (id) => {
         try {
           setDeletingId(id);
-
+    
           await StaffAPI.delete(id);
-
+    
           await loadStaff(search);
-
-          alert("Employee deleted successfully.");
         } catch (err) {
           console.error(err);
-          alert("Failed to delete employee.");
         } finally {
           setDeletingId(null);
         }
@@ -350,7 +358,10 @@
             <button
               className="delete"
               title="Delete"
-              onClick={() => handleDelete(row.id)}
+              onClick={() => {
+                setSelectedStaffId(row.id);
+                setShowDeleteModal(true);
+              }}
             >
               <img src={DeleteIcon} alt="Delete" />
             </button>
@@ -419,7 +430,7 @@
 
                   <div className="usr-auth">
                     <div className="mb-3">
-                      <label className="form-label">Username</label>
+                      <RequiredLabel>Username</RequiredLabel>
                       <input
                         type="text"
                         className="form-control usr-input"
@@ -434,7 +445,7 @@
                     </div>
 
                     <div className="mb-3">
-                      <label className="form-label">Password</label>
+                      <RequiredLabel>Password</RequiredLabel>
                       <input
                         type="password"
                         className="form-control usr-input"
@@ -455,7 +466,7 @@
                   <h6 className="section-title">Employment Information</h6>
 
                   <div className="mb-3">
-                    <label className="form-label">Position / Role</label>
+                    <RequiredLabel>Position / Role</RequiredLabel>
                     <input
                       type="text"
                       className="form-control usr-input"
@@ -470,7 +481,7 @@
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Pay Rate</label>
+                    <RequiredLabel>Pay Rate</RequiredLabel>
                     <div className="input-group">
                       <span className="input-group-text currency-span">₱</span>
                       <input
@@ -483,7 +494,7 @@
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Pay Frequency</label>
+                    <RequiredLabel>Pay Frequency</RequiredLabel>
                     <Dropdown
                         direction="down"
                         title="Select Pay Frequency"
@@ -505,7 +516,7 @@
 
                   <div className="name-row">
                     <div className="mb-3">
-                      <label className="form-label">First Name</label>
+                      <RequiredLabel>First Name</RequiredLabel>
                       <input
                         type="text"
                         className="form-control usr-input"
@@ -520,7 +531,7 @@
                     </div>
 
                     <div className="mb-3">
-                      <label className="form-label">Last Name</label>
+                      <RequiredLabel>Last Name</RequiredLabel>
                       <input
                         type="text"
                         className="form-control usr-input"
@@ -536,7 +547,7 @@
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Email</label>
+                    <RequiredLabel>E-mail</RequiredLabel>
                     <input
                       type="email"
                       className="form-control usr-input"
@@ -551,7 +562,7 @@
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label">Phone Number</label>
+                    <RequiredLabel>Phone Number</RequiredLabel>
                     <input
                       type="text"
                       className="form-control usr-input"
@@ -569,8 +580,12 @@
 
               </div>
             </form>
-          </div>
-
+          </div> 
+          {error && (
+            <div className="form-error">
+              {error}
+            </div>
+          )}      
           <div className="d-flex justify-content-center gap-3 item-btn-group">
               <button
                 id="create-item"
@@ -589,7 +604,7 @@
                 {editingStaff ? "Cancel" : "Clear"}
               </button>
             </div>
-          </div>
+          </div>    
         </div>
           <button
             className={`floating-add-btn ${
@@ -601,6 +616,24 @@
             <img src={AddIcon} alt="" />
             <span>Add New Employee</span>
           </button>
+
+        <Modal
+        isOpen={showDeleteModal}
+        title="Delete Employee"
+        message="Are you sure you want to delete this employee?"
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => {
+          setShowDeleteModal(false);
+          setSelectedStaffId(null);
+        }}
+        onConfirm={async () => {
+          await handleDelete(selectedStaffId);
+
+          setShowDeleteModal(false);
+          setSelectedStaffId(null);
+        }}
+      />
       </>
     );
   }

@@ -1,19 +1,20 @@
 import { useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { Tooltip } from "bootstrap";
-
 import "./Sidebar.css";
-import Button from "./button";
 
-import ArrowMenu from "../assets/arrow_menu.svg?react";
+import Button from "../Button/button";
+import Modal from "../../components/Modal/Modal";
 
-import DashboardIcon from "../assets/dashboard.svg?react";
-import InventoryIcon from "../assets/inventory.svg?react";
-import CheckoutIcon from "../assets/checkout.svg?react";
-import StaffIcon from "../assets/staff.svg?react";
-import LogsIcon from "../assets/logs.svg?react";
-import LogOutIcon from "../assets/log_out.svg?react";
-import SettingsIcon from "../assets/settings.svg?react";
+import ArrowMenu from "../../assets/arrow_menu.svg?react";
+
+import DashboardIcon from "../../assets/dashboard.svg?react";
+import InventoryIcon from "../../assets/inventory.svg?react";
+import CheckoutIcon from "../../assets/checkout.svg?react";
+import StaffIcon from "../../assets/staff.svg?react";
+import LogsIcon from "../../assets/logs.svg?react";
+import LogOutIcon from "../../assets/log_out.svg?react";
+import SettingsIcon from "../../assets/settings.svg?react";
 
 const BREAKPOINT = 1600;
 
@@ -24,6 +25,8 @@ function Sidebar() {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const isLoggedIn = !!localStorage.getItem("staffId");
 
@@ -208,11 +211,11 @@ function Sidebar() {
         </button> */}
          {isLoggedIn ? (
           <Button
-            to="/login"
+            to="#"
             text="Log out"
             icon={<LogOutIcon />}
             collapsed={collapsed}
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             disableActive
           />
         ) : (
@@ -225,6 +228,19 @@ function Sidebar() {
           />
         )}
       </div>
+
+      <Modal
+        isOpen={showLogoutModal}
+        title="Log Out"
+        message="Are you sure you want to log out of EZBM?"
+        confirmText="Log Out"
+        cancelText="Stay Logged In"
+        onCancel={() => setShowLogoutModal(false)}
+        onConfirm={() => {
+          setShowLogoutModal(false);
+          handleLogout();
+        }}
+      />
     </div>
   );
 }

@@ -5,19 +5,25 @@ import { StaffAPI } from "../../api/staff";
 import "./Login.css";
 
 function Login() {
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
   const [loading, setLoading] = useState(false);
+  
+  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+    setError("");
+
     if (!username.trim() || !password.trim()) {
-      alert("Please enter your username and password.");
+      setError("Enter both your username and password.");
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     try {
       // Login
@@ -39,14 +45,10 @@ function Login() {
       localStorage.setItem("payFrequency", fullStaff.payFrequency ?? "");
       localStorage.setItem("payRate", fullStaff.payRate ?? "");
 
-      alert(
-        `Welcome, ${fullStaff.firstName ?? fullStaff.username}!`
-      );
-
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
-      alert("Invalid username or password.");
+      setError("Invalid username or password.");
     } finally {
       setLoading(false);
     }
@@ -83,7 +85,11 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
+            {error && (
+              <div className="login-error">
+                {error}
+              </div>
+            )}
             <button
               type="submit"
               className="btn btn-primary w-100"
