@@ -101,5 +101,4 @@ packages/react-devtools-timeline/dist
 # ---------- Custom ----------
 /.agents
 /.dotnet
-/Documentation/.user_tasks
 .vscode/settings.json
