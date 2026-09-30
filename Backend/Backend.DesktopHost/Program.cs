@@ -15,12 +15,19 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<ProductTransactionService>();
 
-// Automatically read the code and generate a visual test page (Swagger UI) for the API endpoints.
+// Read the code and generate a visual test page (Swagger UI) for the API endpoints.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Creates a runnable web app instance using the configurations provided above.
+// Create a runnable web app instance using the configurations provided above.
 WebApplication app = builder.Build();
+
+// Migrate the database on startup.
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    AppDbContext dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
 
 // Turn on the dev-only Swagger UI and docs if in development mode.
 if (app.Environment.IsDevelopment())
@@ -29,10 +36,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Automatically redirect any plain HTTP requests to HTTPS.
+// Redirect HTTP to HTTPs
 app.UseHttpsRedirection();
 
-// Serve default files (like index.html) when visiting root path.
+// Serve default files (e.g., index.html) when visiting root
 app.UseDefaultFiles();
 
 // Look inside the `wwwroot` folder and serve static files (HTML, CSS, images, etc.)
@@ -45,5 +52,5 @@ app.UseAuthorization();
 // Connect the incoming HTTP request URLs to the right C# methods.
 app.MapControllers();
 
-// Start the web server and begin listening for incoming HTTP requests.
+// Start web server
 app.Run();
