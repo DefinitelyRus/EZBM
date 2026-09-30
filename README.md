@@ -9,8 +9,6 @@ EZBM is a lightweight, local, desktop-first store management app designed for mi
 
 This repository contains both the .NET back-end solutions/services and the React front-end. All parts run locally on the same host machine.
 
----
-
 ## Tech Stack & Architecture
 
 * We use `React` for the front-end user interface, designed specifically for desktop screens.
@@ -19,8 +17,6 @@ This repository contains both the .NET back-end solutions/services and the React
   * A `Razor Pages` desktop client that serves as a local testing platform.
 * Core business logic and database access are handled by a .NET library using `EF Core` and a local `SQLite` database.
 * Communication happens over a local `REST API` or direct library integration.
-
----
 
 ## Project Structure
 
@@ -36,8 +32,6 @@ EZBM/
 \-- README.md                    # Root project documentation
 ```
 
----
-
 ## Features & Prototypes
 
 The project is built to test and validate several SME workflows and advanced business rules:
@@ -48,8 +42,6 @@ The project is built to test and validate several SME workflows and advanced bus
 * Every time database entries are updated or deleted, the action is automatically saved in an audit log.
 * The payroll logic automatically deducts commissions that were already paid out when calculating new earnings.
 * We mock physical hardware interactions, such as simulating `RFID` scans and triggering cash drawer alerts.
-
----
 
 ## Getting Started (Local Setup)
 
@@ -83,8 +75,6 @@ cd Frontend
 npm install
 npm run dev
 ```
-
----
 
 ## Data Strategy & Resetting
 
