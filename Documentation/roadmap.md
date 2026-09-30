@@ -63,10 +63,10 @@ Once the core inventory works, Phase 2 adds sales processing and stock tracking 
 
 ## Phase 3: Security & Single-User Authentication
 
-Phase 3 secures your app with essential cryptographic safeguards. To speed up backend completion, multi-user accounts and the permission matrix are deferred; the app will operate in single-user mode. Each security endpoint must include a basic HTML UI in `wwwroot`.
+Phase 3 secures your app with essential cryptographic safeguards and introduces business-wide settings management. To speed up backend completion, multi-user accounts and the permission matrix are deferred; the app will operate in single-user mode. Each security and settings endpoint must include a basic HTML UI in `wwwroot`.
 
-* **Estimated Duration**: 2–3 active days (~0.5 calendar weeks)
-* **Estimated Target**: October 16 – October 20, 2026
+* **Estimated Duration**: 3–4 active days (~0.5 to 1 calendar week)
+* **Estimated Target**: October 16 – October 21, 2026
 
 ### Core Security & Authentication
 
@@ -74,6 +74,13 @@ Phase 3 secures your app with essential cryptographic safeguards. To speed up ba
 * Implement authentication token generation, validation, and session verification.
 * Add a simple HTML login page and credential management interface in `wwwroot`.
 * *Estimated Duration*: 2–3 active days (Oct 16 – Oct 20, 2026)
+
+### Business-Wide Settings
+
+* Add configurable business-wide settings to manage system paths and store preferences.
+* Set the default database path to `<user>/Documents/EZBM/business_data/data.db` while allowing in-app updates.
+* Build basic HTML controls in `wwwroot` to view, update, and reset business settings.
+* *Estimated Duration*: 1 active day (Oct 21, 2026)
 
 ### Access Permissions (DEFERRED)
 
