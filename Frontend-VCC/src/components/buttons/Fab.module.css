@@ -1,0 +1,104 @@
+.fab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background-color: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--md-sys-elevation-3);
+  overflow: hidden;
+  user-select: none;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  transition: box-shadow var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard),
+              background-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.fab:hover:not(:disabled) {
+  box-shadow: var(--md-sys-elevation-4);
+}
+
+.fab:active:not(:disabled) {
+  box-shadow: var(--md-sys-elevation-3);
+}
+
+.fab:disabled {
+  background-color: rgba(28, 27, 31, 0.12);
+  color: rgba(28, 27, 31, 0.38);
+  box-shadow: var(--md-sys-elevation-0);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.regular {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--md-shape-corner-large);
+}
+
+.small {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-shape-corner-medium);
+}
+
+.large {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--md-shape-corner-extra-large);
+}
+
+.extended {
+  height: 56px;
+  padding: 0 16px;
+  border-radius: var(--md-shape-corner-large);
+  font-family: var(--md-sys-typescale-label-large-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+}
+
+.stateLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.fab:hover:not(:disabled) .stateLayer {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.fab:focus-visible:not(:disabled) .stateLayer {
+  opacity: var(--md-sys-state-focus-opacity);
+}
+
+.fab:active:not(:disabled) .stateLayer {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.small .icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.regular .icon svg,
+.extended .icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.large .icon svg {
+  width: 36px;
+  height: 36px;
+}
+

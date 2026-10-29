@@ -1,0 +1,210 @@
+/* Checkbox */
+.checkboxContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.checkboxInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkboxBox {
+  width: 18px;
+  height: 18px;
+  border-radius: 2px;
+  border: 2px solid var(--md-sys-color-outline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+  background-color: transparent;
+}
+
+.checkboxContainer:hover:not(.disabled) .checkboxBox {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.checkboxChecked .checkboxBox,
+.checkboxIndeterminate .checkboxBox {
+  border-color: var(--md-sys-color-primary);
+  background-color: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.checkboxError .checkboxBox {
+  border-color: var(--md-sys-color-error) !important;
+}
+
+.checkboxError.checkboxChecked .checkboxBox,
+.checkboxError.checkboxIndeterminate .checkboxBox {
+  background-color: var(--md-sys-color-error) !important;
+  color: var(--md-sys-color-on-error) !important;
+}
+
+/* Radio */
+.radioContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.radioInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.radioCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--md-shape-corner-full);
+  border: 2px solid var(--md-sys-color-outline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.radioDot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--md-shape-corner-full);
+  background-color: var(--md-sys-color-primary);
+  transform: scale(0);
+  transition: transform var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.radioChecked .radioCircle {
+  border-color: var(--md-sys-color-primary);
+}
+
+.radioChecked .radioDot {
+  transform: scale(1);
+}
+
+/* Switch */
+.switchContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+}
+
+.switchInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchTrack {
+  width: 52px;
+  height: 32px;
+  border-radius: var(--md-shape-corner-full);
+  border: 2px solid var(--md-sys-color-outline);
+  background-color: var(--md-sys-color-surface-container-highest);
+  position: relative;
+  transition: all var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.switchThumb {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--md-shape-corner-full);
+  background-color: var(--md-sys-color-outline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--md-sys-motion-duration-short2) var(--md-sys-motion-easing-standard);
+}
+
+.switchChecked .switchTrack {
+  background-color: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.switchChecked .switchThumb {
+  left: 26px;
+  top: 2px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--md-sys-color-on-primary);
+  color: var(--md-sys-color-primary);
+}
+
+/* Slider */
+.sliderContainer {
+  display: inline-flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 160px;
+  gap: 4px;
+  user-select: none;
+}
+
+.sliderTrackWrapper {
+  position: relative;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.sliderInactiveTrack {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background-color: var(--md-sys-color-surface-container-highest);
+  border-radius: var(--md-shape-corner-full);
+}
+
+.sliderActiveTrack {
+  position: absolute;
+  height: 4px;
+  background-color: var(--md-sys-color-primary);
+  border-radius: var(--md-shape-corner-full);
+}
+
+.sliderInput {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.sliderThumb {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--md-shape-corner-full);
+  background-color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-1);
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: transform var(--md-sys-motion-duration-short1) ease;
+}
+
+.disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
