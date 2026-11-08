@@ -4,10 +4,14 @@ using Microsoft.EntityFrameworkCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+BusinessSettingsService settingsService = new();
+builder.Services.AddSingleton(settingsService);
+
+string resolvedDbPath = settingsService.GetResolvedDatabasePath();
+string connectionString = $"Data Source={resolvedDbPath}";
+
 builder.Services.AddDbContext<AppDbContext>(
-    options => options.UseSqlite(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
+    options => options.UseSqlite(connectionString)
 );
 
 // Tell ASP.NET Core to look for the API controller classes within Backend.DesktopHost so they can handle incoming HTTP requests.
