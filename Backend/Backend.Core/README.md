@@ -31,14 +31,18 @@ dotnet add package Microsoft.EntityFrameworkCore.Tools
 - **`Microsoft.EntityFrameworkCore.Design`:** Reads the C# classes, inspects the database context, and looks for the migration differences when changes are made to the data models.
 - **`Microsoft.EntityFrameworkCore.Tools`:** Enacts the database migrations when changes are made to the data models. This package depends on `Design` to function.
 
-### 4. Add the `Backend.Core` to the `Backend` solution
+### 4. Add `Backend.Core` to the `Backend` solution
 
 ```bash
-dotnet sln ../Backend.sln add Backend.Core/Backend.Core.csproj
+dotnet sln ../Backend.slnx add Backend.Core/Backend.Core.csproj
 ```
 
 ## Database
 
-<!-- TODO: Update when database handling is properly implemented. -->
+The SQLite `.db` file path is resolved dynamically via `BusinessSettings` and `BusinessSettingsService`. By default, it resolves to:
 
-The .db file's location can be changed during runtime, but is set to `"{Documents}/EZBM/business_data.db"` by default.
+```text
+{Documents}/EZBM/business_data/data.db
+```
+
+The database path can be inspected or modified at runtime using the settings API (`/api/settings`) or updated in `{Documents}/EZBM/settings.json`. Database migrations apply automatically when the host launches, or manually via `dotnet ef database update`.

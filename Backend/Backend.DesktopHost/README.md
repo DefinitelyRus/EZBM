@@ -40,12 +40,12 @@ dotnet add Backend.DesktopHost.csproj package Swashbuckle.AspNetCore
 - **`Microsoft.AspNetCore.OpenApi`:** Generates OpenAPI (formerly Swagger) specification files for the API endpoints.
 - **`Swashbuckle.AspNetCore`:** Generates a web UI for browsing, testing, and documenting the API endpoints.
 
-### 4. Add the `Backend.DesktopHost` to the `Backend` solution
+### 4. Add `Backend.DesktopHost` to the `Backend` solution
 
 Required for running commands like `dotnet build` and `dotnet test`.
 
 ```bash
-dotnet sln ../Backend.sln add Backend.DesktopHost.csproj
+dotnet sln ../Backend.slnx add Backend.DesktopHost.csproj
 ```
 
 ### 5. Add a reference to the `Backend.Core` project
@@ -55,3 +55,45 @@ Required for `dotnet` to find the entities defined in `Backend.Core` when buildi
 ```bash
 dotnet add Backend.DesktopHost.csproj reference ../Backend.Core/Backend.Core.csproj
 ```
+
+## Publishing and Bundled Deployment
+
+Static assets located in `wwwroot` (such as the HTML/JS test dashboard) are preserved during publish and served alongside the backend host. Note that `wwwroot` must remain in the same directory as the published binary.
+
+### Framework-Dependent Publish
+
+Publishes the application as a framework-dependent build that relies on an installed .NET runtime on the host machine:
+
+```powershell
+dotnet publish Backend/Backend.DesktopHost/Backend.DesktopHost.csproj -c Release -o ./publish
+```
+
+### Self-Contained Single-File Publish
+
+Publishes the application as a self-contained single-file executable for Windows x64 systems without requiring an existing .NET runtime:
+
+```powershell
+dotnet publish Backend/Backend.DesktopHost/Backend.DesktopHost.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish
+```
+
+### Running and Verifying the Published Bundle
+
+1. Change directory to `./publish`:
+   ```powershell
+   cd ./publish
+   ```
+2. Execute the host binary:
+   ```powershell
+   ./Backend.DesktopHost.exe
+   ```
+3. Open a browser and navigate to `http://localhost:5000` (or the port specified in console output) to confirm that `index.html` loads.
+4. Verify API connectivity by visiting `/api/products` or the Swagger UI at `/swagger`.
+
+## Applying Database Migrations via CLI
+
+To apply EF Core database migrations without running the host application:
+
+```powershell
+dotnet ef database update --project Backend/Backend.Core/Backend.Core.csproj --startup-project Backend/Backend.DesktopHost/Backend.DesktopHost.csproj
+```
+

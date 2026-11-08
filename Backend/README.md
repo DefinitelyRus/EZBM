@@ -4,12 +4,12 @@ Make sure `dotnet-ef` is installed.
 
 ## Recreating the `Backend` and its sub-projects
 
-### 1. Create `Backend.sln`
+### 1. Create `Backend.slnx`
 
-This will create the solution file `Backend.sln`, which ties together the `Backend.Core` and `Backend.DesktopHost` projects.
+This will create the modern solution file `Backend.slnx` (or `Backend.sln`), which ties together the `Backend.Core` and `Backend.DesktopHost` projects.
 
 ```bash
-dotnet new sln
+dotnet new slnx
 ```
 
 ### 2. Create the `Backend.Core` project
