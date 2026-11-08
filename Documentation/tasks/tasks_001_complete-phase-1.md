@@ -10,27 +10,27 @@ Database connection configuration, bundled publishing scripts, and automatic dat
 2. (COMPLETE) Add Single-Command Production Bundle and Publishing Configuration
 3. (COMPLETE) Automatically Apply Database Migrations on Startup
 4. (COMPLETE) Validate and Test Bundled Deployment
-5. Fix Stock Addition and Total Quantity Update
+5. (COMPLETE) Fix Stock Addition and Total Quantity Update
 
 ## Tasks
 
-### Task 5: Fix Stock Addition and Total Quantity Update
+### (COMPLETE) Task 5: Fix Stock Addition and Total Quantity Update
 
 Submitting the "Add Stock" form in the test dashboard does not update the total stock quantity for the target product.
 
 Connect the "Add Stock" form in `wwwroot/js/app.js` to call the stock creation API and ensure the updated stock quantity reflects across the dashboard.
 
-1. Inspect `Backend/Backend.DesktopHost/wwwroot/js/app.js`.
-2. Add a submit event listener for `create-product-stock-form`:
-    - Read input values for product ID, quantity, cost, expiry date, batch notes, and transaction notes.
-    - Set the target prefix to `create-product-stock`.
-3. Call `createProductStock` with the payload:
-    - Verify that `createProductStock` sends a `POST` request to `/api/ProductStocks/create-stock`.
-4. Call `loadProducts` after a successful stock addition to refresh the table.
-5. Verify in the browser:
-    - Open `index.html`.
-    - Submit stock for an existing product.
-    - Confirm that the "Total Quantity" column in the product table displays the updated quantity.
+1. (COMPLETE) Inspect `Backend/Backend.DesktopHost/wwwroot/js/app.js`.
+2. (COMPLETE) Add a submit event listener for `create-product-stock-form`:
+    - (COMPLETE) Read input values for product ID, quantity, cost, expiry date, batch notes, and transaction notes.
+    - (COMPLETE) Set the target prefix to `create-product-stock`.
+3. (COMPLETE) Call `createProductStock` with the payload:
+    - (COMPLETE) Verify that `createProductStock` sends a `POST` request to `/api/ProductStocks/create-stock`.
+4. (COMPLETE) Call `loadProducts` after a successful stock addition to refresh the table.
+5. (COMPLETE) Verify in the browser:
+    - (COMPLETE) Open `index.html`.
+    - (COMPLETE) Submit stock for an existing product.
+    - (COMPLETE) Confirm that the "Total Quantity" column in the product table displays the updated quantity.
 
 #### Things to Consider
 

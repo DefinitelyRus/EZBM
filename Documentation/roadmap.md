@@ -5,7 +5,7 @@ This document outlines the step-by-step plan for building the EZBM inventory and
 > [!NOTE]
 > Progress assumes 4 to 6 active development days per week (max 1-3 off-days). For all phases prior to Phase 6, every new backend endpoint must have a corresponding front-end interface built in basic HTML, CSS, and plain JavaScript in `wwwroot`.
 
-## Phase 1: Core Inventory MVP (Backend + Vanilla UI)
+## (COMPLETE) Phase 1: Core Inventory MVP (Backend + Vanilla UI)
 
 The main goal of Phase 1 is to get a working inventory tracker running with a single bundled command.
 
@@ -29,9 +29,10 @@ The main goal of Phase 1 is to get a working inventory tracker running with a si
 * (COMPLETE) Place these files inside the ASP.NET `wwwroot` folder so the server can serve them directly.
 * (COMPLETE) Use JavaScript `fetch` calls to talk to the backend API.
 
-### Bundled Deployment
+### (COMPLETE) Bundled Deployment
 
-* Configure the app so running a single command starts both the backend server and serves the frontend interface.
+* (COMPLETE) Configure the app so running a single command starts both the backend server and serves the frontend interface.
+* (COMPLETE) Document and validate framework-dependent and self-contained single-file publish commands.
 * *Estimated Duration*: 1 active day (Sep 28 – Sep 29, 2026)
 
 ## Phase 2: POS and Transactions
