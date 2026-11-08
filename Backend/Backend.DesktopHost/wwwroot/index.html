@@ -87,5 +87,27 @@
 				</fieldset>
 			</form>
 		</div>
+
+		<div>
+			<!-- Business Settings -->
+			<form id="business-settings-form">
+				<fieldset>
+					<legend>Business Settings</legend>
+
+					<label for="settings-db-path">Database Path</label>
+					<input type="text" id="settings-db-path" style="width: 100%; box-sizing: border-box;" required />
+
+					<label for="settings-default-db-path">Default Path</label>
+					<input type="text" id="settings-default-db-path" style="width: 100%; box-sizing: border-box;" readonly disabled />
+
+					<div style="margin-top: 10px;">
+						<button type="submit" id="settings-submit">Save Path</button>
+						<button type="button" id="settings-reset-button">Reset to Default</button>
+					</div>
+
+					<div id="settings-result" style="margin-top: 10px;"></div>
+				</fieldset>
+			</form>
+		</div>
 	</body>
 </html>
