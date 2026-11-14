@@ -26,6 +26,18 @@ Changes:
 
 ## Logs
 
+### 11/14/2026
+
+Added POS cart checkout, payment processing, transaction queries, and database models.
+
+Changes:
+
+- Added `PaymentMethod` enum, `PaymentRecord`, `SaleOrder`, and `SaleOrderItem` entity models.
+- Added database migration `AddPosAndPayments` to store POS orders and payment records.
+- Implemented `PaymentService` and `PaymentsController` for processing customer payments.
+- Implemented `PosService` and `PosController` to process cart checkout with atomic stock deductions.
+- Implemented transaction retrieval endpoints in `ProductTransactionsController`.
+
 ### 09/27/2026
 
 Enabled default file serving, added database migrations, and built the test frontend.
