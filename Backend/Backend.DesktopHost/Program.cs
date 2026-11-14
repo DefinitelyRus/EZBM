@@ -20,6 +20,7 @@ builder.Services.AddControllers();
 builder.Services.AddScoped<ProductTransactionService>();
 builder.Services.AddScoped<PaymentService>();
 builder.Services.AddScoped<PosService>();
+builder.Services.AddScoped<AuthService>();
 
 // Read the code and generate a visual test page (Swagger UI) for the API endpoints.
 builder.Services.AddEndpointsApiExplorer();
@@ -28,11 +29,14 @@ builder.Services.AddSwaggerGen();
 // Create a runnable web app instance using the configurations provided above.
 WebApplication app = builder.Build();
 
-// Migrate the database on startup.
+// Migrate the database on startup and ensure default admin user.
 using (IServiceScope scope = app.Services.CreateScope())
 {
     AppDbContext dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     dbContext.Database.Migrate();
+
+    AuthService authService = scope.ServiceProvider.GetRequiredService<AuthService>();
+    authService.EnsureAdminUserExistsAsync().GetAwaiter().GetResult();
 }
 
 // Turn on the dev-only Swagger UI and docs if in development mode.
