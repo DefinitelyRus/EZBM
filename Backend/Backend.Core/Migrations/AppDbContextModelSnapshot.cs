@@ -314,11 +314,19 @@ namespace Backend.Core.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("TEXT");
 
-                    b.PrimitiveCollection<string>("Notes")
+                    b.Property<long>("ItemId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("ProductId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ItemType")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("TEXT");
@@ -334,11 +342,61 @@ namespace Backend.Core.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ProductId");
-
                     b.HasIndex("SaleOrderId");
 
                     b.ToTable("SaleOrderItems");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.Service", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Cost")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsForSale")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LongDescription")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("QuantityType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("ShortDescription")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Sku")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("Backend.Core.Models.User", b =>
@@ -378,6 +436,39 @@ namespace Backend.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.UserSession", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("UserSessions");
                 });
 
             modelBuilder.Entity("Backend.Core.Models.ProductBatch", b =>
@@ -420,19 +511,11 @@ namespace Backend.Core.Migrations
 
             modelBuilder.Entity("Backend.Core.Models.SaleOrderItem", b =>
                 {
-                    b.HasOne("Backend.Core.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Backend.Core.Models.SaleOrder", null)
                         .WithMany("Items")
                         .HasForeignKey("SaleOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("Backend.Core.Models.SaleOrder", b =>

@@ -11,14 +11,19 @@ public class SaleOrderItem : Entity
     public long SaleOrderId { get; set; }
 
     /// <summary>
-    /// Identifier of the sold product.
+    /// Identifier of the sold product or service item.
     /// </summary>
-    public long ProductId { get; set; }
+    public long ItemId { get; set; }
 
     /// <summary>
-    /// The sold product entity.
+    /// Type of the sold item ('Product' or 'Service').
     /// </summary>
-    public Product Product { get; set; } = null!;
+    public string ItemType { get; set; } = "Product";
+
+    /// <summary>
+    /// Name of the item at the time of sale.
+    /// </summary>
+    public string ItemName { get; set; } = string.Empty;
 
     /// <summary>
     /// Quantity of items sold.
