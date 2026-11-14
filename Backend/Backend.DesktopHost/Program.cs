@@ -18,6 +18,8 @@ builder.Services.AddDbContext<AppDbContext>(
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<ProductTransactionService>();
+builder.Services.AddScoped<PaymentService>();
+builder.Services.AddScoped<PosService>();
 
 // Read the code and generate a visual test page (Swagger UI) for the API endpoints.
 builder.Services.AddEndpointsApiExplorer();
@@ -48,13 +50,9 @@ app.UseDefaultFiles();
 
 // Look inside the `wwwroot` folder and serve static files (HTML, CSS, images, etc.)
 app.UseStaticFiles();
-// What happens when this isn't here? What's the alternative?
 
-// Check if users have permission to access specific endpoints.
-app.UseAuthorization();
-
-// Connect the incoming HTTP request URLs to the right C# methods.
+// Connect URL paths to the controller methods configured above.
 app.MapControllers();
 
-// Start web server
+// Start the server and keep it running to listen for incoming requests.
 app.Run();
