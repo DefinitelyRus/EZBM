@@ -28,10 +28,13 @@ Changes:
 
 ### 11/14/2026
 
-Added user authentication, password hashing, POS checkout, payment processing, and transaction queries.
+Added attendance tracking, payroll calculations, user authentication, POS checkout, payment processing, and transaction queries.
 
 Changes:
 
+- Added `AttendanceRecord` entity model and database migration `AddAttendanceRecords`.
+- Implemented `AttendanceService` and `AttendanceController` to record and query clock-in and clock-out logs.
+- Implemented `PayrollService` and `PayrollController` to calculate total shift hours and gross pay.
 - Added `User` entity model and unique username index in `AppDbContext`.
 - Added PBKDF2 `PasswordHasher` utility using cryptographic salt and derivation.
 - Added database migration `AddUserAuthentication`.
