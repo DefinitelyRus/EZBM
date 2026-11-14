@@ -17,6 +17,44 @@ namespace Backend.Core.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
 
+            modelBuilder.Entity("Backend.Core.Models.PaymentRecord", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("AmountTendered")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("ChangeAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Method")
+                        .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ReferenceNote")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PaymentRecords");
+                });
+
             modelBuilder.Entity("Backend.Core.Models.Product", b =>
                 {
                     b.Property<long>("Id")
@@ -157,6 +195,76 @@ namespace Backend.Core.Migrations
                     b.ToTable("ProductTransactions");
                 });
 
+            modelBuilder.Entity("Backend.Core.Models.SaleOrder", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("PaymentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PaymentId");
+
+                    b.ToTable("SaleOrders");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.SaleOrderItem", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("ProductId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("SaleOrderId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SaleOrderId");
+
+                    b.ToTable("SaleOrderItems");
+                });
+
             modelBuilder.Entity("Backend.Core.Models.ProductBatch", b =>
                 {
                     b.HasOne("Backend.Core.Models.Product", "Product")
@@ -184,6 +292,37 @@ namespace Backend.Core.Migrations
                     b.Navigation("Batch");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.SaleOrder", b =>
+                {
+                    b.HasOne("Backend.Core.Models.PaymentRecord", "Payment")
+                        .WithMany()
+                        .HasForeignKey("PaymentId");
+
+                    b.Navigation("Payment");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.SaleOrderItem", b =>
+                {
+                    b.HasOne("Backend.Core.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Core.Models.SaleOrder", null)
+                        .WithMany("Items")
+                        .HasForeignKey("SaleOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("Backend.Core.Models.SaleOrder", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

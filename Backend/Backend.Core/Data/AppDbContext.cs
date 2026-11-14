@@ -10,6 +10,9 @@ public class AppDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<ProductBatch> ProductBatches { get; set; }
     public DbSet<ProductTransaction> ProductTransactions { get; set; }
+    public DbSet<PaymentRecord> PaymentRecords { get; set; }
+    public DbSet<SaleOrder> SaleOrders { get; set; }
+    public DbSet<SaleOrderItem> SaleOrderItems { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
