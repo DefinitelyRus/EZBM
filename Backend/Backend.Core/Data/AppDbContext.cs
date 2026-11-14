@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<SaleOrderItem> SaleOrderItems { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
+    public DbSet<AuditEventLog> AuditEventLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -34,5 +35,8 @@ public class AppDbContext : DbContext
         builder.Entity<User>()
             .HasIndex(u => u.Username)
             .IsUnique();
+
+        builder.Entity<AuditEventLog>()
+            .HasIndex(e => e.Timestamp);
     }
 }
