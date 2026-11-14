@@ -28,10 +28,12 @@ Changes:
 
 ### 11/14/2026
 
-Added attendance tracking, payroll calculations, user authentication, POS checkout, payment processing, and transaction queries.
+Added system audit logging, attendance tracking, payroll calculations, user authentication, POS checkout, payment processing, and transaction queries.
 
 Changes:
 
+- Added `AuditEventLog` entity model and database migration `AddAuditEventLogs`.
+- Implemented `AuditLogService` and `AuditLogsController` to persist and query operational and security events.
 - Added `AttendanceRecord` entity model and database migration `AddAttendanceRecords`.
 - Implemented `AttendanceService` and `AttendanceController` to record and query clock-in and clock-out logs.
 - Implemented `PayrollService` and `PayrollController` to calculate total shift hours and gross pay.
