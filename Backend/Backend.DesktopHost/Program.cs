@@ -23,6 +23,7 @@ builder.Services.AddScoped<PosService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<AttendanceService>();
 builder.Services.AddScoped<PayrollService>();
+builder.Services.AddScoped<AuditLogService>();
 
 // Read the code and generate a visual test page (Swagger UI) for the API endpoints.
 builder.Services.AddEndpointsApiExplorer();
