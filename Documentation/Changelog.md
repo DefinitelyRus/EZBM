@@ -28,10 +28,15 @@ Changes:
 
 ### 11/14/2026
 
-Added POS cart checkout, payment processing, transaction queries, and database models.
+Added user authentication, password hashing, POS checkout, payment processing, and transaction queries.
 
 Changes:
 
+- Added `User` entity model and unique username index in `AppDbContext`.
+- Added PBKDF2 `PasswordHasher` utility using cryptographic salt and derivation.
+- Added database migration `AddUserAuthentication`.
+- Implemented `AuthService` and `AuthController` with login, session verification, and password change endpoints.
+- Seeded default admin user on application startup if database has no users.
 - Added `PaymentMethod` enum, `PaymentRecord`, `SaleOrder`, and `SaleOrderItem` entity models.
 - Added database migration `AddPosAndPayments` to store POS orders and payment records.
 - Implemented `PaymentService` and `PaymentsController` for processing customer payments.
