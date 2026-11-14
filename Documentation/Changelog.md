@@ -28,7 +28,16 @@ Changes:
 
 ### 11/14/2026
 
-Added system audit logging, attendance tracking, payroll calculations, user authentication, POS checkout, payment processing, and transaction queries.
+Added POS service item checkout, persisted auth sessions, paginated transaction queries, and refined shift pairing.
+
+Changes:
+
+- Supported service items in `PosService` checkout without depleting stock.
+- Added `UserSession` model and database migration `UpdateSaleOrderAndSessions`.
+- Persisted authentication session tokens to SQLite to survive application restarts.
+- Added pagination and date filtering parameters to `ProductTransactionsController`.
+- Refactored `PayrollService` to track and report unpaired clock-ins.
+- Added system audit logging, attendance tracking, payroll calculations, user authentication, POS checkout, payment processing, and transaction queries.
 
 Changes:
 
