@@ -265,6 +265,45 @@ namespace Backend.Core.Migrations
                     b.ToTable("SaleOrderItems");
                 });
 
+            modelBuilder.Entity("Backend.Core.Models.User", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.PrimitiveCollection<string>("Notes")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Salt")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("Backend.Core.Models.ProductBatch", b =>
                 {
                     b.HasOne("Backend.Core.Models.Product", "Product")

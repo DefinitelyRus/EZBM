@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<PaymentRecord> PaymentRecords { get; set; }
     public DbSet<SaleOrder> SaleOrders { get; set; }
     public DbSet<SaleOrderItem> SaleOrderItems { get; set; }
+    public DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -28,5 +29,9 @@ public class AppDbContext : DbContext
             .HasOne(t => t.Batch)
             .WithMany()
             .OnDelete(DeleteBehavior.SetNull);
+
+        builder.Entity<User>()
+            .HasIndex(u => u.Username)
+            .IsUnique();
     }
 }
