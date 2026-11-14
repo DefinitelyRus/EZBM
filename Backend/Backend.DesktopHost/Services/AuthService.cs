@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using Backend.Core.Common;
 using Backend.Core.Data;
@@ -14,15 +13,6 @@ namespace Backend.DesktopHost.Services;
 public class AuthService(AppDbContext context)
 {
     private readonly AppDbContext _context = context;
-    private static readonly ConcurrentDictionary<string, SessionInfo>
-        _activeSessions = new();
-
-    private record SessionInfo(
-        long UserId,
-        string Username,
-        string Role,
-        DateTime ExpiresAt
-    );
 
     #region Authentication Methods
 
@@ -62,18 +52,30 @@ public class AuthService(AppDbContext context)
             );
         }
 
+        // Clean up expired sessions
+        List<UserSession> expiredSessions = await _context.UserSessions
+            .Where(s => s.ExpiresAt <= DateTime.UtcNow)
+            .ToListAsync();
+
+        if (expiredSessions.Count > 0)
+        {
+            _context.UserSessions.RemoveRange(expiredSessions);
+        }
+
         string token = Convert.ToHexString(
             RandomNumberGenerator.GetBytes(32)
         );
         DateTime expiresAt = DateTime.UtcNow.AddDays(7);
 
-        SessionInfo session = new(
-            user.Id,
-            user.Username,
-            user.Role,
-            expiresAt
-        );
-        _activeSessions[token] = session;
+        UserSession session = new()
+        {
+            UserId = user.Id,
+            Token = token,
+            ExpiresAt = expiresAt
+        };
+
+        await _context.UserSessions.AddAsync(session);
+        await _context.SaveChangesAsync();
 
         LoginResponse response = new(
             Token: token,
@@ -88,17 +90,19 @@ public class AuthService(AppDbContext context)
     /// <summary>
     /// Validates an active session token.
     /// </summary>
-    public bool VerifySession(string token)
+    public async Task<bool> VerifySessionAsync(string token)
     {
         if (string.IsNullOrWhiteSpace(token)) return false;
 
-        if (_activeSessions.TryGetValue(token, out SessionInfo? session))
-        {
-            if (DateTime.UtcNow <= session.ExpiresAt) return true;
+        UserSession? session = await _context.UserSessions
+            .FirstOrDefaultAsync(s => s.Token == token);
 
-            _activeSessions.TryRemove(token, out _);
-        }
+        if (session is null) return false;
 
+        if (DateTime.UtcNow <= session.ExpiresAt) return true;
+
+        _context.UserSessions.Remove(session);
+        await _context.SaveChangesAsync();
         return false;
     }
 
@@ -146,6 +150,16 @@ public class AuthService(AppDbContext context)
 
         user.Salt = newSalt;
         user.PasswordHash = newHash;
+
+        // Invalidate prior sessions on password change
+        List<UserSession> userSessions = await _context.UserSessions
+            .Where(s => s.UserId == user.Id)
+            .ToListAsync();
+
+        if (userSessions.Count > 0)
+        {
+            _context.UserSessions.RemoveRange(userSessions);
+        }
 
         await _context.SaveChangesAsync();
     }

@@ -54,6 +54,7 @@ public class PayrollService(AppDbContext context)
         List<ShiftDto> shifts = [];
         AttendanceRecord? activeClockIn = null;
         double totalHours = 0;
+        int unpairedClockIns = 0;
 
         foreach (AttendanceRecord record in records)
         {
@@ -64,6 +65,17 @@ public class PayrollService(AppDbContext context)
 
             if (isClockIn)
             {
+                if (activeClockIn is not null)
+                {
+                    unpairedClockIns++;
+                    shifts.Add(new ShiftDto(
+                        ClockIn: activeClockIn.Timestamp,
+                        ClockOut: null,
+                        HoursWorked: 0,
+                        IsCompleted: false
+                    ));
+                }
+
                 activeClockIn = record;
             }
             else if (isClockOut && activeClockIn is not null)
@@ -76,11 +88,23 @@ public class PayrollService(AppDbContext context)
                 shifts.Add(new ShiftDto(
                     ClockIn: activeClockIn.Timestamp,
                     ClockOut: record.Timestamp,
-                    HoursWorked: Math.Round(shiftHours, 2)
+                    HoursWorked: Math.Round(shiftHours, 2),
+                    IsCompleted: true
                 ));
 
                 activeClockIn = null;
             }
+        }
+
+        if (activeClockIn is not null)
+        {
+            unpairedClockIns++;
+            shifts.Add(new ShiftDto(
+                ClockIn: activeClockIn.Timestamp,
+                ClockOut: null,
+                HoursWorked: 0,
+                IsCompleted: false
+            ));
         }
 
         decimal grossPay = (decimal)totalHours * hourlyRate;
@@ -90,6 +114,7 @@ public class PayrollService(AppDbContext context)
             TotalHours: Math.Round(totalHours, 2),
             HourlyRate: hourlyRate,
             GrossPay: Math.Round(grossPay, 2),
+            UnpairedClockIns: unpairedClockIns,
             Shifts: shifts
         );
 

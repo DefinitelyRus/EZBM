@@ -1,5 +1,4 @@
 using Backend.Core.Common;
-using Backend.DesktopHost.DTOs;
 
 namespace Backend.DesktopHost.DTOs;
 
@@ -7,7 +6,8 @@ namespace Backend.DesktopHost.DTOs;
 /// Line item in a POS cart checkout request.
 /// </summary>
 public record CartItemRequest(
-    long ProductId,
+    long ItemId,
+    string ItemType,
     decimal Quantity
 );
 
@@ -26,8 +26,9 @@ public record CheckoutRequest(
 /// Line item summary in a completed sale response.
 /// </summary>
 public record SaleOrderItemDto(
-    long ProductId,
-    string ProductName,
+    long ItemId,
+    string ItemType,
+    string ItemName,
     decimal Quantity,
     decimal UnitPrice,
     decimal Subtotal

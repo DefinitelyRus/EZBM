@@ -21,17 +21,46 @@ public class ProductTransactionsController(
     #region Query Endpoints
 
     /// <summary>
-    /// Retrieves all recorded product transactions.
+    /// Retrieves product transactions with pagination and date filters.
     /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductTransactionDto>>>
-        GetProductTransactions()
+        GetProductTransactions(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 50,
+            [FromQuery] long? productId = null,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null
+        )
     {
-        List<ProductTransactionDto> transactions = await _context
+        int clampedPage = Math.Max(1, page);
+        int clampedPageSize = Math.Clamp(pageSize, 1, 100);
+
+        IQueryable<ProductTransaction> query = _context
             .ProductTransactions
+            .AsNoTracking();
+
+        if (productId.HasValue)
+        {
+            query = query.Where(t => t.Product.Id == productId.Value);
+        }
+
+        if (from.HasValue)
+        {
+            query = query.Where(t => t.Timestamp >= from.Value);
+        }
+
+        if (to.HasValue)
+        {
+            query = query.Where(t => t.Timestamp <= to.Value);
+        }
+
+        List<ProductTransactionDto> transactions = await query
             .Include(t => t.Product)
             .Include(t => t.Batch)
             .OrderByDescending(t => t.Timestamp)
+            .Skip((clampedPage - 1) * clampedPageSize)
+            .Take(clampedPageSize)
             .Select(t => new ProductTransactionDto(
                 t.Id,
                 t.Product.Id,

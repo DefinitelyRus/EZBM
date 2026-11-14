@@ -6,7 +6,8 @@ namespace Backend.DesktopHost.DTOs;
 public record ShiftDto(
     DateTime ClockIn,
     DateTime? ClockOut,
-    double HoursWorked
+    double HoursWorked,
+    bool IsCompleted
 );
 
 /// <summary>
@@ -17,5 +18,6 @@ public record PayrollSummaryResponse(
     double TotalHours,
     decimal HourlyRate,
     decimal GrossPay,
+    int UnpairedClockIns,
     List<ShiftDto> Shifts
 );

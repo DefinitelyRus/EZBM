@@ -17,7 +17,7 @@ public class PosService(AppDbContext context)
     #region Checkout Operations
 
     /// <summary>
-    /// Processes cart checkout atomically, reducing stock and logging transactions.
+    /// Processes cart checkout and logs transactions atomically.
     /// </summary>
     public async Task<CheckoutResponse> CheckoutAsync(
         CheckoutRequest request
@@ -49,70 +49,94 @@ public class PosService(AppDbContext context)
                     );
                 }
 
-                Product product =
-                    await _context.Products.FindAsync(cartItem.ProductId)
-                    ?? throw Esc.New<ArgumentException>(
-                        "Product not found.",
-                        cartItem.ProductId
-                    );
+                bool isService = cartItem.ItemType
+                    .Equals("Service", StringComparison.OrdinalIgnoreCase);
 
-                if (product.TotalQuantity < cartItem.Quantity)
+                string itemName;
+                decimal unitPrice;
+
+                if (isService)
                 {
-                    string errorMsg =
-                        $"Insufficient stock for product '{product.Name}'. " +
-                        $"Available: {product.TotalQuantity}, " +
-                        $"Requested: {cartItem.Quantity}.";
-                    throw Esc.New<InvalidOperationException>(errorMsg);
+                    Service service =
+                        await _context.Services.FindAsync(cartItem.ItemId)
+                        ?? throw Esc.New<ArgumentException>(
+                            "Service not found.",
+                            cartItem.ItemId
+                        );
+
+                    itemName = service.Name;
+                    unitPrice = service.Price;
+                }
+                else
+                {
+                    Product product =
+                        await _context.Products.FindAsync(cartItem.ItemId)
+                        ?? throw Esc.New<ArgumentException>(
+                            "Product not found.",
+                            cartItem.ItemId
+                        );
+
+                    if (product.TotalQuantity < cartItem.Quantity)
+                    {
+                        string errorMsg =
+                            $"Insufficient stock for '{product.Name}'. " +
+                            $"Available: {product.TotalQuantity}, " +
+                            $"Requested: {cartItem.Quantity}.";
+                        throw Esc.New<InvalidOperationException>(errorMsg);
+                    }
+
+                    product.TotalQuantity -= cartItem.Quantity;
+
+                    ProductTransaction transaction = new()
+                    {
+                        Product = product,
+                        Quantity = cartItem.Quantity,
+                        TransactionType = TransactionType.Sale,
+                        Timestamp = DateTime.UtcNow
+                    };
+                    await _context.ProductTransactions.AddAsync(transaction);
+
+                    decimal remainingToDeduct = cartItem.Quantity;
+                    List<ProductBatch> batches = await _context.ProductBatches
+                        .Where(b => b.Product.Id == product.Id)
+                        .Where(b => b.Quantity > 0)
+                        .OrderBy(b => b.ExpirationDate)
+                        .ThenBy(b => b.Id)
+                        .ToListAsync();
+
+                    foreach (ProductBatch batch in batches)
+                    {
+                        if (remainingToDeduct <= 0) break;
+
+                        decimal deductFromBatch =
+                            Math.Min(batch.Quantity, remainingToDeduct);
+                        batch.Quantity -= deductFromBatch;
+                        remainingToDeduct -= deductFromBatch;
+                    }
+
+                    itemName = product.Name;
+                    unitPrice = product.Price;
                 }
 
-                // Reduce total product quantity
-                product.TotalQuantity -= cartItem.Quantity;
-
-                // Create stock reduction transaction
-                ProductTransaction transaction = new()
-                {
-                    Product = product,
-                    Quantity = cartItem.Quantity,
-                    TransactionType = TransactionType.Sale,
-                    Timestamp = DateTime.UtcNow
-                };
-                await _context.ProductTransactions.AddAsync(transaction);
-
-                // Reduce from available batches (FIFO/FEFO order)
-                decimal remainingToDeduct = cartItem.Quantity;
-                List<ProductBatch> batches = await _context.ProductBatches
-                    .Where(b => b.Product.Id == product.Id && b.Quantity > 0)
-                    .OrderBy(b => b.ExpirationDate)
-                    .ThenBy(b => b.Id)
-                    .ToListAsync();
-
-                foreach (ProductBatch batch in batches)
-                {
-                    if (remainingToDeduct <= 0) break;
-
-                    decimal deductFromBatch =
-                        Math.Min(batch.Quantity, remainingToDeduct);
-                    batch.Quantity -= deductFromBatch;
-                    remainingToDeduct -= deductFromBatch;
-                }
-
-                decimal itemSubtotal = cartItem.Quantity * product.Price;
+                decimal itemSubtotal = cartItem.Quantity * unitPrice;
                 totalOrderAmount += itemSubtotal;
 
                 SaleOrderItem orderItem = new()
                 {
-                    Product = product,
-                    ProductId = product.Id,
+                    ItemId = cartItem.ItemId,
+                    ItemType = isService ? "Service" : "Product",
+                    ItemName = itemName,
                     Quantity = cartItem.Quantity,
-                    UnitPrice = product.Price
+                    UnitPrice = unitPrice
                 };
                 orderItems.Add(orderItem);
 
                 SaleOrderItemDto itemDto = new(
-                    ProductId: product.Id,
-                    ProductName: product.Name,
+                    ItemId: cartItem.ItemId,
+                    ItemType: isService ? "Service" : "Product",
+                    ItemName: itemName,
                     Quantity: cartItem.Quantity,
-                    UnitPrice: product.Price,
+                    UnitPrice: unitPrice,
                     Subtotal: itemSubtotal
                 );
                 orderItemDtos.Add(itemDto);
@@ -121,7 +145,7 @@ public class PosService(AppDbContext context)
             if (request.AmountTendered < totalOrderAmount)
             {
                 throw Esc.New<ArgumentException>(
-                    "Amount tendered is insufficient to cover total order cost.",
+                    "Tendered amount is insufficient for total cost.",
                     request.AmountTendered
                 );
             }

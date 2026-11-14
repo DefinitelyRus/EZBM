@@ -50,9 +50,9 @@ public class AuthController(AuthService authService) : ControllerBase
     /// Verifies session token validity.
     /// </summary>
     [HttpGet("verify")]
-    public ActionResult Verify([FromQuery] string token)
+    public async Task<ActionResult> Verify([FromQuery] string token)
     {
-        bool isValid = _authService.VerifySession(token);
+        bool isValid = await _authService.VerifySessionAsync(token);
         if (!isValid) return Unauthorized("Session is invalid or expired.");
 
         return Ok(new { valid = true });
