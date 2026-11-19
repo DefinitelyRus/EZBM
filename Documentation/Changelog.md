@@ -26,6 +26,17 @@ Changes:
 
 ## Logs
 
+### 11/19/2026
+
+Added an automated API endpoint integration test suite and fixed `IBusinessSettingsService` dependency injection.
+
+Changes:
+
+- Created the `Backend.ApiTests` console project with isolated temporary SQLite database and settings support.
+- Added plain-language test modules covering Auth, Products, ProductStocks, ProductTransactions, POS, Payments, Attendance, Payroll, AuditLogs, and Settings.
+- Registered `IBusinessSettingsService` in `Backend.DesktopHost/Program.cs` and exposed `Program` for integration testing.
+- Added `Backend/Backend.ApiTests/README.md` with setup and usage instructions.
+
 ### 11/14/2026
 
 Added POS service item checkout, persisted auth sessions, paginated transaction queries, and refined shift pairing.
