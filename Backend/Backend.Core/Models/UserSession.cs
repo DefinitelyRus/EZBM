@@ -20,3 +20,4 @@ public class UserSession : Entity
     /// </summary>
     public DateTime ExpiresAt { get; set; }
 }
+

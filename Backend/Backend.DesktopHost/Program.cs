@@ -6,6 +6,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 BusinessSettingsService settingsService = new();
 builder.Services.AddSingleton(settingsService);
+builder.Services.AddSingleton<IBusinessSettingsService>(settingsService);
 
 string resolvedDbPath = settingsService.GetResolvedDatabasePath();
 string connectionString = $"Data Source={resolvedDbPath}";
@@ -63,3 +64,8 @@ app.MapControllers();
 
 // Start the server and keep it running to listen for incoming requests.
 app.Run();
+
+/// <summary>
+/// Entry point class exposed for integration testing.
+/// </summary>
+public partial class Program { }
